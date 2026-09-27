@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.models.sql;
+package vn.io.huangnosimp.nautilusserver.models;
 
 import jakarta.persistence.*;
 import lombok.Getter;

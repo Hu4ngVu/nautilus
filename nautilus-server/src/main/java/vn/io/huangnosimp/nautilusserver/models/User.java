@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.models.sql;
+package vn.io.huangnosimp.nautilusserver.models;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +11,7 @@ import vn.io.huangnosimp.nautilusserver.constant.Role;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User extends  BaseEntity {
+public class User extends BaseEntity {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
@@ -25,6 +25,15 @@ public class User extends  BaseEntity {
     @Column(name = "role", nullable = false, length = 10)
     private Role role;
 
+    @Column(name = "server_count", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    private Integer serverCount;
+
+    @Column(name = "collection_count", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    private Integer collectionCount;
+
     @Column(name = "avatar_url")
     private String avatarUrl;
+
+    @Column(name = "bio", columnDefinition = "TEXT")
+    private String bio;
 }

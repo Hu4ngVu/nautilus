@@ -1,6 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.constant;
 
-public enum Loaders {
+public enum Loader {
     FABRIC,
     NEOFORGE,
     FORGE,
