@@ -31,6 +31,9 @@ public class Server extends  BaseEntity {
     @Column(name = "player_count", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
     private Integer playerCount;
 
+    @Column(name = "link_count", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    private Integer linkCount;
+
     @Column(name = "java_address")
     private String javaAddress;
 
