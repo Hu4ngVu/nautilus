@@ -18,8 +18,8 @@ public class User extends BaseEntity {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "hashed_password", nullable = false)
-    private String hashedPassword;
+    @Column(name = "password", nullable = false)
+    private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 10)
