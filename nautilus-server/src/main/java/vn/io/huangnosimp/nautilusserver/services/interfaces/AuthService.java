@@ -1,9 +1,9 @@
 package vn.io.huangnosimp.nautilusserver.services.interfaces;
 
-import vn.io.huangnosimp.nautilusserver.models.User;
+import vn.io.huangnosimp.nautilusserver.dto.request.LoginUser;
+import vn.io.huangnosimp.nautilusserver.dto.request.RegisterUser;
 
 public interface AuthService {
-    boolean existsByUsername(String username);
-    boolean existsByEmail(String email);
-    User registerUser(User user);
+    void registerUser(RegisterUser registerUser);
+    void loginUser(LoginUser loginUser);
 }
