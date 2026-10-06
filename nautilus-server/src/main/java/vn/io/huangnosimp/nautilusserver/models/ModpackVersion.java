@@ -2,7 +2,7 @@ package vn.io.huangnosimp.nautilusserver.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-import vn.io.huangnosimp.nautilusserver.constant.Loader;
+import vn.io.huangnosimp.nautilusserver.constants.Loader;
 
 import java.math.BigInteger;
 

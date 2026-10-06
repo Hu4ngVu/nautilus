@@ -3,13 +3,12 @@ package vn.io.huangnosimp.nautilusserver.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import vn.io.huangnosimp.nautilusserver.dto.request.LoginUser;
-import vn.io.huangnosimp.nautilusserver.dto.request.RegisterUser;
+import org.springframework.web.bind.annotation.*;
+import vn.io.huangnosimp.nautilusserver.dto.request.auth.LoginUser;
+import vn.io.huangnosimp.nautilusserver.dto.request.auth.RegisterUser;
+import vn.io.huangnosimp.nautilusserver.dto.response.auth.Login;
 import vn.io.huangnosimp.nautilusserver.services.interfaces.AuthService;
 
 @RestController
@@ -19,7 +18,7 @@ import vn.io.huangnosimp.nautilusserver.services.interfaces.AuthService;
 public class AuthController {
     private final AuthService authService;
 
-    @RequestMapping("/register")
+    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUser registerUser) {
         log.info("Registering user: {}", registerUser.username());
         authService.registerUser(registerUser);
@@ -27,11 +26,11 @@ public class AuthController {
         return ResponseEntity.ok("User registered successfully!");
     }
 
-    @RequestMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginUser loginUser) {
         log.info("Logging in user: {}", loginUser.username());
-        authService.loginUser(loginUser);
+        Login accessToken = authService.loginUser(loginUser);
         log.info("User {} logged in successfully", loginUser.username());
-        return ResponseEntity.ok("User logged in successfully!");
+        return ResponseEntity.status(HttpStatus.CREATED).body(accessToken);
     }
 }

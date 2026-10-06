@@ -29,7 +29,7 @@ public class Collection extends BaseEntity {
     @Column(name = "visibility", nullable = false, columnDefinition = "BOOLEAN")
     private Boolean visibility; // true for public, false for private
 
-    @Column(name = "server_count", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    @Column(name = "server_count", columnDefinition = "INTEGER DEFAULT 0")
     private Integer serverCount;
 
     @Column(name = "description", columnDefinition = "TEXT")

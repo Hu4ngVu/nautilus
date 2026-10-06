@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.constant;
+package vn.io.huangnosimp.nautilusserver.constants;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

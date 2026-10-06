@@ -2,8 +2,8 @@ package vn.io.huangnosimp.nautilusserver.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-import vn.io.huangnosimp.nautilusserver.constant.ServerTagValue;
-import vn.io.huangnosimp.nautilusserver.constant.TagCategory;
+import vn.io.huangnosimp.nautilusserver.constants.ServerTagValue;
+import vn.io.huangnosimp.nautilusserver.constants.TagCategory;
 
 @Entity
 @Table(

@@ -2,7 +2,7 @@ package vn.io.huangnosimp.nautilusserver.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-import vn.io.huangnosimp.nautilusserver.constant.ServerType;
+import vn.io.huangnosimp.nautilusserver.constants.ServerType;
 
 @Entity
 @Table(name = "server")
@@ -19,20 +19,23 @@ public class Server extends  BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "visibility", nullable = false, columnDefinition = "BOOLEAN")
+    @Column(name = "visibility", columnDefinition = "BOOLEAN DEFAULT 0")
     private Boolean visibility; // true for public, false for private
 
-    @Column(name = "feedback_count", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    @Column(name = "feedback_count", columnDefinition = "INTEGER DEFAULT 0")
     private Integer feedbackCount;
 
-    @Column(name = "favorite_count", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    @Column(name = "favorite_count", columnDefinition = "INTEGER DEFAULT 0")
     private Integer favoriteCount;
 
-    @Column(name = "player_count", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    @Column(name = "player_count", columnDefinition = "INTEGER DEFAULT 0")
     private Integer playerCount;
 
-    @Column(name = "link_count", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    @Column(name = "link_count", columnDefinition = "INTEGER DEFAULT 0")
     private Integer linkCount;
+
+    @Column(name = "requires_premium", columnDefinition = "BOOLEAN DEFAULT 1")
+    private Boolean requiresPremium;
 
     @Column(name = "java_address")
     private String javaAddress;

@@ -1,4 +1,4 @@
-package exceptions.auth;
+package vn.io.huangnosimp.nautilusserver.exceptions.auth;
 
 public class DuplicateEmail extends RuntimeException {
   public DuplicateEmail(String message) {

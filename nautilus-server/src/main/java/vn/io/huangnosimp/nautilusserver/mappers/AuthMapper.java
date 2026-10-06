@@ -1,8 +1,8 @@
-package vn.io.huangnosimp.nautilusserver.mapper;
+package vn.io.huangnosimp.nautilusserver.mappers;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import vn.io.huangnosimp.nautilusserver.dto.request.RegisterUser;
+import vn.io.huangnosimp.nautilusserver.dto.request.auth.RegisterUser;
 import vn.io.huangnosimp.nautilusserver.models.User;
 
 @Mapper(componentModel = "spring")

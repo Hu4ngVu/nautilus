@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.dto.request;
+package vn.io.huangnosimp.nautilusserver.dto.request.auth;
 
 import jakarta.validation.constraints.NotBlank;
 
