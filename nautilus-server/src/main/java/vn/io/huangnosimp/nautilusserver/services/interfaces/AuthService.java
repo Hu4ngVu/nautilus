@@ -1,10 +1,13 @@
 package vn.io.huangnosimp.nautilusserver.services.interfaces;
 
-import vn.io.huangnosimp.nautilusserver.dto.request.auth.LoginUser;
-import vn.io.huangnosimp.nautilusserver.dto.request.auth.RegisterUser;
-import vn.io.huangnosimp.nautilusserver.dto.response.auth.Login;
+import org.springframework.security.oauth2.jwt.Jwt;
+import vn.io.huangnosimp.nautilusserver.dto.request.auth.LoginRequest;
+import vn.io.huangnosimp.nautilusserver.dto.request.auth.RegisterRequest;
+import vn.io.huangnosimp.nautilusserver.dto.result.TokenResult;
 
 public interface AuthService {
-    void registerUser(RegisterUser registerUser);
-    Login loginUser(LoginUser loginUser);
+    void registerUser(RegisterRequest registerRequest);
+    TokenResult loginUser(LoginRequest loginRequest);
+    void logoutUser(Jwt token);
+    TokenResult refreshToken(String refreshToken);
 }

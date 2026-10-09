@@ -3,20 +3,27 @@ package vn.io.huangnosimp.nautilusserver.services;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import vn.io.huangnosimp.nautilusserver.models.User;
+import vn.io.huangnosimp.nautilusserver.models.UserDetailsWrapper;
 import vn.io.huangnosimp.nautilusserver.repositories.UserRepository;
-import vn.io.huangnosimp.nautilusserver.services.interfaces.UserService;
+
+import java.util.Optional;
 
 @Service
-@NullMarked
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
+    @NullMarked
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
+            throw  new UsernameNotFoundException(username);
+        }
+        return new UserDetailsWrapper(user.get());
     }
 }
