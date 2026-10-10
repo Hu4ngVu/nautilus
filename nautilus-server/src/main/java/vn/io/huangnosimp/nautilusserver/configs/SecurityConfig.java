@@ -30,7 +30,7 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/register", "/auth/login").permitAll()
+                .requestMatchers("/auth/register", "/auth/login", "/auth/refresh").permitAll()
                 .anyRequest().authenticated())
 
                 .oauth2ResourceServer(oauth2 ->

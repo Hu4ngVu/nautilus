@@ -45,6 +45,24 @@ public class AuthServiceImpl implements AuthService {
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
 
+    private String generateAccessToken(UserDetailsWrapper userDetailsWrapper) {
+        Instant now = Instant.now();
+        String role = userDetailsWrapper
+                .getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(" "));
+        JwtClaimsSet claimsSet = JwtClaimsSet.builder()
+                        .issuer("nautilus-server")
+                        .issuedAt(now)
+                        .expiresAt(now.plusMillis(jwtExpirationMs))
+                        .subject(userDetailsWrapper.getUsername())
+                        .claim("role", role)
+                        .build();
+        JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build();
+        return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claimsSet)).getTokenValue();
+    }
+
     @Override
     @Transactional
     public void registerUser(RegisterRequest registerRequest) {
@@ -80,31 +98,27 @@ public class AuthServiceImpl implements AuthService {
                 new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
         UserDetailsWrapper userDetailsWrapper = (UserDetailsWrapper) authentication.getPrincipal();
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        Instant now = Instant.now();
         assert userDetailsWrapper != null;
-        String role = userDetailsWrapper
-                .getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
-        JwtClaimsSet claimsSet = JwtClaimsSet.builder()
-                        .issuer("nautilus-server")
-                        .issuedAt(now)
-                        .expiresAt(now.plusMillis(jwtExpirationMs))
-                        .subject(authentication.getName())
-                        .claim("role", role)
-                        .build();
-        JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build();
-        String accessToken = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claimsSet)).getTokenValue();
+        String accessToken = generateAccessToken(userDetailsWrapper);
         String refreshToken = refreshTokenService.generateRefreshToken(userDetailsWrapper.user());
         log.info("user {} logged in successfully", loginRequest.username());
         return new TokenResult(accessToken, refreshToken);
     }
 
     @Override
+    @Transactional
     public TokenResult refreshToken(String refreshToken) {
-        //TODO: implement refresh token logic
-        return null;
+        log.info("refreshing token");
+        refreshTokenService.validateRefreshToken(refreshToken);
+        String ownerId = refreshTokenService.getOwnerId(refreshToken);
+        User user = userRepository.findById(ownerId)
+                .orElseThrow(() -> new UserNotFound("User not found: " + ownerId));
+        String accessToken = generateAccessToken(new UserDetailsWrapper(user));
+        refreshTokenService.deleteRefreshToken(user);
+        log.info("user {} refreshed access token successfully", user.getUsername());
+        String newRefreshToken = refreshTokenService.generateRefreshToken(user);
+        log.info("user {} generated new refresh token successfully", user.getUsername());
+        return new TokenResult(accessToken, newRefreshToken);
     }
 
     @Override

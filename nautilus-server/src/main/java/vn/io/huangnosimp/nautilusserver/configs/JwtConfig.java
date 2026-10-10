@@ -62,6 +62,6 @@ public class JwtConfig {
         grantedAuthoritiesConverter.setAuthoritiesClaimName("role");
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
-        return  jwtAuthenticationConverter;
+        return jwtAuthenticationConverter;
     }
 }
