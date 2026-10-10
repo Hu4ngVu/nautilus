@@ -1,5 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.services;
 
+import org.redisson.api.RBloomFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,6 +42,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtEncoder jwtEncoder;
     private final RefreshTokenService refreshTokenService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final RBloomFilter<String> usernameBloomFilter;
 
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
@@ -63,11 +65,18 @@ public class AuthServiceImpl implements AuthService {
         return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claimsSet)).getTokenValue();
     }
 
+    private boolean isUsernameAvailable(String username ) {
+        if (usernameBloomFilter.contains(username)) {
+            return !userRepository.existsByUsername(username);
+        }
+        return true;
+    }
+
     @Override
     @Transactional
     public void registerUser(RegisterRequest registerRequest) {
         log.info("registering user: {}", registerRequest.username());
-        if (userRepository.existsByUsername(registerRequest.username())) {
+        if (!isUsernameAvailable(registerRequest.username())) {
             log.info("Username is already taken: {}", registerRequest.username());
             throw new DuplicateUsername("Username is already taken: " + registerRequest.username());
         }
@@ -88,6 +97,7 @@ public class AuthServiceImpl implements AuthService {
                 .enable(true)
                 .build();
         userRepository.save(user);
+        usernameBloomFilter.add(user.getUsername());
         log.info("registered user: {}", user.getUsername());
     }
 
