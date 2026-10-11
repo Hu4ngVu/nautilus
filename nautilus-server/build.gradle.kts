@@ -33,6 +33,7 @@ dependencies {
 //    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.2.0")
     implementation("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")
     implementation("org.redisson:redisson-spring-boot-starter:4.8.0")
+    implementation("net.datafaker:datafaker:2.7.0")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")

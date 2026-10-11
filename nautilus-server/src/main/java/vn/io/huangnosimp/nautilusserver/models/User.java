@@ -20,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class User extends BaseEntity implements UserDetails {
-    @Column(name = "username", unique = true)
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
 
     @Column(name = "email", nullable = false, unique = true)

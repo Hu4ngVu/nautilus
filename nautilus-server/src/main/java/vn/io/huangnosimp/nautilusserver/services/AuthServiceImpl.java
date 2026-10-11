@@ -1,6 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.services;
 
-import org.redisson.api.RBloomFilter;
+import org.redisson.api.RCuckooFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -42,7 +42,8 @@ public class AuthServiceImpl implements AuthService {
     private final JwtEncoder jwtEncoder;
     private final RefreshTokenService refreshTokenService;
     private final TokenBlacklistService tokenBlacklistService;
-    private final RBloomFilter<String> usernameBloomFilter;
+    private final RCuckooFilter<String> usernameCuckooFilter;
+    private final RCuckooFilter<String> emailCuckooFilter;
 
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
@@ -65,18 +66,11 @@ public class AuthServiceImpl implements AuthService {
         return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claimsSet)).getTokenValue();
     }
 
-    private boolean isUsernameAvailable(String username ) {
-        if (usernameBloomFilter.contains(username)) {
-            return !userRepository.existsByUsername(username);
-        }
-        return true;
-    }
-
     @Override
     @Transactional
     public void registerUser(RegisterRequest registerRequest) {
         log.info("registering user: {}", registerRequest.username());
-        if (!isUsernameAvailable(registerRequest.username())) {
+        if (userRepository.existsByUsername(registerRequest.username())) {
             log.info("Username is already taken: {}", registerRequest.username());
             throw new DuplicateUsername("Username is already taken: " + registerRequest.username());
         }
@@ -88,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
                 .username(registerRequest.username())
                 .email(registerRequest.email())
                 .password(passwordEncoder.encode(registerRequest.password()))
-                .provider(Provider.NONE)
+                .provider(Provider.LOCAL)
                 .role(Role.USER)
                 .serverCount(0)
                 .collectionCount(0)
@@ -97,7 +91,8 @@ public class AuthServiceImpl implements AuthService {
                 .enable(true)
                 .build();
         userRepository.save(user);
-        usernameBloomFilter.add(user.getUsername());
+        usernameCuckooFilter.add(user.getUsername());
+        emailCuckooFilter.add(user.getEmail());
         log.info("registered user: {}", user.getUsername());
     }
 
