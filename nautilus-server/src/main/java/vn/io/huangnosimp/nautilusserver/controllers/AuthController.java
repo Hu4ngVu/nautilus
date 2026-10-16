@@ -11,14 +11,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-import vn.io.huangnosimp.nautilusserver.dto.request.auth.LoginRequest;
-import vn.io.huangnosimp.nautilusserver.dto.request.auth.RegisterRequest;
-import vn.io.huangnosimp.nautilusserver.dto.response.auth.AccessTokenResponse;
+import vn.io.huangnosimp.nautilusserver.dto.request.LoginRequest;
+import vn.io.huangnosimp.nautilusserver.dto.request.RegisterRequest;
+import vn.io.huangnosimp.nautilusserver.dto.response.AccessTokenResponse;
 import vn.io.huangnosimp.nautilusserver.dto.result.TokenResult;
-import vn.io.huangnosimp.nautilusserver.services.interfaces.AuthService;
+import vn.io.huangnosimp.nautilusserver.services.auth.AuthService;
 
 @RestController
-@RequestMapping(value = "/auth", method = RequestMethod.POST)
+@RequestMapping(value = "/auth")
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {
@@ -50,6 +50,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @ResponseBody
     public ResponseEntity<?> logoutUser(@AuthenticationPrincipal Jwt jwt) {
         log.info("Logging out user");
 

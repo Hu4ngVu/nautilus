@@ -1,11 +1,10 @@
-package vn.io.huangnosimp.nautilusserver.services;
+package vn.io.huangnosimp.nautilusserver.services.auth;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
-import vn.io.huangnosimp.nautilusserver.services.interfaces.TokenBlacklistService;
 
 import java.time.Duration;
 import java.time.Instant;

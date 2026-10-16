@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import vn.io.huangnosimp.nautilusserver.services.OAuth2UserService;
+import vn.io.huangnosimp.nautilusserver.services.auth.OAuth2UserService;
 
 @Configuration
 @EnableWebSecurity

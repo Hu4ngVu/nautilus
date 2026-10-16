@@ -1,0 +1,10 @@
+package vn.io.huangnosimp.nautilusserver.services;
+
+import vn.io.huangnosimp.nautilusserver.dto.request.CreateServerRequest;
+import vn.io.huangnosimp.nautilusserver.dto.response.ServerInfoResponse;
+
+public interface ServerService {
+    ServerInfoResponse getServerInfo(String username, String servername);
+    void createServer(String username, CreateServerRequest body);
+    void deleteServer(String username, String servername);
+}

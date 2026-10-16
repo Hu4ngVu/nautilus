@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.services;
+package vn.io.huangnosimp.nautilusserver.services.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,7 +8,6 @@ import vn.io.huangnosimp.nautilusserver.exceptions.auth.InvalidRefreshToken;
 import vn.io.huangnosimp.nautilusserver.models.RefreshToken;
 import vn.io.huangnosimp.nautilusserver.models.User;
 import vn.io.huangnosimp.nautilusserver.repositories.RefreshTokenRepository;
-import vn.io.huangnosimp.nautilusserver.services.interfaces.RefreshTokenService;
 
 import java.time.Instant;
 import java.util.UUID;

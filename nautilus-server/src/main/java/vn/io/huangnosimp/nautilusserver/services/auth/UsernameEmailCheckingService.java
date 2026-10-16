@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.services.interfaces;
+package vn.io.huangnosimp.nautilusserver.services.auth;
 
 public interface UsernameEmailCheckingService {
     boolean isUsernameExists(String username);

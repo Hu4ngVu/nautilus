@@ -1,7 +1,6 @@
-package vn.io.huangnosimp.nautilusserver.services;
+package vn.io.huangnosimp.nautilusserver.services.auth;
 
 import lombok.RequiredArgsConstructor;
-import net.datafaker.Faker;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -24,9 +23,14 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     @NullMarked
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        Faker faker = new Faker();
         String email = oAuth2User.getAttribute("email");
-        String username = faker.animal().name().toLowerCase() + faker.number().digits(4);
+        if (email == null) {
+            throw new OAuth2AuthenticationException("Email not found");
+        }
+        if (email.isEmpty()) {
+            throw new OAuth2AuthenticationException("Email not found");
+        }
+        String username = email.split("@")[0];
 
         Boolean emailVerified = oAuth2User.getAttribute("email_verified");
         if (emailVerified == null || !emailVerified) {

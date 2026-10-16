@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.services.interfaces;
+package vn.io.huangnosimp.nautilusserver.services.auth;
 
 import vn.io.huangnosimp.nautilusserver.exceptions.auth.InvalidRefreshToken;
 import vn.io.huangnosimp.nautilusserver.models.User;

@@ -1,8 +1,8 @@
-package vn.io.huangnosimp.nautilusserver.services.interfaces;
+package vn.io.huangnosimp.nautilusserver.services.auth;
 
 import org.springframework.security.oauth2.jwt.Jwt;
-import vn.io.huangnosimp.nautilusserver.dto.request.auth.LoginRequest;
-import vn.io.huangnosimp.nautilusserver.dto.request.auth.RegisterRequest;
+import vn.io.huangnosimp.nautilusserver.dto.request.LoginRequest;
+import vn.io.huangnosimp.nautilusserver.dto.request.RegisterRequest;
 import vn.io.huangnosimp.nautilusserver.dto.result.TokenResult;
 
 public interface AuthService {

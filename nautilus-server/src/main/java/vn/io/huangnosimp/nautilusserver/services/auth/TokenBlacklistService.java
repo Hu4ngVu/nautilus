@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.services.interfaces;
+package vn.io.huangnosimp.nautilusserver.services.auth;
 
 import org.springframework.security.oauth2.jwt.Jwt;
 

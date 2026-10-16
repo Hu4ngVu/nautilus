@@ -1,10 +1,9 @@
-package vn.io.huangnosimp.nautilusserver.services;
+package vn.io.huangnosimp.nautilusserver.services.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RCuckooFilter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import vn.io.huangnosimp.nautilusserver.services.interfaces.UsernameEmailCheckingService;
 
 @Service
 @RequiredArgsConstructor

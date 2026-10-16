@@ -5,7 +5,13 @@ import lombok.*;
 import vn.io.huangnosimp.nautilusserver.constants.ServerType;
 
 @Entity
-@Table(name = "server")
+@Table(
+        name = "server",
+        uniqueConstraints = @UniqueConstraint(
+                name = "unique_server_name_per_user",
+                columnNames = {"user_id", "name"}
+        )
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +25,7 @@ public class Server extends  BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "visibility", columnDefinition = "BOOLEAN DEFAULT 0")
+    @Column(name = "visibility", nullable = false)
     private Boolean visibility; // true for public, false for private
 
     @Column(name = "feedback_count", columnDefinition = "INTEGER DEFAULT 0")
@@ -47,11 +53,14 @@ public class Server extends  BaseEntity {
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", length = 20)
+    @Column(name = "type", nullable = false, length = 20)
     private ServerType type;
 
     @Column(name = "banner_url")
     private String bannerUrl;
+
+    @Column(name = "summary", nullable = false, columnDefinition = "TEXT")
+    private String summary;
 
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;

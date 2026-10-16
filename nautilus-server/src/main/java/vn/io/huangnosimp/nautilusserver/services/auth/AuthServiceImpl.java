@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.services;
+package vn.io.huangnosimp.nautilusserver.services.auth;
 
 import org.redisson.api.RCuckooFilter;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,15 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.dto.request.auth.LoginRequest;
-import vn.io.huangnosimp.nautilusserver.dto.request.auth.RegisterRequest;
+import vn.io.huangnosimp.nautilusserver.dto.request.LoginRequest;
+import vn.io.huangnosimp.nautilusserver.dto.request.RegisterRequest;
 import vn.io.huangnosimp.nautilusserver.exceptions.auth.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.models.User;
 import vn.io.huangnosimp.nautilusserver.models.UserDetailsWrapper;
 import vn.io.huangnosimp.nautilusserver.repositories.UserRepository;
-import vn.io.huangnosimp.nautilusserver.services.interfaces.AuthService;
-import vn.io.huangnosimp.nautilusserver.services.interfaces.RefreshTokenService;
-import vn.io.huangnosimp.nautilusserver.services.interfaces.TokenBlacklistService;
 
 import java.time.Instant;
 import java.util.stream.Collectors;

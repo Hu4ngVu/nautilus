@@ -2,7 +2,6 @@ package vn.io.huangnosimp.nautilusserver.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-import vn.io.huangnosimp.nautilusserver.constants.ServerTagValue;
 import vn.io.huangnosimp.nautilusserver.constants.TagCategory;
 
 @Entity
@@ -25,9 +24,8 @@ public class ServerTag extends BaseEntity {
     @JoinColumn(name = "server_id", nullable = false)
     private Server server;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "tag", nullable = false, length = 50)
-    private ServerTagValue tag;
+    private String tag;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false, length = 20)
