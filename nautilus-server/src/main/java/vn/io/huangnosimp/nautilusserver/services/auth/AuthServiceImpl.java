@@ -82,8 +82,7 @@ public class AuthServiceImpl implements AuthService {
                 .provider(Provider.LOCAL)
                 .role(Role.USER)
                 .serverCount(0)
-                .collectionCount(0)
-                .avatarUrl(null)
+                .avatarKey(null)
                 .bio(null)
                 .enable(true)
                 .build();

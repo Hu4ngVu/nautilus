@@ -40,11 +40,8 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "server_count", columnDefinition = "INTEGER DEFAULT 0")
     private Integer serverCount;
 
-    @Column(name = "collection_count", columnDefinition = "INTEGER DEFAULT 0")
-    private Integer collectionCount;
-
-    @Column(name = "avatar_url")
-    private String avatarUrl;
+    @Column(name = "avatar_key")
+    private String avatarKey;
 
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;

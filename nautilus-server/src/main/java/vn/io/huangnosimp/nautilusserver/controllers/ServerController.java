@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.io.huangnosimp.nautilusserver.dto.request.CreateServerRequest;
+import vn.io.huangnosimp.nautilusserver.dto.request.UpdateServerInfoRequest;
 import vn.io.huangnosimp.nautilusserver.dto.response.ServerInfoResponse;
 import vn.io.huangnosimp.nautilusserver.services.ServerService;
 
@@ -15,23 +16,30 @@ import vn.io.huangnosimp.nautilusserver.services.ServerService;
 public class ServerController {
     private final ServerService serverService;
 
-    @GetMapping("/{username}/{servername}")
-    @PreAuthorize("@serverAccessEvaluator.isPublic(#username, #servername) or @serverAccessEvaluator.isOwner(authentication.name, #username, #servername)")
-    public ResponseEntity<ServerInfoResponse> getServerInfo(@PathVariable String username, @PathVariable String servername) {
-        return ResponseEntity.ok(serverService.getServerInfo(username, servername));
+    @GetMapping("/{leaderName}/{servername}")
+    @PreAuthorize("@serverAccessEvaluator.isPublic(#leaderName, #servername) or @serverAccessEvaluator.isOwner(authentication.name, #servername)")
+    public ResponseEntity<ServerInfoResponse> getServerInfo(@PathVariable String leaderName, @PathVariable String servername) {
+        return ResponseEntity.ok(serverService.getServerInfo(leaderName, servername));
     }
 
-    @PostMapping("/{username}")
-    @PreAuthorize("@userAccessEvaluator.isOwner(authentication.name, #username)")
-    public ResponseEntity<?> createServer(@PathVariable String username, @Valid @RequestBody CreateServerRequest body) {
-        serverService.createServer(username, body);
-        return ResponseEntity.ok("Server created for " + username);
+    @PostMapping("/{leaderName}")
+    @PreAuthorize("@userAccessEvaluator.isOwner(authentication.name, #leaderName)")
+    public ResponseEntity<?> createServer(@PathVariable String leaderName, @Valid @RequestBody CreateServerRequest body) {
+        serverService.createServer(leaderName, body);
+        return ResponseEntity.ok("Server created for " + leaderName);
     }
 
-    @DeleteMapping("{username}/{servername}")
-    @PreAuthorize("@serverAccessEvaluator.isOwner(authentication.name, #username, #servername)")
-    public ResponseEntity<?> deleteServer(@PathVariable String username, @PathVariable String servername) {
-        serverService.deleteServer(username, servername);
-        return ResponseEntity.ok("Server deleted for " + username);
+    @DeleteMapping("{leaderName}/{servername}")
+    @PreAuthorize("@serverAccessEvaluator.isLeader(authentication.name, #servername)")
+    public ResponseEntity<?> deleteServer(@PathVariable String leaderName, @PathVariable String servername) {
+        serverService.deleteServer(leaderName, servername);
+        return ResponseEntity.ok("Server deleted for " + leaderName);
+    }
+
+    @PatchMapping("{leaderName}/{servername}")
+    @PreAuthorize("@serverAccessEvaluator.isOwner(authentication.name, #servername)")
+    public ResponseEntity<?> updateServer(@PathVariable String leaderName, @PathVariable String servername, @Valid @RequestBody UpdateServerInfoRequest body) {
+        serverService.updateServerInfo(leaderName, servername, body);
+        return ResponseEntity.ok("Server updated for " + leaderName);
     }
 }

@@ -1,22 +1,31 @@
 package vn.io.huangnosimp.nautilusserver.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import vn.io.huangnosimp.nautilusserver.models.Server;
 
 import java.util.Optional;
 
 @Repository
 public interface ServerRepository extends JpaRepository<Server, String> {
-    @Query("SELECT EXISTS (SELECT 1 FROM Server s WHERE s.name = :name AND s.user.username = :username)")
-    boolean existsByNameAndUserUsername(@Param("name") String name, @Param("newUsername") String username);
+    @Query("SELECT o.server.visibility FROM Owner o WHERE o.user.username = :username AND o.server.servername = :servername")
+    Boolean findVisibilityByNameAndUsername(@Param("username") String username, @Param("servername") String servername);
 
-    @Query("SELECT s.visibility FROM Server s WHERE s.name = :name AND s.user.username = :username")
-    Boolean findVisibilityByNameAndUserUsername(@Param("name") String name, @Param("newUsername") String username);
+    @Query("SELECT s FROM Server s WHERE s.user.username = :username AND s.servername = :servername")
+    Optional<Server> findByUsernameAndServername(@Param("username") String username, @Param("servername") String servername);
 
-    Optional<Server> findByNameAndUserUsername(String name, String username);
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Server s WHERE s.user.username = :username AND s.servername = :servername")
+    void deleteByServernameAndUsername(@Param("username") String username, @Param("servername") String servername);
 
-    void deleteByNameAndUserUsername(String name, String username);
+    @Query("SELECT EXISTS (SELECT 1 FROM Owner o WHERE o.user.username = :authenticationName AND o.server.servername = :servername)")
+    boolean existsOwnerUsername(@Param("authenticationName") String authenticationName, @Param("servername") String servername);
+
+    @Query("SELECT EXISTS (SELECT 1 FROM Server s WHERE s.user.username = :authenticationName AND s.servername = :servername)")
+    boolean existsLeaderUsername(@Param("authenticationName") String authenticationName, @Param("servername") String servername);
 }

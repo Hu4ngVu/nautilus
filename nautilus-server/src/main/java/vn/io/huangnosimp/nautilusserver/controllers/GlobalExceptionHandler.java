@@ -2,6 +2,8 @@ package vn.io.huangnosimp.nautilusserver.controllers;
 
 import software.amazon.awssdk.http.HttpStatusCode;
 import vn.io.huangnosimp.nautilusserver.exceptions.CannotUpload;
+import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateInvitation;
+import vn.io.huangnosimp.nautilusserver.exceptions.InvitationNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.auth.DuplicateEmail;
 import vn.io.huangnosimp.nautilusserver.exceptions.auth.DuplicateUsername;
@@ -39,7 +41,17 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CannotUpload.class)
-    public  ResponseEntity<String> handleCannotUpload(CannotUpload e) {
+    public ResponseEntity<String> handleCannotUpload(CannotUpload e) {
         return ResponseEntity.status(HttpStatusCode.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    }
+
+    @ExceptionHandler(InvitationNotFound.class)
+    public ResponseEntity<String> handleInvitationNotFound() {
+        return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(DuplicateInvitation.class)
+    public ResponseEntity<String> handleDuplicateInvitation(DuplicateInvitation e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
 }

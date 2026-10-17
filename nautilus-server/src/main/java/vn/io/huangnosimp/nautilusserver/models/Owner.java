@@ -5,23 +5,21 @@ import lombok.*;
 
 @Entity
 @Table(
-        name = "save",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uc_collection_id_server_id",
-                        columnNames = {"collection_id", "server_id"}
-                )
-        }
+        name = "owner",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uc_owner_name",
+                columnNames = {"user_id", "server_id"}
+        )
 )
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Save extends BaseEntity {
+public class Owner extends BaseEntity{
     @ManyToOne(fetch =  FetchType.LAZY, optional = false)
-    @JoinColumn(name = "collection_id", nullable = false)
-    private Collection collection;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne(fetch =  FetchType.LAZY, optional = false)
     @JoinColumn(name = "server_id", nullable = false)

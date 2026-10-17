@@ -9,7 +9,11 @@ import vn.io.huangnosimp.nautilusserver.constants.ServerType;
         name = "server",
         uniqueConstraints = @UniqueConstraint(
                 name = "unique_server_name_per_user",
-                columnNames = {"user_id", "name"}
+                columnNames = {"user_id", "servername"}
+        ),
+        indexes = @Index(
+                name = "index_server_servername",
+                columnList = "servername"
         )
 )
 @Getter
@@ -22,25 +26,16 @@ public class Server extends  BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "servername", nullable = false)
+    private String servername;
 
-    @Column(name = "visibility", nullable = false)
+    @Column(name = "visibility", nullable = false, columnDefinition = "BOOLEAN")
     private Boolean visibility; // true for public, false for private
-
-    @Column(name = "feedback_count", columnDefinition = "INTEGER DEFAULT 0")
-    private Integer feedbackCount;
-
-    @Column(name = "favorite_count", columnDefinition = "INTEGER DEFAULT 0")
-    private Integer favoriteCount;
-
-    @Column(name = "player_count", columnDefinition = "INTEGER DEFAULT 0")
-    private Integer playerCount;
 
     @Column(name = "link_count", columnDefinition = "INTEGER DEFAULT 0")
     private Integer linkCount;
 
-    @Column(name = "requires_premium", columnDefinition = "BOOLEAN DEFAULT 1")
+    @Column(name = "requires_premium", nullable = false, columnDefinition = "BOOLEAN")
     private Boolean requiresPremium;
 
     @Column(name = "java_address")
@@ -49,15 +44,15 @@ public class Server extends  BaseEntity {
     @Column(name = "bedrock_address")
     private String bedrockAddress;
 
-    @Column(name = "image_url")
-    private String imageUrl;
+    @Column(name = "image_key")
+    private String imageKey;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 20)
     private ServerType type;
 
-    @Column(name = "banner_url")
-    private String bannerUrl;
+    @Column(name = "banner_key")
+    private String bannerKey;
 
     @Column(name = "summary", nullable = false, columnDefinition = "TEXT")
     private String summary;
