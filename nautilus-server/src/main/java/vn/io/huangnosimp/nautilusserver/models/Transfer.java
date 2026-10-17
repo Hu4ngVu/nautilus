@@ -8,9 +8,9 @@ import java.time.Instant;
 
 @Entity
 @Table(
-        name = "server_invitations",
+        name = "transfers",
         indexes = @Index(
-                name = "idx_server_invitations_sender_id_receiver_id_server_id",
+                name = "idx_server_transfers_sender_id_receiver_id_server_id",
                 columnList = "sender_id, receiver_id, server_id"
         )
 )
@@ -19,23 +19,23 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ServerInvitation extends BaseEntity {
+public class Transfer extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "sender_id")
+    @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "receiver_id")
+    @ManyToOne(fetch =  FetchType.LAZY, optional = false)
+    @JoinColumn(name = "receiver_id", nullable = false)
     private User receiver;
 
     @ManyToOne(fetch =  FetchType.LAZY, optional = false)
-    @JoinColumn(name = "server_id")
+    @JoinColumn(name = "server_id", nullable = false)
     private Server server;
 
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private InvitationStatus status;
 }

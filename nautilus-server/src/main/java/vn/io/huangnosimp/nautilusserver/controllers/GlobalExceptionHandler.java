@@ -1,10 +1,7 @@
 package vn.io.huangnosimp.nautilusserver.controllers;
 
 import software.amazon.awssdk.http.HttpStatusCode;
-import vn.io.huangnosimp.nautilusserver.exceptions.CannotUpload;
-import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateInvitation;
-import vn.io.huangnosimp.nautilusserver.exceptions.InvitationNotFound;
-import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
+import vn.io.huangnosimp.nautilusserver.exceptions.*;
 import vn.io.huangnosimp.nautilusserver.exceptions.auth.DuplicateEmail;
 import vn.io.huangnosimp.nautilusserver.exceptions.auth.DuplicateUsername;
 import org.springframework.http.ResponseEntity;
@@ -53,5 +50,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateInvitation.class)
     public ResponseEntity<String> handleDuplicateInvitation(DuplicateInvitation e) {
         return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateTransfer.class)
+    public ResponseEntity<String> handleDuplicateTransfer(DuplicateTransfer e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidTransferStatus.class)
+    public ResponseEntity<String> handleInvalidTransferStatus(InvalidTransferStatus e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(TransferNotFound.class)
+    public ResponseEntity<String> handleTransferNotFound() {
+        return ResponseEntity.notFound().build();
     }
 }

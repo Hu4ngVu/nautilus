@@ -23,8 +23,8 @@ public interface ServerRepository extends JpaRepository<Server, String> {
     @Query("DELETE FROM Server s WHERE s.user.username = :username AND s.servername = :servername")
     void deleteByServernameAndUsername(@Param("username") String username, @Param("servername") String servername);
 
-    @Query("SELECT EXISTS (SELECT 1 FROM Owner o WHERE o.user.username = :authenticationName AND o.server.servername = :servername)")
-    boolean existsOwnerUsername(@Param("authenticationName") String authenticationName, @Param("servername") String servername);
+    @Query("SELECT EXISTS (SELECT 1 FROM Owner o WHERE o.user.username = :authenticationName AND o.server.user.username = :leaderName AND o.server.servername = :servername)")
+    boolean existsOwnerUsername(@Param("authenticationName") String authenticationName, @Param("leaderName") String leaderName, @Param("servername") String servername);
 
     @Query("SELECT EXISTS (SELECT 1 FROM Server s WHERE s.user.username = :authenticationName AND s.servername = :servername)")
     boolean existsLeaderUsername(@Param("authenticationName") String authenticationName, @Param("servername") String servername);

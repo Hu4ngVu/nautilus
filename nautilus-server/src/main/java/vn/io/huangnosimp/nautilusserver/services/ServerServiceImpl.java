@@ -20,7 +20,6 @@ import vn.io.huangnosimp.nautilusserver.repositories.ServerRepository;
 import vn.io.huangnosimp.nautilusserver.repositories.UserRepository;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +34,7 @@ public class ServerServiceImpl implements ServerService {
     
     @Override
     public ServerInfoResponse getServerInfo(String username, String servername) throws ServerNotFound {
-        Optional<Server> optionalServer = serverRepository.findByUsernameAndServername(username, servername);
-        Server server = optionalServer.orElseThrow(() -> new ServerNotFound(servername));
+        Server server = serverRepository.findByUsernameAndServername(username, servername).orElseThrow(() -> new ServerNotFound(servername));
         return ServerInfoResponse.builder()
                 .servername(server.getServername())
                 .visibility(server.getVisibility())
@@ -50,8 +48,7 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Transactional
     public void createServer(String username, CreateServerRequest body) {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        User user = optionalUser.orElseThrow(() -> new UserNotFound(username));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
         Server server = Server.builder()
                 .user(user)
                 .servername(body.servername())
@@ -77,8 +74,7 @@ public class ServerServiceImpl implements ServerService {
 
     @Override
     public void updateServerInfo(String username, String servername, UpdateServerInfoRequest body) {
-        Optional<Server> optionalServer = serverRepository.findByUsernameAndServername(username, servername);
-        Server server = optionalServer.orElseThrow(() -> new ServerNotFound(servername));
+        Server server = serverRepository.findByUsernameAndServername(username, servername).orElseThrow(() -> new ServerNotFound(servername));
         if (body.banner() != null) {
             String extension = FileNameUtil.getExtension(body.banner().getOriginalFilename());
             if (isExtensionInvalid(extension)) {

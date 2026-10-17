@@ -46,8 +46,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserInfoResponse getUserInfo(String username) {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        User user = optionalUser.orElseThrow(() -> new UserNotFound(username));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
         String avatarUrl = s3Template.createSignedGetURL(bucketName, user.getAvatarKey(), Duration.of(1, ChronoUnit.MINUTES)).toString();
         return new UserInfoResponse(
                 user.getUsername(),
@@ -61,8 +60,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUserInfo(String username, UpdateUserInfoRequest updateUserInfoRequest) {
         log.info("Updating user info for {}", username);
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        User user = optionalUser.orElseThrow(() -> new UserNotFound(username));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
         if (updateUserInfoRequest.bio() != null) {
             log.info("Updating bio for {}", username);
             user.setBio(updateUserInfoRequest.bio());

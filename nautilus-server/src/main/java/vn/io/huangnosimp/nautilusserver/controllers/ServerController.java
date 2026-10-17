@@ -17,7 +17,7 @@ public class ServerController {
     private final ServerService serverService;
 
     @GetMapping("/{leaderName}/{servername}")
-    @PreAuthorize("@serverAccessEvaluator.isPublic(#leaderName, #servername) or @serverAccessEvaluator.isOwner(authentication.name, #servername)")
+    @PreAuthorize("@serverAccessEvaluator.isPublic(#leaderName, #servername) or @serverAccessEvaluator.isOwner(authentication.name, #leaderName, #servername)")
     public ResponseEntity<ServerInfoResponse> getServerInfo(@PathVariable String leaderName, @PathVariable String servername) {
         return ResponseEntity.ok(serverService.getServerInfo(leaderName, servername));
     }
@@ -30,14 +30,14 @@ public class ServerController {
     }
 
     @DeleteMapping("{leaderName}/{servername}")
-    @PreAuthorize("@serverAccessEvaluator.isLeader(authentication.name, #servername)")
+    @PreAuthorize("@serverAccessEvaluator.isLeader(authentication.name, #leaderName, #servername)")
     public ResponseEntity<?> deleteServer(@PathVariable String leaderName, @PathVariable String servername) {
         serverService.deleteServer(leaderName, servername);
         return ResponseEntity.ok("Server deleted for " + leaderName);
     }
 
     @PatchMapping("{leaderName}/{servername}")
-    @PreAuthorize("@serverAccessEvaluator.isOwner(authentication.name, #servername)")
+    @PreAuthorize("@serverAccessEvaluator.isOwner(authentication.name, #leaderName, #servername)")
     public ResponseEntity<?> updateServer(@PathVariable String leaderName, @PathVariable String servername, @Valid @RequestBody UpdateServerInfoRequest body) {
         serverService.updateServerInfo(leaderName, servername, body);
         return ResponseEntity.ok("Server updated for " + leaderName);

@@ -12,10 +12,10 @@ public class ServerAccessEvaluator {
 
     @Cacheable(
             cacheNames = "server-owner",
-            key = "#servername + ':' + #authenticationName"
+            key = "#leaderName + ':' + #servername + ':' + #authenticationName"
     )
-    public boolean isOwner(String authenticationName, String servername) {
-        return serverRepository.existsOwnerUsername(authenticationName, servername);
+    public boolean isOwner(String authenticationName, String leaderName, String servername) {
+        return serverRepository.existsOwnerUsername(authenticationName, leaderName, servername);
     }
 
     @Cacheable(
@@ -30,9 +30,9 @@ public class ServerAccessEvaluator {
 
     @Cacheable(
             cacheNames = "server-leader",
-            key = "#servername + ':' + #authenticationName"
+            key = "#leaderName + ':' + #servername + ':' + #authenticationName"
     )
-    public boolean isLeader(String authenticationName, String servername) {
-        return serverRepository.existsLeaderUsername(authenticationName, servername);
+    public boolean isLeader(String authenticationName, String leaderName, String servername) {
+        return authenticationName.equals(leaderName) && serverRepository.existsLeaderUsername(leaderName, servername);
     }
 }
