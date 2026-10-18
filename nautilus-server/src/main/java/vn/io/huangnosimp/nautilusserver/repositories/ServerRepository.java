@@ -12,8 +12,8 @@ import java.util.Optional;
 
 @Repository
 public interface ServerRepository extends JpaRepository<Server, String> {
-    @Query("SELECT o.server.visibility FROM Owner o WHERE o.user.username = :username AND o.server.servername = :servername")
-    Boolean findVisibilityByNameAndUsername(@Param("username") String username, @Param("servername") String servername);
+    @Query("SELECT s.visibility FROM Server s WHERE s.user.username = :leaderName AND s.servername = :servername")
+    Boolean findVisibilityByNameAndUsername(@Param("leaderName") String leaderName, @Param("servername") String servername);
 
     @Query("SELECT s FROM Server s WHERE s.user.username = :username AND s.servername = :servername")
     Optional<Server> findByUsernameAndServername(@Param("username") String username, @Param("servername") String servername);

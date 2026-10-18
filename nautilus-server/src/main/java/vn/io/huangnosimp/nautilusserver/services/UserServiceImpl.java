@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import vn.io.huangnosimp.nautilusserver.dto.request.UpdateUserInfoRequest;
 import vn.io.huangnosimp.nautilusserver.dto.response.UserInfoResponse;
@@ -58,6 +59,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateUserInfo(String username, UpdateUserInfoRequest updateUserInfoRequest) {
         log.info("Updating user info for {}", username);
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));

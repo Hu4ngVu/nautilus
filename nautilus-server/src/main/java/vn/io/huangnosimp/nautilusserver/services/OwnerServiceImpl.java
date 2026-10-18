@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.constants.InvitationStatus;
+import vn.io.huangnosimp.nautilusserver.constants.Status;
 import vn.io.huangnosimp.nautilusserver.exceptions.*;
 import vn.io.huangnosimp.nautilusserver.exceptions.auth.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.models.*;
@@ -21,11 +21,13 @@ public class OwnerServiceImpl implements  OwnerService {
     private final ServerRepository serverRepository;
     private final UserRepository userRepository;
     private final OwnerRepository ownerRepository;
+    private final SchedulingService schedulingService;
 
     @Value("${app.invite-expiration-ms}")
     private long inviteExpirationMs;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void createInvite(String leaderName, String servername, String username) {
         User sender = userRepository.findByUsername(leaderName).orElseThrow(() -> new UserNotFound(leaderName));
         User receiver = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
@@ -38,34 +40,37 @@ public class OwnerServiceImpl implements  OwnerService {
                 .receiver(receiver)
                 .server(server)
                 .expiresAt(Instant.now().plusMillis(inviteExpirationMs))
-                .status(InvitationStatus.PENDING)
+                .status(Status.PENDING)
                 .build();
         invitationRepository.save(invitation);
+        schedulingService.scheduleInvitationExpiration(invitation);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void cancelInvite(String leaderName, String servername, String username) {
         Invitation invitation = invitationRepository
                 .findBySenderNameReceiverNameServerName(leaderName, username, servername)
                 .orElseThrow(() -> new InvitationNotFound("invitation not found"));
-        if (invitation.getStatus() != InvitationStatus.PENDING) {
+        if (invitation.getStatus() != Status.PENDING) {
             throw new InvalidInvitationStatus("invitation is not pending");
         }
-        invitation.setStatus(InvitationStatus.CANCELED);
+        invitation.setStatus(Status.CANCELED);
         invitationRepository.save(invitation);
+        schedulingService.cancelInvitationExpiration(invitation.getId());
     }
 
     @Override
-    @Transactional
-    @CacheEvict(value = "server-owner", key = "#leaderName + ':' + #servername + ':' + #receiverName")
+    @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(value = "server-owner", allEntries = true)
     public void acceptInvite(String leaderName, String servername, String receiverName) {
         Invitation invitation = invitationRepository
                 .findBySenderNameReceiverNameServerName(leaderName, receiverName, servername)
                 .orElseThrow(() -> new InvitationNotFound("invitation not found"));
-        if (invitation.getStatus() != InvitationStatus.PENDING) {
+        if (invitation.getStatus() != Status.PENDING) {
             throw new InvalidInvitationStatus("invitation is not pending");
         }
-        invitation.setStatus(InvitationStatus.ACCEPTED);
+        invitation.setStatus(Status.ACCEPTED);
         invitationRepository.save(invitation);
         User user = invitation.getReceiver();
         Server server = invitation.getServer();
@@ -74,22 +79,26 @@ public class OwnerServiceImpl implements  OwnerService {
                 .server(server)
                 .build();
         ownerRepository.save(owner);
+
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void declineInvite(String leaderName, String servername, String username) {
         Invitation invitation = invitationRepository
                 .findBySenderNameReceiverNameServerName(leaderName, username, servername)
                 .orElseThrow(() -> new InvitationNotFound("invitation not found"));
-        if (invitation.getStatus() != InvitationStatus.PENDING) {
+        if (invitation.getStatus() != Status.PENDING) {
             throw new InvalidInvitationStatus("invitation is not pending");
         }
-        invitation.setStatus(InvitationStatus.DECLINED);
+        invitation.setStatus(Status.DECLINED);
         invitationRepository.save(invitation);
+        schedulingService.cancelInvitationExpiration(invitation.getId());
     }
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void createTransfer(String leaderName, String ownerName, String servername) {
         User sender = userRepository.findByUsername(leaderName).orElseThrow(() -> new UserNotFound(leaderName));
         User receiver = userRepository.findByUsername(ownerName).orElseThrow(() -> new UserNotFound(ownerName));
@@ -102,35 +111,39 @@ public class OwnerServiceImpl implements  OwnerService {
                 .receiver(receiver)
                 .server(server)
                 .expiresAt(Instant.now().plusMillis(inviteExpirationMs))
-                .status(InvitationStatus.PENDING)
+                .status(Status.PENDING)
                 .build();
         transferRepository.save(transfer);
+        schedulingService.scheduleTransferExpiration(transfer);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void cancelTransfer(String leaderName, String ownerName, String servername) {
         Transfer transfer = transferRepository
                 .findBySenderNameReceiverNameServerName(leaderName, ownerName, servername)
                 .orElseThrow(() -> new TransferNotFound("transfer not found"));
-        if (transfer.getStatus() != InvitationStatus.PENDING) {
+        if (transfer.getStatus() != Status.PENDING) {
             throw new InvalidTransferStatus("transfer is not pending");
         }
-        transfer.setStatus(InvitationStatus.CANCELED);
+        transfer.setStatus(Status.CANCELED);
         transferRepository.save(transfer);
+        schedulingService.cancelTransferExpiration(transfer.getId());
     }
 
     @Override
-    @Transactional
-    @CacheEvict(cacheNames = "server_leader")
+    @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(cacheNames = "server-leader", allEntries = true)
     public void acceptTransfer(String leaderName, String ownerName, String servername) {
         Transfer transfer = transferRepository
                 .findBySenderNameReceiverNameServerName(leaderName, ownerName, servername)
                 .orElseThrow(() -> new TransferNotFound("transfer not found"));
-        if (transfer.getStatus() != InvitationStatus.PENDING) {
+        if (transfer.getStatus() != Status.PENDING) {
             throw new InvalidTransferStatus("transfer is not pending");
         }
-        transfer.setStatus(InvitationStatus.ACCEPTED);
+        transfer.setStatus(Status.ACCEPTED);
         transferRepository.save(transfer);
+        schedulingService.cancelTransferExpiration(transfer.getId());
         User receiver = transfer.getReceiver();
         Server server = transfer.getServer();
         server.setUser(receiver);
@@ -138,14 +151,16 @@ public class OwnerServiceImpl implements  OwnerService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void declineTransfer(String leaderName, String ownerName, String servername) {
         Transfer transfer = transferRepository
                 .findBySenderNameReceiverNameServerName(leaderName, ownerName, servername)
                 .orElseThrow(() -> new TransferNotFound("transfer not found"));
-        if (transfer.getStatus() != InvitationStatus.PENDING) {
+        if (transfer.getStatus() != Status.PENDING) {
             throw new InvalidTransferStatus("transfer is not pending");
         }
-        transfer.setStatus(InvitationStatus.DECLINED);
+        transfer.setStatus(Status.DECLINED);
         transferRepository.save(transfer);
+        schedulingService.cancelTransferExpiration(transfer.getId());
     }
 }

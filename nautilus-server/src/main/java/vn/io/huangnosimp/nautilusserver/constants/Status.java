@@ -1,6 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.constants;
 
-public enum InvitationStatus {
+public enum Status {
     PENDING,
     ACCEPTED,
     DECLINED,

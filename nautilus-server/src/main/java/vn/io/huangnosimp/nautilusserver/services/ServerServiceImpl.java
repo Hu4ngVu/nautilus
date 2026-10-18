@@ -46,7 +46,7 @@ public class ServerServiceImpl implements ServerService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void createServer(String username, CreateServerRequest body) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
         Server server = Server.builder()
@@ -68,11 +68,13 @@ public class ServerServiceImpl implements ServerService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteServer(String username, String servername) {
         serverRepository.deleteByServernameAndUsername(username, servername);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateServerInfo(String username, String servername, UpdateServerInfoRequest body) {
         Server server = serverRepository.findByUsernameAndServername(username, servername).orElseThrow(() -> new ServerNotFound(servername));
         if (body.banner() != null) {

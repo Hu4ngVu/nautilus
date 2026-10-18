@@ -2,7 +2,7 @@ package vn.io.huangnosimp.nautilusserver.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-import vn.io.huangnosimp.nautilusserver.constants.InvitationStatus;
+import vn.io.huangnosimp.nautilusserver.constants.Status;
 
 import java.time.Instant;
 
@@ -37,5 +37,5 @@ public class Transfer extends BaseEntity {
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private InvitationStatus status;
+    private Status status;
 }
