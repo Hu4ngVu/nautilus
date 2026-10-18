@@ -66,4 +66,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleTransferNotFound() {
         return ResponseEntity.notFound().build();
     }
+
+    @ExceptionHandler(ImageNotFound.class)
+    public ResponseEntity<String> handleImageNotFound() {
+        return ResponseEntity.notFound().build();
+    }
 }

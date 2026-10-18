@@ -26,20 +26,34 @@ public class ServerController {
     @PreAuthorize("@userAccessEvaluator.isOwner(authentication.name, #leaderName)")
     public ResponseEntity<?> createServer(@PathVariable String leaderName, @Valid @RequestBody CreateServerRequest body) {
         serverService.createServer(leaderName, body);
-        return ResponseEntity.ok("Server created for " + leaderName);
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("{leaderName}/{servername}")
+    @DeleteMapping("/{leaderName}/{servername}")
     @PreAuthorize("@serverAccessEvaluator.isLeader(authentication.name, #leaderName, #servername)")
     public ResponseEntity<?> deleteServer(@PathVariable String leaderName, @PathVariable String servername) {
         serverService.deleteServer(leaderName, servername);
-        return ResponseEntity.ok("Server deleted for " + leaderName);
+        return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("{leaderName}/{servername}")
+    @PatchMapping("/{leaderName}/{servername}")
     @PreAuthorize("@serverAccessEvaluator.isOwner(authentication.name, #leaderName, #servername)")
     public ResponseEntity<?> updateServer(@PathVariable String leaderName, @PathVariable String servername, @Valid @RequestBody UpdateServerInfoRequest body) {
         serverService.updateServerInfo(leaderName, servername, body);
-        return ResponseEntity.ok("Server updated for " + leaderName);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{leaderName}/{servername}/image")
+    @PreAuthorize("@serverAccessEvaluator.isOwner(authentication.name, #leaderName, #servername)")
+    public ResponseEntity<?> deleteServerImage(@PathVariable String leaderName, @PathVariable String servername) {
+        serverService.deleteServerImage(leaderName, servername);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{leaderName}/{servername}/banner")
+    @PreAuthorize("@serverAccessEvaluator.isOwner(authentication.name, #leaderName, #servername)")
+    public ResponseEntity<?> deleteServerBanner(@PathVariable String leaderName, @PathVariable String servername) {
+        serverService.deleteServerBanner(leaderName, servername);
+        return ResponseEntity.ok().build();
     }
 }

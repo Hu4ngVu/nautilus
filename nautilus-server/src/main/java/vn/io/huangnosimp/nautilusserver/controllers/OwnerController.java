@@ -43,14 +43,14 @@ public class OwnerController {
 
     // transfer leader
     @PostMapping("/transfer/{ownerName}/{leaderName}/{servername}")
-    @PreAuthorize("@serverAccessEvaluator.isLeader(authentication.name, #leaderName, #servername)")
+    @PreAuthorize("@serverAccessEvaluator.isLeader(authentication.name, #leaderName, #servername) and @serverAccessEvaluator.isOwner(#ownerName, #leaderName, #servername)")
     public ResponseEntity<?> createTransfer(@PathVariable String ownerName, @PathVariable String leaderName, @PathVariable String servername) {
         ownerService.createTransfer(leaderName, ownerName, servername);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/transfer/{ownerName}/{leaderName}/{servername}")
-    @PreAuthorize("@serverAccessEvaluator.isLeader(authentication.name, #leaderName, #servername)")
+    @PreAuthorize("@serverAccessEvaluator.isLeader(authentication.name, #leaderName, #servername) and @transferAccessEvaluator.isSender(authentication.name, #leaderName, #ownerName, #servername)")
     public ResponseEntity<?> cancelTransfer(@PathVariable String ownerName, @PathVariable String leaderName, @PathVariable String servername) {
         ownerService.cancelTransfer(leaderName, ownerName, servername);
         return ResponseEntity.ok().build();

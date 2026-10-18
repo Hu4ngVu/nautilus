@@ -17,6 +17,7 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
 
     @Override
     public void addToken(Jwt token) {
+        log.debug("Adding token {} to blacklist", token.getTokenValue());
         Instant expireAt = token.getExpiresAt();
         long remainingMs = Duration.between(Instant.now(), expireAt).toMillis();
         if (remainingMs <= 0) {
@@ -29,6 +30,7 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
 
     @Override
     public boolean isBlacklisted(Jwt token) {
+        log.debug("Checking if token {} is blacklisted", token.getTokenValue());
         boolean isBlacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(token.getTokenValue()));
         if (isBlacklisted) {
             log.info("Token {} is blacklisted", token.getTokenValue());

@@ -1,6 +1,7 @@
 package vn.io.huangnosimp.nautilusserver.services;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
@@ -10,6 +11,7 @@ import vn.io.huangnosimp.nautilusserver.models.Transfer;
 import vn.io.huangnosimp.nautilusserver.services.task.ChangeInvitationStatusJob;
 import vn.io.huangnosimp.nautilusserver.services.task.ChangeTransferStatusJob;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SchedulingServiceImpl implements  SchedulingService {
@@ -18,6 +20,7 @@ public class SchedulingServiceImpl implements  SchedulingService {
     @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void scheduleInvitationExpiration(Invitation invitation) {
+        log.debug("Scheduling expiration for invitation: {}", invitation.getId());
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("invitationId", invitation.getId());
 
@@ -38,12 +41,13 @@ public class SchedulingServiceImpl implements  SchedulingService {
         } catch (SchedulerException e) {
             throw new RuntimeException("Failed to schedule invitation expiration", e);
         }
-
+        log.info("Scheduled expiration for invitation: {}", invitation.getId());
     }
 
     @Override
     @TransactionalEventListener(phase =  TransactionPhase.AFTER_COMMIT)
     public void cancelInvitationExpiration(String invitationId) {
+        log.debug("Cancelling expiration for invitation: {}", invitationId);
         try {
             JobKey jobKey = new JobKey(invitationId);
             if (scheduler.checkExists(jobKey)) {
@@ -52,11 +56,13 @@ public class SchedulingServiceImpl implements  SchedulingService {
         } catch (SchedulerException e) {
             throw new RuntimeException("Failed to cancel invitation expiration", e);
         }
+        log.info("Cancelled expiration for invitation: {}", invitationId);
     }
 
     @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void scheduleTransferExpiration(Transfer transfer) {
+        log.debug("Scheduling expiration for transfer: {}", transfer.getId());
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("transferId", transfer.getId());
 
@@ -77,11 +83,13 @@ public class SchedulingServiceImpl implements  SchedulingService {
         } catch (SchedulerException e) {
             throw new RuntimeException("Failed to schedule transfer expiration", e);
         }
+        log.info("Scheduled expiration for transfer: {}", transfer.getId());
     }
 
     @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void cancelTransferExpiration(String transferId) {
+        log.debug("Cancelling expiration for transfer: {}", transferId);
         try {
             JobKey jobKey = new JobKey(transferId);
             if (scheduler.checkExists(jobKey)) {
@@ -90,5 +98,6 @@ public class SchedulingServiceImpl implements  SchedulingService {
         } catch (SchedulerException e) {
             throw new RuntimeException("Failed to cancel transfer expiration", e);
         }
+        log.info("Cancelled expiration for transfer: {}", transferId);
     }
 }

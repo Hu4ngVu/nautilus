@@ -1,6 +1,7 @@
 package vn.io.huangnosimp.nautilusserver.services.auth;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -14,6 +15,7 @@ import vn.io.huangnosimp.nautilusserver.repositories.UserRepository;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuth2UserService extends DefaultOAuth2UserService {
@@ -22,6 +24,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     @Override
     @NullMarked
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        log.debug("Loading OAuth2 user: {}", userRequest.getClientRegistration().getRegistrationId());
         OAuth2User oAuth2User = super.loadUser(userRequest);
         String email = oAuth2User.getAttribute("email");
         if (email == null) {
@@ -54,6 +57,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                     .build();
             userRepository.save(user);
         }
+        log.info("OAuth2 user loaded: {}", email);
         return oAuth2User;
     }
 }

@@ -21,7 +21,6 @@ import vn.io.huangnosimp.nautilusserver.repositories.UserRepository;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,30 +46,44 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserInfoResponse getUserInfo(String username) {
+        log.debug("Fetching user info for {}", username);
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
-        String avatarUrl = s3Template.createSignedGetURL(bucketName, user.getAvatarKey(), Duration.of(1, ChronoUnit.MINUTES)).toString();
-        return new UserInfoResponse(
+        if (user.getAvatarKey() == null) {
+            var response = new UserInfoResponse(
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getServerCount(),
+                    user.getBio(),
+                    null
+            );
+            log.info("User info for {} fetched successfully", username);
+            return response;
+        }
+        String avatarUrl = s3Template.createSignedGetURL(bucketName, user.getAvatarKey(), Duration.ofMinutes(1)).toString();
+        var response = new UserInfoResponse(
                 user.getUsername(),
                 user.getEmail(),
                 user.getServerCount(),
                 user.getBio(),
                 avatarUrl
         );
+        log.info("User info for {} fetched successfully", username);
+        return response;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateUserInfo(String username, UpdateUserInfoRequest updateUserInfoRequest) {
-        log.info("Updating user info for {}", username);
+        log.debug("Updating user info for {}", username);
+        if (allFieldIsNull(updateUserInfoRequest)) {
+            return;
+        }
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
         if (updateUserInfoRequest.bio() != null) {
-            log.info("Updating bio for {}", username);
             user.setBio(updateUserInfoRequest.bio());
-            log.info("Updated bio for {}", username);
         }
         MultipartFile avatarFile = updateUserInfoRequest.avatar();
         if (avatarFile != null) {
-            log.info("Updating avatar for {}", username);
             String extension = FileNameUtil.getExtension(avatarFile.getOriginalFilename());
             if (isExtensionInvalid(extension)) {
                 throw new IllegalArgumentException("Invalid file type. Only PNG, JPG, JPEG, and WEBP are allowed.");
@@ -78,25 +91,31 @@ public class UserServiceImpl implements UserService {
             String key = "avatars/" + user.getUsername() + "-" + UUID.randomUUID() + "." + extension;
             try {
                 String oldKey = user.getAvatarKey();
-                log.info("uploading avatar for user {}", user.getUsername());
                 s3Template.upload(bucketName, key, avatarFile.getInputStream());
-                log.info("Uploaded avatar for user {}", user.getUsername());
-                log.info("Setting new avatar key for user {}", user.getUsername());
                 user.setAvatarKey(key);
-                log.info("Set new avatar key for user {}", user.getUsername());
                 if (oldKey != null) {
-                    log.info("Deleting old avatar for user {}", user.getUsername());
                     s3Template.deleteObject(bucketName, oldKey);
-                    log.info("deleted old avatar for user {}", user.getUsername());
                 }
-                log.info("updated new avatar for user {}", user.getUsername());
             } catch (IOException e) {
-                log.error("Failed to upload avatar for user {}: {}", user.getUsername(), e.getMessage());
                 throw new CannotUpload("Failed to upload avatar");
             }
         }
         userRepository.save(user);
         log.info("Updated user info for {}", username);
+    }
+
+    @Override
+    @Transactional(rollbackFor =  Exception.class)
+    public void deleteUserAvatar(String username) {
+        log.debug("Deleting avatar for user {}", username);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
+        String oldKey = user.getAvatarKey();
+        if (oldKey != null) {
+            s3Template.deleteObject(bucketName, oldKey);
+            user.setAvatarKey(null);
+            userRepository.save(user);
+        }
+        log.info("Deleted avatar for user {}", username);
     }
 
     private boolean isExtensionInvalid(String extension) {
@@ -107,4 +126,7 @@ public class UserServiceImpl implements UserService {
                 && !extension.equalsIgnoreCase("webp");
     }
 
+    private boolean allFieldIsNull(UpdateUserInfoRequest body) {
+        return body.avatar() == null && body.bio() == null;
+    }
 }

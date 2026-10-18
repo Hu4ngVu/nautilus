@@ -29,7 +29,7 @@ public class AuthController {
         log.info("Registering user: {}", registerRequest.username());
         authService.registerUser(registerRequest);
         log.info("User {} registered successfully", registerRequest.username());
-        return ResponseEntity.ok("User registered successfully!");
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/login")
@@ -64,7 +64,7 @@ public class AuthController {
                 .sameSite(Cookie.SameSite.LAX.name())
                 .build();
         log.info("User logged out successfully");
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body("User logged out successfully!");
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }
 
     @PostMapping("/refresh")

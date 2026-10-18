@@ -9,6 +9,10 @@ import vn.io.huangnosimp.nautilusserver.repositories.TransferRepository;
 public class TransferAccessEvaluator {
     private final TransferRepository transferRepository;
 
+    public boolean isSender(String authenticationName, String senderName, String receiverName, String servername) {
+        return authenticationName.equals(senderName) && transferRepository.existsPendingTransferWithSenderName(senderName, receiverName, servername);
+    }
+
     public boolean isReceiver(String authenticationName, String senderName, String receiverName, String servername) {
         return authenticationName.equals(receiverName) && transferRepository.existsPendingTransferWithReceiverName(senderName, receiverName, servername);
     }

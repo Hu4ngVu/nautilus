@@ -3,6 +3,7 @@ package vn.io.huangnosimp.nautilusserver.services.auth;
 import org.redisson.api.RCuckooFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -66,13 +67,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void registerUser(RegisterRequest registerRequest) {
-        log.info("registering user: {}", registerRequest.username());
+        log.debug("registering user: {}", registerRequest.username());
         if (userRepository.existsByUsername(registerRequest.username())) {
-            log.info("Username is already taken: {}", registerRequest.username());
             throw new DuplicateUsername("Username is already taken: " + registerRequest.username());
         }
         if (userRepository.existsByEmail(registerRequest.email())) {
-            log.info("Email is already taken: {}", registerRequest.email());
             throw  new DuplicateEmail("Email is already taken: " + registerRequest.email());
         }
         User user = User.builder()
@@ -94,12 +93,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenResult loginUser(LoginRequest loginRequest) {
-        log.info("logging in user: {}", loginRequest.username());
+        log.debug("logging in user: {}", loginRequest.username());
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
         UserDetailsWrapper userDetailsWrapper = (UserDetailsWrapper) authentication.getPrincipal();
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        assert userDetailsWrapper != null;
+        if (userDetailsWrapper == null) {
+            throw new BadCredentialsException("Invalid username or password");
+        }
         String accessToken = generateAccessToken(userDetailsWrapper);
         String refreshToken = refreshTokenService.generateRefreshToken(userDetailsWrapper.user());
         log.info("user {} logged in successfully", loginRequest.username());
@@ -109,7 +110,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public TokenResult refreshToken(String refreshToken) {
-        log.info("refreshing token");
+        log.debug("refreshing token");
         refreshTokenService.validateRefreshToken(refreshToken);
         String ownerId = refreshTokenService.getOwnerId(refreshToken);
         User user = userRepository.findById(ownerId)
@@ -124,7 +125,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logoutUser(Jwt token) {
-        log.info("logging out user: {}", token.getSubject());
+        log.debug("logging out user: {}", token.getSubject());
         User user = userRepository.findByUsername(token.getSubject())
                 .orElseThrow(() -> new UserNotFound("User not found: " + token.getSubject()));
         tokenBlacklistService.addToken(token);

@@ -17,14 +17,20 @@ public class UserController {
 
     @GetMapping("/{username}")
     public ResponseEntity<UserInfoResponse> getUserInfo(@PathVariable String username) {
-        var response = userService.getUserInfo(username);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(userService.getUserInfo(username));
     }
 
     @PatchMapping("/{username}")
     @PreAuthorize("@userAccessEvaluator.isOwner(authentication.name, #username)")
     public ResponseEntity<?> updateUserInfo(@PathVariable String username, @Valid @ModelAttribute UpdateUserInfoRequest body) {
         userService.updateUserInfo(username, body);
-        return ResponseEntity.ok("User info updated for " + username);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{username}/avatar")
+    @PreAuthorize("@userAccessEvaluator.isOwner(authentication.name, #username)")
+    public ResponseEntity<?> deleteUserAvatar(@PathVariable String username) {
+        userService.deleteUserAvatar(username);
+        return ResponseEntity.ok().build();
     }
 }

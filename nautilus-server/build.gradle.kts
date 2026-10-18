@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     java
     checkstyle
@@ -6,7 +8,7 @@ plugins {
 }
 
 group = "vn.io.huangnosimp"
-version = "0.0.1-SNAPSHOT"
+version = "1.0.0-SNAPSHOT"
 description = "nautilus-server"
 
 java {
@@ -64,4 +66,8 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.withType(BootJar::class) {
+    archiveFileName.set("nautilus-server.jar")
 }

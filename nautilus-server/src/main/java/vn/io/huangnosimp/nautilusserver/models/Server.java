@@ -32,9 +32,6 @@ public class Server extends  BaseEntity {
     @Column(name = "visibility", nullable = false, columnDefinition = "BOOLEAN")
     private Boolean visibility; // true for public, false for private
 
-    @Column(name = "link_count", columnDefinition = "INTEGER DEFAULT 0")
-    private Integer linkCount;
-
     @Column(name = "requires_premium", nullable = false, columnDefinition = "BOOLEAN")
     private Boolean requiresPremium;
 

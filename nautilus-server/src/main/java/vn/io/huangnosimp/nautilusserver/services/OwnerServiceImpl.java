@@ -1,6 +1,7 @@
 package vn.io.huangnosimp.nautilusserver.services;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import vn.io.huangnosimp.nautilusserver.repositories.*;
 
 import java.time.Instant;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OwnerServiceImpl implements  OwnerService {
@@ -29,6 +31,7 @@ public class OwnerServiceImpl implements  OwnerService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createInvite(String leaderName, String servername, String username) {
+        log.debug("Creating invitation from {} to {} for server {}", leaderName, username, servername);
         User sender = userRepository.findByUsername(leaderName).orElseThrow(() -> new UserNotFound(leaderName));
         User receiver = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
         Server server = serverRepository.findByUsernameAndServername(leaderName, servername).orElseThrow(() -> new ServerNotFound(servername));
@@ -44,11 +47,13 @@ public class OwnerServiceImpl implements  OwnerService {
                 .build();
         invitationRepository.save(invitation);
         schedulingService.scheduleInvitationExpiration(invitation);
+        log.info("Invitation from {} to {} for server {} created successfully", leaderName, username, servername);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancelInvite(String leaderName, String servername, String username) {
+        log.debug("Cancelling invitation from {} to {} for server {}", leaderName, username, servername);
         Invitation invitation = invitationRepository
                 .findBySenderNameReceiverNameServerName(leaderName, username, servername)
                 .orElseThrow(() -> new InvitationNotFound("invitation not found"));
@@ -58,12 +63,14 @@ public class OwnerServiceImpl implements  OwnerService {
         invitation.setStatus(Status.CANCELED);
         invitationRepository.save(invitation);
         schedulingService.cancelInvitationExpiration(invitation.getId());
+        log.info("Invitation from {} to {} for server {} cancelled successfully", leaderName, username, servername);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "server-owner", allEntries = true)
     public void acceptInvite(String leaderName, String servername, String receiverName) {
+        log.debug("Accepting invitation from {} to {} for server {}", leaderName, receiverName, servername);
         Invitation invitation = invitationRepository
                 .findBySenderNameReceiverNameServerName(leaderName, receiverName, servername)
                 .orElseThrow(() -> new InvitationNotFound("invitation not found"));
@@ -79,12 +86,14 @@ public class OwnerServiceImpl implements  OwnerService {
                 .server(server)
                 .build();
         ownerRepository.save(owner);
-
+        schedulingService.cancelInvitationExpiration(invitation.getId());
+        log.info("Invitation from {} to {} for server {} accepted successfully", leaderName, receiverName, servername);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void declineInvite(String leaderName, String servername, String username) {
+        log.debug("Declining invitation from {} to {} for server {}", leaderName, username, servername);
         Invitation invitation = invitationRepository
                 .findBySenderNameReceiverNameServerName(leaderName, username, servername)
                 .orElseThrow(() -> new InvitationNotFound("invitation not found"));
@@ -94,12 +103,14 @@ public class OwnerServiceImpl implements  OwnerService {
         invitation.setStatus(Status.DECLINED);
         invitationRepository.save(invitation);
         schedulingService.cancelInvitationExpiration(invitation.getId());
+        log.info("Invitation from {} to {} for server {} declined successfully", leaderName, username, servername);
     }
 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createTransfer(String leaderName, String ownerName, String servername) {
+        log.debug("Creating transfer from {} to {} for server {}", leaderName, ownerName, servername);
         User sender = userRepository.findByUsername(leaderName).orElseThrow(() -> new UserNotFound(leaderName));
         User receiver = userRepository.findByUsername(ownerName).orElseThrow(() -> new UserNotFound(ownerName));
         Server server = serverRepository.findByUsernameAndServername(leaderName, servername).orElseThrow(() -> new ServerNotFound(servername));
@@ -115,11 +126,13 @@ public class OwnerServiceImpl implements  OwnerService {
                 .build();
         transferRepository.save(transfer);
         schedulingService.scheduleTransferExpiration(transfer);
+        log.info("Transfer from {} to {} for server {} created successfully", leaderName, ownerName, servername);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancelTransfer(String leaderName, String ownerName, String servername) {
+        log.debug("Cancelling transfer from {} to {} for server {}", leaderName, ownerName, servername);
         Transfer transfer = transferRepository
                 .findBySenderNameReceiverNameServerName(leaderName, ownerName, servername)
                 .orElseThrow(() -> new TransferNotFound("transfer not found"));
@@ -129,12 +142,14 @@ public class OwnerServiceImpl implements  OwnerService {
         transfer.setStatus(Status.CANCELED);
         transferRepository.save(transfer);
         schedulingService.cancelTransferExpiration(transfer.getId());
+        log.info("Transfer from {} to {} for server {} cancelled successfully", leaderName, ownerName, servername);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(cacheNames = "server-leader", allEntries = true)
     public void acceptTransfer(String leaderName, String ownerName, String servername) {
+        log.debug("Accepting transfer from {} to {} for server {}", leaderName, ownerName, servername);
         Transfer transfer = transferRepository
                 .findBySenderNameReceiverNameServerName(leaderName, ownerName, servername)
                 .orElseThrow(() -> new TransferNotFound("transfer not found"));
@@ -148,11 +163,13 @@ public class OwnerServiceImpl implements  OwnerService {
         Server server = transfer.getServer();
         server.setUser(receiver);
         serverRepository.save(server);
+        log.info("Transfer from {} to {} for server {} accepted successfully", leaderName, ownerName, servername);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void declineTransfer(String leaderName, String ownerName, String servername) {
+        log.debug("Declining transfer from {} to {} for server {}", leaderName, ownerName, servername);
         Transfer transfer = transferRepository
                 .findBySenderNameReceiverNameServerName(leaderName, ownerName, servername)
                 .orElseThrow(() -> new TransferNotFound("transfer not found"));
@@ -162,5 +179,6 @@ public class OwnerServiceImpl implements  OwnerService {
         transfer.setStatus(Status.DECLINED);
         transferRepository.save(transfer);
         schedulingService.cancelTransferExpiration(transfer.getId());
+        log.info("Transfer from {} to {} for server {} declined successfully", leaderName, ownerName, servername);
     }
 }

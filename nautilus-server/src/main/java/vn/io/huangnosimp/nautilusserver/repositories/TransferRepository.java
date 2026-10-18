@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface TransferRepository extends JpaRepository<Transfer, String> {
-    @Query("SELECT t FROM Transfer t WHERE t.sender.username = :senderName AND t.receiver.username = :receiverName AND t.server.servername = :servername")
+    @Query("SELECT t FROM Transfer t WHERE t.sender.username = :senderName AND t.receiver.username = :receiverName AND t.server.servername = :servername AND t.status = PENDING")
     Optional<Transfer> findBySenderNameReceiverNameServerName(@Param("senderName") String senderName, @Param("receiverName") String receiverName, @Param("servername") String servername);
 
     @Query("SELECT EXISTS (SELECT 1 FROM Transfer t WHERE t.sender.username = :senderName AND t.server.servername = :servername AND t.status = PENDING)")
@@ -18,4 +18,7 @@ public interface TransferRepository extends JpaRepository<Transfer, String> {
 
     @Query("SELECT EXISTS (SELECT 1 FROM Transfer t WHERE t.sender.username = :senderName AND t.receiver.username = :receiverName AND t.server.servername = :servername AND t.status = PENDING)")
     boolean existsPendingTransferWithReceiverName(String senderName, String receiverName, String servername);
+
+    @Query("SELECT EXISTS (SELECT 1 FROM Transfer t WHERE t.sender.username = :senderName AND t.receiver.username = :receiverName AND t.server.servername = :servername AND t.status = PENDING)")
+    boolean existsPendingTransferWithSenderName(String senderName, String receiverName, String servername);
 }

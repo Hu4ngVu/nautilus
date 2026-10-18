@@ -12,6 +12,9 @@ public record ServerInfoResponse(
         int linkCount,
         boolean requiresPremium,
         String javaAddress,
-        String bedrockAddress) {
+        String bedrockAddress,
+        String imageUrl,
+        String bannerUrl
+) {
 }
 

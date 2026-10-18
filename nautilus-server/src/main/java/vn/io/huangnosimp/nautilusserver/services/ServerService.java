@@ -9,4 +9,8 @@ public interface ServerService {
     void createServer(String username, CreateServerRequest body);
     void deleteServer(String username, String servername);
     void updateServerInfo(String username, String servername, UpdateServerInfoRequest body);
+
+    void deleteServerImage(String leaderName, String servername);
+
+    void deleteServerBanner(String leaderName, String servername);
 }

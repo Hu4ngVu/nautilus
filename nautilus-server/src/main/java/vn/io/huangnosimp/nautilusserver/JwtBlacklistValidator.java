@@ -20,11 +20,11 @@ public class JwtBlacklistValidator implements OAuth2TokenValidator<Jwt> {
     @NullMarked
     public OAuth2TokenValidatorResult validate(Jwt token) {
         if (tokenBlacklistService.isBlacklisted(token)) {
-            log.info("Token {} is blacklisted", token.getTokenValue());
+            log.debug("Token {} is blacklisted", token.getTokenValue());
             OAuth2Error error = new OAuth2Error("invalid_token", "The token has been blacklisted", null);
             return OAuth2TokenValidatorResult.failure(error);
         }
-        log.info("Token {} is valid", token.getTokenValue());
+        log.debug("Token {} is valid", token.getTokenValue());
         return OAuth2TokenValidatorResult.success();
     }
 }
