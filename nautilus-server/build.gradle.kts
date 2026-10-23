@@ -6,6 +6,7 @@ plugins {
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
 }
+val springModulithVersion = "2.1.1"
 
 group = "vn.io.huangnosimp"
 version = "1.0.0-SNAPSHOT"
@@ -36,6 +37,8 @@ dependencies {
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.2.0")
     implementation("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")
     implementation("org.redisson:redisson-spring-boot-starter:4.8.0")
+    implementation("org.springframework.modulith:spring-modulith-starter-core")
+    implementation("org.springframework.modulith:spring-modulith-starter-jpa")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
@@ -59,6 +62,9 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-elasticsearch")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:mysql")
+    testImplementation("org.springframework.modulith:spring-modulith-starter-test")
+    runtimeOnly("org.springframework.modulith:spring-modulith-actuator")
+    runtimeOnly("org.springframework.modulith:spring-modulith-observability")
     testCompileOnly("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testAnnotationProcessor("org.projectlombok:lombok")
@@ -70,4 +76,9 @@ tasks.withType<Test> {
 
 tasks.withType(BootJar::class) {
     archiveFileName.set("nautilus-server.jar")
+}
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.modulith:spring-modulith-bom:$springModulithVersion")
+    }
 }
