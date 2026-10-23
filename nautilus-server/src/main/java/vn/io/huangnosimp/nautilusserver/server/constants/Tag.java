@@ -1,6 +1,9 @@
 package vn.io.huangnosimp.nautilusserver.server.constants;
 
-public class ServerTag {
+import java.util.Map;
+import java.util.Set;
+
+public class Tag {
     public static class Feature {
         public static final String POKEMON = "Pokemon";
         public static final String BOSSES = "Bosses";
@@ -57,5 +60,69 @@ public class ServerTag {
         public static final String SMP = "SMP";
         public static final String SOCIAL = "Social";
         public static final String TECHNICAL = "Technical";
+    }
+
+    private static final Map<TagCategory, Set<String>> tagCategorySetMap = Map.of(
+            TagCategory.FEATURES, Set.of(
+                    Feature.POKEMON,
+                    Feature.BOSSES,
+                    Feature.CLASSES,
+                    Feature.CUSTOM_CONTENT,
+                    Feature.DUNGEONS,
+                    Feature.ECONOMY,
+                    Feature.MEDIA,
+                    Feature.OP,
+                    Feature.PERSONAL_WORLDS,
+                    Feature.PLOTS,
+                    Feature.PVE,
+                    Feature.PVP,
+                    Feature.QUESTING,
+                    Feature.TEAMS
+            ),
+            TagCategory.GAMEPLAY, Set.of(
+                    Gameplay.ANARCHY,
+                    Gameplay.BATTLE_ROYALE,
+                    Gameplay.BED_WARS,
+                    Gameplay.FACTIONS,
+                    Gameplay.GENS,
+                    Gameplay.KIT_PVP,
+                    Gameplay.LIFESTEAL,
+                    Gameplay.MICROGAMES,
+                    Gameplay.MINIGAMES,
+                    Gameplay.ONE_BLOCK,
+                    Gameplay.PARKOUR,
+                    Gameplay.PRISON,
+                    Gameplay.RACING,
+                    Gameplay.RPG,
+                    Gameplay.SKYBLOCK,
+                    Gameplay.TOWNS,
+                    Gameplay.VANILLA_LIKE
+            ),
+            TagCategory.META, Set.of(
+                    Meta.ADVENTURE_MODE,
+                    Meta.CREATIVE_MODE,
+                    Meta.CROSSPLAY,
+                    Meta.HARDCORE_MODE,
+                    Meta.KEEP_INVENTORY,
+                    Meta.NETWORK,
+                    Meta.OFFLINE_MODE,
+                    Meta.SURVIVAL_MODE,
+                    Meta.WHITELISTED,
+                    Meta.WORLD_RESETS
+            ),
+            TagCategory.COMMUNITY, Set.of(
+                    Community.COMPETITIVE,
+                    Community.CREATOR_COMMUNITY,
+                    Community.MMO,
+                    Community.RECORDING_SMP,
+                    Community.ROLEPLAY,
+                    Community.SMP,
+                    Community.SOCIAL,
+                    Community.TECHNICAL
+            )
+    );
+
+    public static Map<TagCategory, Set<String>> getTagMap() {
+        return tagCategorySetMap;
     }
 }

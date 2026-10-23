@@ -36,4 +36,9 @@ public class ServerExceptionHandler {
     public ResponseEntity<String> handleUserNotFound() {
         return ResponseEntity.notFound().build();
     }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(InvalidServerTag.class)
+    public ResponseEntity<String> handleInvalidServerTag(InvalidServerTag e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
 }

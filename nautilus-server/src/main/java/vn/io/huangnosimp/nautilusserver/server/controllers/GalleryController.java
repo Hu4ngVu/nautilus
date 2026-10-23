@@ -11,7 +11,7 @@ import vn.io.huangnosimp.nautilusserver.server.services.GalleryService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/gallery")
+@RequestMapping("/servers/gallery")
 @RequiredArgsConstructor
 public class GalleryController {
     private final GalleryService galleryService;

@@ -15,38 +15,38 @@ import vn.io.huangnosimp.nautilusserver.server.services.ServerService;
 public class ServerController {
     private final ServerService serverService;
 
-    @GetMapping("/{leaderName}/{servername}")
-    public ResponseEntity<ServerInfoResponse> getServerInfo(@PathVariable String leaderName, @PathVariable String servername) {
-        return ResponseEntity.ok(serverService.getServerInfo(leaderName, servername));
+    @GetMapping("/{username}/{servername}")
+    public ResponseEntity<ServerInfoResponse> getServerInfo(@PathVariable String username, @PathVariable String servername) {
+        return ResponseEntity.ok(serverService.getServerInfo(username, servername));
     }
 
-    @PostMapping("/{leaderName}")
-    public ResponseEntity<?> createServer(@PathVariable String leaderName, @Valid @RequestBody CreateServerRequest body) {
-        serverService.createServer(leaderName, body);
+    @PostMapping("/{username}")
+    public ResponseEntity<?> createServer(@PathVariable String username, @Valid @RequestBody CreateServerRequest body) {
+        serverService.createServer(username, body);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{leaderName}/{servername}")
-    public ResponseEntity<?> deleteServer(@PathVariable String leaderName, @PathVariable String servername) {
-        serverService.deleteServer(leaderName, servername);
+    @DeleteMapping("/{username}/{servername}")
+    public ResponseEntity<?> deleteServer(@PathVariable String username, @PathVariable String servername) {
+        serverService.deleteServer(username, servername);
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/{leaderName}/{servername}")
-    public ResponseEntity<?> updateServer(@PathVariable String leaderName, @PathVariable String servername, @Valid @RequestBody UpdateServerInfoRequest body) {
-        serverService.updateServerInfo(leaderName, servername, body);
+    @PatchMapping("/{username}/{servername}")
+    public ResponseEntity<?> updateServer(@PathVariable String username, @PathVariable String servername, @Valid @RequestBody UpdateServerInfoRequest body) {
+        serverService.updateServerInfo(username, servername, body);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{leaderName}/{servername}/avatar")
-    public ResponseEntity<?> deleteServerAvatar(@PathVariable String leaderName, @PathVariable String servername) {
-        serverService.deleteServerAvatar(leaderName, servername);
+    @DeleteMapping("/{username}/{servername}/avatar")
+    public ResponseEntity<?> deleteServerAvatar(@PathVariable String username, @PathVariable String servername) {
+        serverService.deleteServerAvatar(username, servername);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{leaderName}/{servername}/banner")
-    public ResponseEntity<?> deleteServerBanner(@PathVariable String leaderName, @PathVariable String servername) {
-        serverService.deleteServerBanner(leaderName, servername);
+    @DeleteMapping("/{username}/{servername}/banner")
+    public ResponseEntity<?> deleteServerBanner(@PathVariable String username, @PathVariable String servername) {
+        serverService.deleteServerBanner(username, servername);
         return ResponseEntity.ok().build();
     }
 }

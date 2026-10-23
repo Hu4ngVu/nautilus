@@ -10,7 +10,7 @@ public interface ServerService {
     void deleteServer(String username, String servername);
     void updateServerInfo(String username, String servername, UpdateServerInfoRequest body);
 
-    void deleteServerAvatar(String leaderName, String servername);
+    void deleteServerAvatar(String username, String servername);
 
-    void deleteServerBanner(String leaderName, String servername);
+    void deleteServerBanner(String username, String servername);
 }
