@@ -9,8 +9,8 @@ import vn.io.huangnosimp.nautilusserver.user.exceptions.UserNotFound;
 @RestControllerAdvice
 public class UserExceptionHandler {
     @org.springframework.web.bind.annotation.ExceptionHandler(CannotUploadAvatar.class)
-    public ResponseEntity<String> handleCannotUploadAvatar(CannotUploadAvatar e) {
-        return ResponseEntity.status(HttpStatusCode.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    public ResponseEntity<String> handleCannotUploadAvatar() {
+        return ResponseEntity.status(HttpStatusCode.INTERNAL_SERVER_ERROR).build();
     }
 
     @org.springframework.web.bind.annotation.ExceptionHandler(UserNotFound.class)
