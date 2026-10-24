@@ -1,17 +1,18 @@
 package vn.io.huangnosimp.nautilusserver.server.services;
 
-import io.awspring.cloud.s3.S3Template;
 import jodd.io.FileNameUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import vn.io.huangnosimp.nautilusserver.server.DeleteImageEvent;
+import vn.io.huangnosimp.nautilusserver.server.DeleteImagesBatchEvent;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateImageInfoRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UploadImageRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.GalleryResponse;
-import vn.io.huangnosimp.nautilusserver.server.exceptions.CannotUploadImage;
 import vn.io.huangnosimp.nautilusserver.server.exceptions.ImageNotFound;
 import vn.io.huangnosimp.nautilusserver.server.exceptions.ServerNotFound;
 import vn.io.huangnosimp.nautilusserver.server.exceptions.UsernameNotFound;
@@ -20,8 +21,8 @@ import vn.io.huangnosimp.nautilusserver.server.models.Server;
 import vn.io.huangnosimp.nautilusserver.server.repositories.GalleryRepository;
 import vn.io.huangnosimp.nautilusserver.server.repositories.ServerRepository;
 import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
+import vn.io.huangnosimp.nautilusserver.storage.StorageService;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,12 +31,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class GalleryServiceImpl implements GalleryService {
     private final GalleryRepository galleryRepository;
-    private final S3Template s3Template;
     private final AuthUserUtils authUserUtils;
     private final ServerRepository serverRepository;
-
-    @Value("${app.s3.bucket-name}")
-    private String bucketName;
+    private final StorageService storageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public List<GalleryResponse> getGallery(String username, String servername) {
@@ -45,7 +44,7 @@ public class GalleryServiceImpl implements GalleryService {
                 .stream()
                 .map(gallery -> GalleryResponse.builder()
                         .imageId(gallery.getId())
-                        .imageUrl(s3Template.createSignedGetURL(bucketName, gallery.getImageKey(), Duration.ofMinutes(1)).toString())
+                        .imageUrl(storageService.createSignedGetUrl(gallery.getImageKey()))
                         .imageTitle(gallery.getTitle())
                         .imageSummary(gallery.getSummary())
                         .orderIndex(gallery.getOrderIndex())
@@ -57,26 +56,26 @@ public class GalleryServiceImpl implements GalleryService {
     }
 
     @Override
-    @Transactional(rollbackFor =  Exception.class)
     public void uploadImage(String username, String servername, UploadImageRequest body) {
         log.debug("Uploading image for user: {}, server: {}", username, servername);
-        String userId = getUserId(username);
+        Server server = getServer(username, servername);
+
         String extension = FileNameUtil.getExtension(body.image().getOriginalFilename());
         if (isExtensionInvalid(extension)) {
             throw new IllegalArgumentException("Invalid image extension. Only png, jpg, jpeg, and webp are allowed.");
         }
-        Server server = serverRepository.findByUserIdAndServername(userId, servername).orElseThrow(() -> new ServerNotFound(servername));
+
         String key = "gallery/" + username + "/" + server.getServername() + "-" + UUID.randomUUID() + "." + extension;
+        storageService.upload(body.image(), key);
         try {
-            s3Template.upload(bucketName, key, body.image().getInputStream());
+            Image image = new Image();
+            setInfo(image, body.title(), body.summary(), body.orderIndex());
+            image.setServer(server);
+            image.setImageKey(key);
+            galleryRepository.save(image);
         } catch (Exception e) {
-            throw new CannotUploadImage("Cannot upload image");
+            eventPublisher.publishEvent(new DeleteImageEvent(key));
         }
-        Image image = new Image();
-        setInfo(image, body.title(), body.summary(), body.orderIndex());
-        image.setServer(server);
-        image.setImageKey(key);
-        galleryRepository.save(image);
         log.info("Image uploaded successfully for user: {}, server: {}", username, servername);
     }
 
@@ -85,50 +84,63 @@ public class GalleryServiceImpl implements GalleryService {
     public void deleteImage(String username, String servername, String imageId) {
         log.debug("Deleting image for user: {}, server: {}, image: {}", username, servername, imageId);
         String userId = getUserId(username);
-        galleryRepository.findByUserIdServernameId(userId, servername, imageId).ifPresent(image ->
-            s3Template.deleteObject(bucketName, image.getImageKey())
-        );
-        galleryRepository.deleteByUserIdServernameId(userId, servername, imageId);
+        Image image = galleryRepository.findByUserIdServernameId(userId, servername, imageId)
+                .orElseThrow(() -> new ImageNotFound("Image not found"));
+        galleryRepository.delete(image);
+        eventPublisher.publishEvent(new DeleteImageEvent(image.getImageKey()));
         log.info("Image deleted successfully for user: {}, server: {}, image: {}", username, servername, imageId);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateImageInfo(String username, String servername, String imageId, UpdateImageInfoRequest body) {
         log.debug("Updating image info for user: {}, server: {}, image: {}", username, servername, imageId);
         if (allFieldIsNull(body)) {
             return;
         }
-        String userId = getUserId(username);
-        Image image = galleryRepository.findByUserIdServernameId(userId, servername, imageId).orElseThrow(() -> new ImageNotFound("Image not found"));
-        if (body.image() != null) {
+        Image image = galleryRepository.findByUserIdServernameId(getUserId(username), servername, imageId)
+                .orElseThrow(() -> new ImageNotFound("Image not found"));
+
+        String oldKey = image.getImageKey();
+        String newKey = null;
+        boolean isImageUploaded = false;
+
+        MultipartFile imageFile = body.image();
+        if (imageFile != null) {
             String extension = FileNameUtil.getExtension(body.image().getOriginalFilename());
             if (isExtensionInvalid(extension)) {
                 throw new IllegalArgumentException("Invalid image extension. Only png, jpg, jpeg, and webp are allowed.");
             }
-            String key = "gallery/" + username + "/" + image.getServer().getServername() + "-" + UUID.randomUUID() + "." + extension;
-            try {
-                String oldKey = image.getImageKey();
-                s3Template.upload(bucketName, key, body.image().getInputStream());
-                image.setImageKey(key);
-                s3Template.deleteObject(bucketName, oldKey);
-            } catch (Exception e) {
-                throw new CannotUploadImage("Cannot upload image");
-            }
+            newKey = "gallery/" + username + "/" + image.getServer().getServername() + "-" + UUID.randomUUID() + "." + extension;
+            storageService.upload(imageFile, newKey);
+            isImageUploaded = true;
         }
-        setInfo(image, body.title(), body.summary(), body.orderIndex());
-        galleryRepository.save(image);
-        log.info("Image info updated successfully for user: {}, server: {}, image: {}", username, servername, imageId);
+
+        try {
+            setInfo(image, body.title(), body.summary(), body.orderIndex());
+            galleryRepository.save(image);
+            log.info("Image info updated successfully for user: {}, server: {}, image: {}", username, servername, imageId);
+        } catch (Exception e) {
+            if (isImageUploaded) {
+                eventPublisher.publishEvent(new DeleteImageEvent(newKey));
+            }
+            throw e;
+        }
+
+        if (isImageUploaded && oldKey != null) {
+            eventPublisher.publishEvent(new DeleteImageEvent(oldKey));
+        }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteGallery(String userId, String servername) {
         log.debug("Deleting gallery for user: {}, server: {}", userId, servername);
-        List<Image> images = galleryRepository.findAllByUserIdServername(userId, servername);
-        for (Image image : images) {
-            s3Template.deleteObject(bucketName, image.getImageKey());
+        List<String> keys = galleryRepository.findAllImageKeysByUserIdAndServername(userId, servername);
+        if (keys.isEmpty()) {
+            return;
         }
-        galleryRepository.deleteAll(images);
+        galleryRepository.deleteByUserIdAndServernameBulk(userId, servername);
+        eventPublisher.publishEvent(new DeleteImagesBatchEvent(keys));
         log.info("Gallery deleted successfully for user: {}, server: {}", userId, servername);
     }
 
@@ -136,6 +148,12 @@ public class GalleryServiceImpl implements GalleryService {
         return authUserUtils.getAuthUserIdByUsername(username).orElseThrow(() -> new UsernameNotFound(username));
     }
 
+    private Server getServer(String username, String servername) {
+        String userId = authUserUtils.getAuthUserIdByUsername(username)
+                .orElseThrow(() -> new UsernameNotFound(username));
+        return serverRepository.findByUserIdAndServername(userId, servername)
+                .orElseThrow(() -> new ServerNotFound(servername));
+    }
 
     private void setInfo(Image image, String title, String summary, Integer orderIndex) {
         if (title != null) {
