@@ -16,11 +16,14 @@ public interface GalleryRepository extends JpaRepository<Image, String> {
     @Query("SELECT g FROM Image g WHERE g.server.userId = :userId AND g.server.servername = :servername ORDER BY g.orderIndex ASC, g.createdAt ASC")
     List<Image> findAllByUserIdServername(@Param("authUserId") String userId, @Param("servername") String servername);
 
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM Image g WHERE g.server.userId = :userId AND g.server.servername = :servername AND g.id = :imageId")
-    void deleteByUserIdServernameId(@Param("authUserId") String userId, @Param("servername") String servername, @Param("imageId") String imageId);
-
     @Query("SELECT g FROM Image g WHERE g.server.userId = :userId AND g.server.servername = :servername AND g.id = :imageId")
     Optional<Image> findByUserIdServernameId(String userId, String servername, String imageId);
+
+    @Query("SELECT i.imageKey FROM Image i WHERE i.server.userId = :userId AND i.server.servername = :servername")
+    List<String> findAllImageKeysByUserIdAndServername(String userId, String servername);
+
+    @Modifying
+    @Transactional(rollbackFor = Exception.class)
+    @Query("DELETE FROM Image i WHERE i.server.userId = :userId AND i.server.servername = :servername")
+    void deleteByUserIdAndServernameBulk(String userId, String servername);
 }
