@@ -20,6 +20,7 @@ public class Tag {
         public static final String QUESTING = "Questing";
         public static final String TEAMS = "Teams";
     }
+
     public static class Gameplay {
         public static final String ANARCHY = "Anarchy";
         public static final String BATTLE_ROYALE = "Battle Royale";
@@ -39,6 +40,7 @@ public class Tag {
         public static final String TOWNS = "Towns";
         public static final String VANILLA_LIKE = "Vanilla Like";
     }
+
     public static class Meta {
         public static final String ADVENTURE_MODE = "Adventure Mode";
         public static final String CREATIVE_MODE = "Creative Mode";
@@ -51,6 +53,7 @@ public class Tag {
         public static final String WHITELISTED = "Whitelisted";
         public static final String WORLD_RESETS = "World Resets";
     }
+
     public static class Community {
         public static final String COMPETITIVE = "Competitive";
         public static final String CREATOR_COMMUNITY = "Creator Community";
@@ -62,65 +65,65 @@ public class Tag {
         public static final String TECHNICAL = "Technical";
     }
 
-    private static final Map<TagCategory, Set<String>> tagCategorySetMap = Map.of(
-            TagCategory.FEATURES, Set.of(
-                    Feature.POKEMON,
-                    Feature.BOSSES,
-                    Feature.CLASSES,
-                    Feature.CUSTOM_CONTENT,
-                    Feature.DUNGEONS,
-                    Feature.ECONOMY,
-                    Feature.MEDIA,
-                    Feature.OP,
-                    Feature.PERSONAL_WORLDS,
-                    Feature.PLOTS,
-                    Feature.PVE,
-                    Feature.PVP,
-                    Feature.QUESTING,
-                    Feature.TEAMS
-            ),
-            TagCategory.GAMEPLAY, Set.of(
-                    Gameplay.ANARCHY,
-                    Gameplay.BATTLE_ROYALE,
-                    Gameplay.BED_WARS,
-                    Gameplay.FACTIONS,
-                    Gameplay.GENS,
-                    Gameplay.KIT_PVP,
-                    Gameplay.LIFESTEAL,
-                    Gameplay.MICROGAMES,
-                    Gameplay.MINIGAMES,
-                    Gameplay.ONE_BLOCK,
-                    Gameplay.PARKOUR,
-                    Gameplay.PRISON,
-                    Gameplay.RACING,
-                    Gameplay.RPG,
-                    Gameplay.SKYBLOCK,
-                    Gameplay.TOWNS,
-                    Gameplay.VANILLA_LIKE
-            ),
-            TagCategory.META, Set.of(
-                    Meta.ADVENTURE_MODE,
-                    Meta.CREATIVE_MODE,
-                    Meta.CROSSPLAY,
-                    Meta.HARDCORE_MODE,
-                    Meta.KEEP_INVENTORY,
-                    Meta.NETWORK,
-                    Meta.OFFLINE_MODE,
-                    Meta.SURVIVAL_MODE,
-                    Meta.WHITELISTED,
-                    Meta.WORLD_RESETS
-            ),
-            TagCategory.COMMUNITY, Set.of(
-                    Community.COMPETITIVE,
-                    Community.CREATOR_COMMUNITY,
-                    Community.MMO,
-                    Community.RECORDING_SMP,
-                    Community.ROLEPLAY,
-                    Community.SMP,
-                    Community.SOCIAL,
-                    Community.TECHNICAL
-            )
-    );
+    private static final Map<TagCategory, Set<String>> tagCategorySetMap =
+            Map.of(
+                    TagCategory.FEATURES,
+                            Set.of(
+                                    Feature.POKEMON,
+                                    Feature.BOSSES,
+                                    Feature.CLASSES,
+                                    Feature.CUSTOM_CONTENT,
+                                    Feature.DUNGEONS,
+                                    Feature.ECONOMY,
+                                    Feature.MEDIA,
+                                    Feature.OP,
+                                    Feature.PERSONAL_WORLDS,
+                                    Feature.PLOTS,
+                                    Feature.PVE,
+                                    Feature.PVP,
+                                    Feature.QUESTING,
+                                    Feature.TEAMS),
+                    TagCategory.GAMEPLAY,
+                            Set.of(
+                                    Gameplay.ANARCHY,
+                                    Gameplay.BATTLE_ROYALE,
+                                    Gameplay.BED_WARS,
+                                    Gameplay.FACTIONS,
+                                    Gameplay.GENS,
+                                    Gameplay.KIT_PVP,
+                                    Gameplay.LIFESTEAL,
+                                    Gameplay.MICROGAMES,
+                                    Gameplay.MINIGAMES,
+                                    Gameplay.ONE_BLOCK,
+                                    Gameplay.PARKOUR,
+                                    Gameplay.PRISON,
+                                    Gameplay.RACING,
+                                    Gameplay.RPG,
+                                    Gameplay.SKYBLOCK,
+                                    Gameplay.TOWNS,
+                                    Gameplay.VANILLA_LIKE),
+                    TagCategory.META,
+                            Set.of(
+                                    Meta.ADVENTURE_MODE,
+                                    Meta.CREATIVE_MODE,
+                                    Meta.CROSSPLAY,
+                                    Meta.HARDCORE_MODE,
+                                    Meta.KEEP_INVENTORY,
+                                    Meta.NETWORK,
+                                    Meta.OFFLINE_MODE,
+                                    Meta.SURVIVAL_MODE,
+                                    Meta.WHITELISTED,
+                                    Meta.WORLD_RESETS),
+                    TagCategory.COMMUNITY,
+                            Set.of(
+                                    Community.COMPETITIVE,
+                                    Community.CREATOR_COMMUNITY,
+                                    Community.MMO,
+                                    Community.RECORDING_SMP,
+                                    Community.ROLEPLAY,
+                                    Community.SMP,
+                                    Community.SOCIAL,
+                                    Community.TECHNICAL));
 
     public static Map<TagCategory, Set<String>> getTagMap() {
         return tagCategorySetMap;

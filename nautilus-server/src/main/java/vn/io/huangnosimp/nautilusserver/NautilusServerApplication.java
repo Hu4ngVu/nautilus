@@ -9,5 +9,4 @@ public class NautilusServerApplication {
     public static void main(String[] args) {
         SpringApplication.run(NautilusServerApplication.class, args);
     }
-
 }

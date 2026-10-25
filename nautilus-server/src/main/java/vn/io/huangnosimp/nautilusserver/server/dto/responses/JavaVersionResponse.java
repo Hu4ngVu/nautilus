@@ -4,7 +4,4 @@ import java.util.Map;
 import java.util.Set;
 
 public record JavaVersionResponse(
-        Map<String, Set<String>> javaVersions,
-        String primaryJavaVersion
-) {
-}
+        Map<String, Set<String>> javaVersions, String primaryJavaVersion) {}

@@ -1,4 +1,3 @@
 package vn.io.huangnosimp.nautilusserver.server;
 
-public record ServerCreatedEvent(String username) {
-}
+public record ServerCreatedEvent(String username) {}

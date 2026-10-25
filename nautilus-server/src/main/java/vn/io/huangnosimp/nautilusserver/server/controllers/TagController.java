@@ -15,13 +15,17 @@ public class TagController {
     private final ServerTagService serverTagService;
 
     @GetMapping("/{username}/{servername}")
-    public ResponseEntity<TagResponse> getAllTags(@PathVariable String username, @PathVariable String servername) {
+    public ResponseEntity<TagResponse> getAllTags(
+            @PathVariable String username, @PathVariable String servername) {
         TagResponse response = serverTagService.getAllServerTag(username, servername);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{username}/{servername}")
-    public ResponseEntity<?> addServerTag(@PathVariable String username, @PathVariable String servername, @Valid @RequestBody AddTagRequest body) {
+    public ResponseEntity<?> addServerTag(
+            @PathVariable String username,
+            @PathVariable String servername,
+            @Valid @RequestBody AddTagRequest body) {
         serverTagService.addServerTag(username, servername, body);
         return ResponseEntity.ok().build();
     }

@@ -7,11 +7,10 @@ import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 @Entity
 @Table(
         name = "server",
-        uniqueConstraints = @UniqueConstraint(
-                name = "unique_server_name_per_user",
-                columnNames = {"user_id", "servername"}
-        )
-)
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "unique_server_name_per_user",
+                        columnNames = {"user_id", "servername"}))
 @Getter
 @Setter
 @NoArgsConstructor

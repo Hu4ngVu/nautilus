@@ -1,14 +1,13 @@
 package vn.io.huangnosimp.nautilusserver.storage.services;
 
 import io.awspring.cloud.s3.S3Template;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import vn.io.huangnosimp.nautilusserver.storage.StorageService;
 import vn.io.huangnosimp.nautilusserver.storage.exceptions.CannotUpload;
-
-import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +18,7 @@ public class StorageServiceImpl implements StorageService {
     private String bucketName;
 
     @Override
-    public void upload(MultipartFile file, String key) {
+    public void uploadImage(MultipartFile file, String key) {
         try {
             s3Template.upload(bucketName, key, file.getInputStream());
         } catch (Exception e) {

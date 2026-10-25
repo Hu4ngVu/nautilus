@@ -5,6 +5,8 @@ import vn.io.huangnosimp.nautilusserver.user.dto.responses.UserInfoResponse;
 
 public interface UserService {
     UserInfoResponse getUserInfo(String username);
+
     void updateUserInfo(String username, UpdateUserInfoRequest updateUserInfoRequest);
+
     void deleteUserAvatar(String username);
 }

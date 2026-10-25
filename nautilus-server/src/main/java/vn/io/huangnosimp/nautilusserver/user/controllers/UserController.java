@@ -20,7 +20,8 @@ public class UserController {
     }
 
     @PatchMapping("/{username}")
-    public ResponseEntity<?> updateUserInfo(@PathVariable String username, @Valid @ModelAttribute UpdateUserInfoRequest body) {
+    public ResponseEntity<?> updateUserInfo(
+            @PathVariable String username, @Valid @ModelAttribute UpdateUserInfoRequest body) {
         userService.updateUserInfo(username, body);
         return ResponseEntity.ok().build();
     }

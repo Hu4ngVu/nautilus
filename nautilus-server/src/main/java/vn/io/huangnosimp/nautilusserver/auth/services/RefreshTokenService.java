@@ -5,7 +5,10 @@ import vn.io.huangnosimp.nautilusserver.auth.models.AuthUser;
 
 public interface RefreshTokenService {
     String generateRefreshToken(AuthUser user);
+
     void deleteRefreshToken(AuthUser user);
+
     void validateRefreshToken(String refreshToken) throws InvalidRefreshToken;
+
     String getOwnerId(String refreshToken);
 }

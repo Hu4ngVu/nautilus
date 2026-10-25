@@ -5,5 +5,6 @@ import vn.io.huangnosimp.nautilusserver.server.dto.responses.TagResponse;
 
 public interface ServerTagService {
     TagResponse getAllServerTag(String username, String servername);
+
     void addServerTag(String username, String servername, AddTagRequest body);
 }

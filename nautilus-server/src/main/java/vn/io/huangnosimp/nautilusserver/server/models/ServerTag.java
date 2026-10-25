@@ -10,16 +10,14 @@ import vn.io.huangnosimp.nautilusserver.server.constants.TagCategory;
 @Table(
         name = "server_tag",
         uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uc_server_id_tag_category",
-                        columnNames = {"server_id", "category", "tag"}
-                )
+            @UniqueConstraint(
+                    name = "uc_server_id_tag_category",
+                    columnNames = {"server_id", "category", "tag"})
         },
         indexes = {
-                @Index(name = "idx_server_tag_tag", columnList = "tag"),
-                @Index(name = "idx_server_tag_category", columnList = "category")
-        }
-)
+            @Index(name = "idx_server_tag_tag", columnList = "tag"),
+            @Index(name = "idx_server_tag_category", columnList = "category")
+        })
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,7 +25,7 @@ import vn.io.huangnosimp.nautilusserver.server.constants.TagCategory;
 @Builder
 public class ServerTag extends BaseEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @ManyToOne(fetch =  FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "server_id", nullable = false)
     private Server server;
 

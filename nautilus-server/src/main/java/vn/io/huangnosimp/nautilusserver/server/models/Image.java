@@ -9,23 +9,18 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(
         name = "image",
         uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uc_server_id_image_key",
-                        columnNames = {"server_id", "image_key"}
-                )
+            @UniqueConstraint(
+                    name = "uc_server_id_image_key",
+                    columnNames = {"server_id", "image_key"})
         },
-        indexes = @Index(
-                name = "idx_server_id",
-                columnList = "server_id"
-        )
-)
+        indexes = @Index(name = "idx_server_id", columnList = "server_id"))
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Image extends BaseEntity {
-    @ManyToOne(fetch =  FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "server_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Server server;

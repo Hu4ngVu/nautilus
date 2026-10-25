@@ -1,8 +1,7 @@
 package vn.io.huangnosimp.nautilusserver.server.dto.responses;
 
-import lombok.Builder;
-
 import java.time.Instant;
+import lombok.Builder;
 
 @Builder
 public record GalleryResponse(
@@ -11,6 +10,4 @@ public record GalleryResponse(
         String imageTitle,
         String imageSummary,
         int orderIndex,
-        Instant createdAt
-) {
-}
+        Instant createdAt) {}

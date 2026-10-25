@@ -1,13 +1,12 @@
 package vn.io.huangnosimp.nautilusserver.auth.services;
 
+import java.time.Duration;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.time.Instant;
 
 @Slf4j
 @Service
@@ -24,7 +23,9 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
             log.warn("Token {} is already expired, not adding to blacklist", token.getTokenValue());
             return;
         }
-        redisTemplate.opsForValue().set(token.getTokenValue(), "blacklisted", Duration.ofMillis(remainingMs));
+        redisTemplate
+                .opsForValue()
+                .set(token.getTokenValue(), "blacklisted", Duration.ofMillis(remainingMs));
         log.info("Token added to blacklist");
     }
 

@@ -15,6 +15,11 @@ public class AuthUserServiceImpl implements AuthUserService {
     @Override
     @NullMarked
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return authUserRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+        return authUserRepository
+                .findByUsername(username)
+                .orElseThrow(
+                        () ->
+                                new UsernameNotFoundException(
+                                        "User not found with username: " + username));
     }
 }

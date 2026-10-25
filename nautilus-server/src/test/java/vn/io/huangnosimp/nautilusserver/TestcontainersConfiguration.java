@@ -14,6 +14,7 @@ class TestcontainersConfiguration {
     @ServiceConnection
     @Ssl
     ElasticsearchContainer elasticsearchContainer() {
-        return new ElasticsearchContainer(DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch:9.3.3"));
+        return new ElasticsearchContainer(
+                DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch:9.3.3"));
     }
 }

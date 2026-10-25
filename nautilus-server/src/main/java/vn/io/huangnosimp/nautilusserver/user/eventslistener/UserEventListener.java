@@ -17,26 +17,31 @@ public class UserEventListener {
 
     @ApplicationModuleListener
     public void on(UserRegisteredEvent event) {
-        User user = User.builder()
-                .authUserId(event.authUserId())
-                .username(event.username())
-                .serverCount(0)
-                .build();
+        User user =
+                User.builder()
+                        .authUserId(event.authUserId())
+                        .username(event.username())
+                        .serverCount(0)
+                        .build();
         userRepository.save(user);
     }
 
     @ApplicationModuleListener
     public void on(ServerCreatedEvent event) {
-        User user = userRepository.findByUsername(event.username())
-                .orElseThrow(() -> new UserNotFound("User not found: " + event.username()));
+        User user =
+                userRepository
+                        .findByUsername(event.username())
+                        .orElseThrow(() -> new UserNotFound("User not found: " + event.username()));
         user.setServerCount(user.getServerCount() + 1);
         userRepository.save(user);
     }
 
     @ApplicationModuleListener
     public void on(ServerDeletedEvent event) {
-        User user = userRepository.findByUsername(event.username())
-                .orElseThrow(() -> new UserNotFound("User not found: " + event.username()));
+        User user =
+                userRepository
+                        .findByUsername(event.username())
+                        .orElseThrow(() -> new UserNotFound("User not found: " + event.username()));
         user.setServerCount(user.getServerCount() - 1);
         userRepository.save(user);
     }

@@ -5,6 +5,9 @@ import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import java.nio.charset.StandardCharsets;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,10 +19,6 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import vn.io.huangnosimp.nautilusserver.auth.services.JwtBlacklistValidator;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 
 @Configuration
 @RequiredArgsConstructor
@@ -36,12 +35,12 @@ public class JwtConfig {
     @Bean
     public JwtDecoder jwtDecoder() {
         SecretKey secretKey = new SecretKeySpec(getSecretKey(), "HmacSHA256");
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
+        NimbusJwtDecoder decoder =
+                NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
 
-        OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(
-                JwtValidators.createDefault(),
-                jwtBlacklistValidator
-        );
+        OAuth2TokenValidator<Jwt> validator =
+                new DelegatingOAuth2TokenValidator<>(
+                        JwtValidators.createDefault(), jwtBlacklistValidator);
 
         decoder.setJwtValidator(validator);
         return decoder;
@@ -49,15 +48,15 @@ public class JwtConfig {
 
     @Bean
     public JwtEncoder jwtEncoder() {
-        OctetSequenceKey jwk = new OctetSequenceKey.Builder(getSecretKey())
-                .build();
+        OctetSequenceKey jwk = new OctetSequenceKey.Builder(getSecretKey()).build();
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwks);
     }
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter =
+                new JwtGrantedAuthoritiesConverter();
         grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
         grantedAuthoritiesConverter.setAuthoritiesClaimName("role");
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();

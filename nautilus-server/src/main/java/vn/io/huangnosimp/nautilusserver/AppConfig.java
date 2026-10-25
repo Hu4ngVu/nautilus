@@ -9,5 +9,4 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableCaching
 @EnableJpaAuditing
 @EnableAsync
-public class AppConfig {
-}
+public class AppConfig {}
