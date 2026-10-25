@@ -1,7 +1,7 @@
 package vn.io.huangnosimp.nautilusserver.auth.exceptions;
 
 public class DuplicateEmail extends RuntimeException {
-  public DuplicateEmail(String message) {
-    super(message);
-  }
+    public DuplicateEmail(String message) {
+        super(message);
+    }
 }

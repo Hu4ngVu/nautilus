@@ -1,5 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.user.services;
 
+import java.util.UUID;
 import jodd.io.FileNameUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +16,6 @@ import vn.io.huangnosimp.nautilusserver.user.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.user.models.User;
 import vn.io.huangnosimp.nautilusserver.user.repositories.UserRepository;
 
-import java.util.UUID;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,24 +27,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserInfoResponse getUserInfo(String username) {
         log.debug("Fetching user info for {}", username);
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(() -> new UserNotFound(username));
         if (user.getAvatarKey() == null) {
-            var response = new UserInfoResponse(
-                    user.getUsername(),
-                    user.getServerCount(),
-                    user.getBio(),
-                    null
-            );
+            var response =
+                    new UserInfoResponse(
+                            user.getUsername(), user.getServerCount(), user.getBio(), null);
             log.info("User info for {} fetched successfully", username);
             return response;
         }
         String avatarUrl = storageService.createSignedGetUrl(user.getAvatarKey());
-        var response = new UserInfoResponse(
-                user.getUsername(),
-                user.getServerCount(),
-                user.getBio(),
-                avatarUrl
-        );
+        var response =
+                new UserInfoResponse(
+                        user.getUsername(), user.getServerCount(), user.getBio(), avatarUrl);
         log.info("User info for {} fetched successfully", username);
         return response;
     }
@@ -56,7 +52,10 @@ public class UserServiceImpl implements UserService {
         if (allFieldIsNull(updateUserInfoRequest)) {
             return;
         }
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(() -> new UserNotFound(username));
 
         String oldKey = user.getAvatarKey();
         String newKey = null;
@@ -67,12 +66,14 @@ public class UserServiceImpl implements UserService {
         if (avatarFile != null) {
             String extension = FileNameUtil.getExtension(avatarFile.getOriginalFilename());
             if (isExtensionInvalid(extension)) {
-                throw new IllegalArgumentException("Invalid file type. Only PNG, JPG, JPEG, and WEBP are allowed.");
+                throw new IllegalArgumentException(
+                        "Invalid file type. Only PNG, JPG, JPEG, and WEBP are allowed.");
             }
 
-            newKey = "user/avatar/" + user.getUsername() + "-" + UUID.randomUUID() + "." + extension;
+            newKey =
+                    "user/avatar/" + user.getUsername() + "-" + UUID.randomUUID() + "." + extension;
 
-            storageService.upload(avatarFile, newKey);
+            storageService.uploadImage(avatarFile, newKey);
             isNewAvatarUploaded = true;
         }
 
@@ -102,7 +103,10 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteUserAvatar(String username) {
         log.debug("Deleting avatar for user {}", username);
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(() -> new UserNotFound(username));
         String oldKey = user.getAvatarKey();
         if (oldKey != null) {
             eventPublisher.publishEvent(new DeleteUserAvatar(oldKey));
@@ -114,10 +118,11 @@ public class UserServiceImpl implements UserService {
 
     private boolean isExtensionInvalid(String extension) {
         return extension == null
+                || extension.isBlank()
                 || !extension.equalsIgnoreCase("png")
-                && !extension.equalsIgnoreCase("jpg")
-                && !extension.equalsIgnoreCase("jpeg")
-                && !extension.equalsIgnoreCase("webp");
+                        && !extension.equalsIgnoreCase("jpg")
+                        && !extension.equalsIgnoreCase("jpeg")
+                        && !extension.equalsIgnoreCase("webp");
     }
 
     private boolean allFieldIsNull(UpdateUserInfoRequest body) {

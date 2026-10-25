@@ -1,6 +1,7 @@
 package vn.io.huangnosimp.nautilusserver.storage.eventlistener;
 
 import io.awspring.cloud.s3.S3Template;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.modulith.events.ApplicationModuleListener;
@@ -11,13 +12,8 @@ import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.S3Exception;
-import vn.io.huangnosimp.nautilusserver.server.DeleteImageEvent;
-import vn.io.huangnosimp.nautilusserver.server.DeleteImagesBatchEvent;
-import vn.io.huangnosimp.nautilusserver.server.DeleteServerAvatarEvent;
-import vn.io.huangnosimp.nautilusserver.server.DeleteServerBannerEvent;
+import vn.io.huangnosimp.nautilusserver.server.*;
 import vn.io.huangnosimp.nautilusserver.user.DeleteUserAvatar;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,56 +26,51 @@ public class StorageEventListener {
     private String bucketName;
 
     // from user
-    @Retryable(
-        value = {S3Exception.class}
-    )
+    @Retryable(value = {S3Exception.class})
     @ApplicationModuleListener
     public void on(DeleteUserAvatar event) {
         s3Template.deleteObject(bucketName, event.key());
     }
 
     // from server
-    @Retryable(
-        value = {S3Exception.class}
-    )
+    @Retryable(value = {S3Exception.class})
     @ApplicationModuleListener
     public void on(DeleteImageEvent event) {
         s3Template.deleteObject(bucketName, event.key());
     }
 
-    @Retryable(
-            value = {S3Exception.class}
-    )
+    @Retryable(value = {S3Exception.class})
     @ApplicationModuleListener
     public void on(DeleteImagesBatchEvent event) {
-        List<String> allKeys = event.keys();
-        if (allKeys == null || allKeys.isEmpty()) {
-            return;
-        }
-        for (int i = 0;i < allKeys.size(); i += BATCH_SIZE) {
-            List<String> subList = allKeys.subList(i, Math.min(i + BATCH_SIZE, allKeys.size()));
-            List<ObjectIdentifier> objectIdentifiers = subList.stream()
-                    .map(key -> ObjectIdentifier.builder().key(key).build())
-                    .toList();
-            Delete delete = Delete.builder().objects(objectIdentifiers).quiet(true).build();
-            DeleteObjectsRequest request = DeleteObjectsRequest.builder().delete(delete).bucket(bucketName).build();
-            s3Client.deleteObjects(request);
-        }
+        deleteBatch(event.keys());
     }
 
-    @Retryable(
-            value = {S3Exception.class}
-    )
+    @Retryable(value = {S3Exception.class})
     @ApplicationModuleListener
     public void on(DeleteServerBannerEvent event) {
         s3Template.deleteObject(bucketName, event.key());
     }
 
-    @Retryable(
-            value = {S3Exception.class}
-    )
+    @Retryable(value = {S3Exception.class})
     @ApplicationModuleListener
     public void on(DeleteServerAvatarEvent event) {
         s3Template.deleteObject(bucketName, event.key());
+    }
+
+    private void deleteBatch(List<String> allKeys) {
+        if (allKeys == null || allKeys.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < allKeys.size(); i += BATCH_SIZE) {
+            List<String> subList = allKeys.subList(i, Math.min(i + BATCH_SIZE, allKeys.size()));
+            List<ObjectIdentifier> objectIdentifiers =
+                    subList.stream()
+                            .map(key -> ObjectIdentifier.builder().key(key).build())
+                            .toList();
+            Delete delete = Delete.builder().objects(objectIdentifiers).quiet(true).build();
+            DeleteObjectsRequest request =
+                    DeleteObjectsRequest.builder().delete(delete).bucket(bucketName).build();
+            s3Client.deleteObjects(request);
+        }
     }
 }

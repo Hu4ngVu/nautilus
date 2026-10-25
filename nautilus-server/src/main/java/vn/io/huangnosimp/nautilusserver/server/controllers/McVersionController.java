@@ -17,25 +17,35 @@ public class McVersionController {
     private final ServerMcVersionService serverMcVersionService;
 
     @GetMapping("/java/{username}/{servername}")
-    public ResponseEntity<JavaVersionResponse> getJavaVersions(@PathVariable String username, @PathVariable String servername) {
-        JavaVersionResponse response = serverMcVersionService.getAllJavaVersion(username, servername);
+    public ResponseEntity<JavaVersionResponse> getJavaVersions(
+            @PathVariable String username, @PathVariable String servername) {
+        JavaVersionResponse response =
+                serverMcVersionService.getAllJavaVersion(username, servername);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/bedrock/{username}/{servername}")
-    public ResponseEntity<BedrockVersionResponse> getBedrockVersions(@PathVariable String username, @PathVariable String servername) {
-        BedrockVersionResponse response = serverMcVersionService.getAllBedrockVersion(username, servername);
+    public ResponseEntity<BedrockVersionResponse> getBedrockVersions(
+            @PathVariable String username, @PathVariable String servername) {
+        BedrockVersionResponse response =
+                serverMcVersionService.getAllBedrockVersion(username, servername);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/java/{username}/{servername}")
-    public ResponseEntity<?> addJavaVersion(@PathVariable String username, @PathVariable String servername, @Valid @RequestBody AddJavaVersionRequest body) {
+    public ResponseEntity<?> addJavaVersion(
+            @PathVariable String username,
+            @PathVariable String servername,
+            @Valid @RequestBody AddJavaVersionRequest body) {
         serverMcVersionService.addJavaVersion(username, servername, body);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/bedrock/{username}/{servername}")
-    public ResponseEntity<?> addBedrockVersion(@PathVariable String username, @PathVariable String servername, @Valid @RequestBody AddBedrockVersionRequest body) {
+    public ResponseEntity<?> addBedrockVersion(
+            @PathVariable String username,
+            @PathVariable String servername,
+            @Valid @RequestBody AddBedrockVersionRequest body) {
         serverMcVersionService.addBedrockVersion(username, servername, body);
         return ResponseEntity.ok().build();
     }

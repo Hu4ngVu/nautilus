@@ -1,5 +1,9 @@
 package vn.io.huangnosimp.nautilusserver.auth.services;
 
+import java.time.Instant;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RCuckooFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -9,27 +13,22 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.io.huangnosimp.nautilusserver.auth.UserRegisteredEvent;
 import vn.io.huangnosimp.nautilusserver.auth.constants.Provider;
 import vn.io.huangnosimp.nautilusserver.auth.constants.Role;
+import vn.io.huangnosimp.nautilusserver.auth.dto.requests.LoginRequest;
+import vn.io.huangnosimp.nautilusserver.auth.dto.requests.RegisterRequest;
 import vn.io.huangnosimp.nautilusserver.auth.dto.results.TokenResult;
 import vn.io.huangnosimp.nautilusserver.auth.exceptions.AuthUserNotFound;
 import vn.io.huangnosimp.nautilusserver.auth.exceptions.DuplicateEmail;
 import vn.io.huangnosimp.nautilusserver.auth.exceptions.DuplicateUsername;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.auth.dto.requests.LoginRequest;
-import vn.io.huangnosimp.nautilusserver.auth.dto.requests.RegisterRequest;
 import vn.io.huangnosimp.nautilusserver.auth.models.AuthUser;
 import vn.io.huangnosimp.nautilusserver.auth.repositories.AuthUserRepository;
-
-import java.time.Instant;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -50,12 +49,12 @@ public class AuthServiceImpl implements AuthService {
 
     private String generateAccessToken(AuthUser authUser) {
         Instant now = Instant.now();
-        String role = authUser
-                .getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
-        JwtClaimsSet claimsSet = JwtClaimsSet.builder()
+        String role =
+                authUser.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.joining(" "));
+        JwtClaimsSet claimsSet =
+                JwtClaimsSet.builder()
                         .issuer("nautilus-server")
                         .issuedAt(now)
                         .expiresAt(now.plusMillis(jwtExpirationMs))
@@ -74,28 +73,32 @@ public class AuthServiceImpl implements AuthService {
             throw new DuplicateUsername("Username is already taken: " + registerRequest.username());
         }
         if (authUserRepository.existsByEmail(registerRequest.email())) {
-            throw  new DuplicateEmail("Email is already taken: " + registerRequest.email());
+            throw new DuplicateEmail("Email is already taken: " + registerRequest.email());
         }
-        AuthUser authUser = AuthUser.builder()
-                .username(registerRequest.username())
-                .email(registerRequest.email())
-                .password(passwordEncoder.encode(registerRequest.password()))
-                .provider(Provider.LOCAL)
-                .role(Role.USER)
-                .enabled(true)
-                .build();
+        AuthUser authUser =
+                AuthUser.builder()
+                        .username(registerRequest.username())
+                        .email(registerRequest.email())
+                        .password(passwordEncoder.encode(registerRequest.password()))
+                        .provider(Provider.LOCAL)
+                        .role(Role.USER)
+                        .enabled(true)
+                        .build();
         authUserRepository.save(authUser);
         usernameCuckooFilter.add(authUser.getUsername());
         emailCuckooFilter.add(authUser.getEmail());
-        eventPublisher.publishEvent(new UserRegisteredEvent(authUser.getId(), authUser.getUsername()));
+        eventPublisher.publishEvent(
+                new UserRegisteredEvent(authUser.getId(), authUser.getUsername()));
         log.info("registered user: {}", authUser.getUsername());
     }
 
     @Override
     public TokenResult loginUser(LoginRequest loginRequest) {
         log.debug("logging in user: {}", loginRequest.username());
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                loginRequest.username(), loginRequest.password()));
         AuthUser authUser = (AuthUser) authentication.getPrincipal();
         SecurityContextHolder.getContext().setAuthentication(authentication);
         if (authUser == null) {
@@ -113,8 +116,10 @@ public class AuthServiceImpl implements AuthService {
         log.debug("refreshing token");
         refreshTokenService.validateRefreshToken(refreshToken);
         String ownerId = refreshTokenService.getOwnerId(refreshToken);
-        AuthUser authUser = authUserRepository.findById(ownerId)
-                .orElseThrow(() -> new AuthUserNotFound("User not found: " + ownerId));
+        AuthUser authUser =
+                authUserRepository
+                        .findById(ownerId)
+                        .orElseThrow(() -> new AuthUserNotFound("User not found: " + ownerId));
         String accessToken = generateAccessToken(authUser);
         refreshTokenService.deleteRefreshToken(authUser);
         log.info("user {} refreshed access token successfully", authUser.getUsername());
@@ -126,8 +131,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logoutUser(Jwt token) {
         log.debug("logging out user: {}", token.getSubject());
-        AuthUser authUser = authUserRepository.findByUsername(token.getSubject())
-                .orElseThrow(() -> new AuthUserNotFound("User not found: " + token.getSubject()));
+        AuthUser authUser =
+                authUserRepository
+                        .findByUsername(token.getSubject())
+                        .orElseThrow(
+                                () ->
+                                        new AuthUserNotFound(
+                                                "User not found: " + token.getSubject()));
         tokenBlacklistService.addToken(token);
         refreshTokenService.deleteRefreshToken(authUser);
         SecurityContextHolder.clearContext();

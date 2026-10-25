@@ -38,15 +38,18 @@ public class AuthController {
         TokenResult tokenResult = authService.loginUser(loginRequest);
         AccessTokenResponse accessToken = new AccessTokenResponse(tokenResult.accessToken());
 
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", tokenResult.refreshToken())
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(30 * 24 * 60 * 60) // 7 days
-                .sameSite(Cookie.SameSite.LAX.name())
-                .build();
+        ResponseCookie cookie =
+                ResponseCookie.from("refreshToken", tokenResult.refreshToken())
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .maxAge(30 * 24 * 60 * 60) // 7 days
+                        .sameSite(Cookie.SameSite.LAX.name())
+                        .build();
         log.info("User {} logged in successfully", loginRequest.username());
-        return ResponseEntity.status(HttpStatus.CREATED).header(HttpHeaders.SET_COOKIE, cookie.toString()).body(accessToken);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(accessToken);
     }
 
     @PostMapping("/logout")
@@ -56,13 +59,14 @@ public class AuthController {
 
         authService.logoutUser(jwt);
 
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0) // Expire immediately
-                .sameSite(Cookie.SameSite.LAX.name())
-                .build();
+        ResponseCookie cookie =
+                ResponseCookie.from("refreshToken", "")
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .maxAge(0) // Expire immediately
+                        .sameSite(Cookie.SameSite.LAX.name())
+                        .build();
         log.info("User logged out successfully");
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }
@@ -73,14 +77,17 @@ public class AuthController {
         TokenResult tokenResult = authService.refreshToken(refreshToken);
         AccessTokenResponse accessToken = new AccessTokenResponse(tokenResult.accessToken());
 
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", tokenResult.refreshToken())
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(30 * 24 * 60 * 60) // 7 days
-                .sameSite(Cookie.SameSite.LAX.name())
-                .build();
+        ResponseCookie cookie =
+                ResponseCookie.from("refreshToken", tokenResult.refreshToken())
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .maxAge(30 * 24 * 60 * 60) // 7 days
+                        .sameSite(Cookie.SameSite.LAX.name())
+                        .build();
         log.info("Token refreshed successfully");
-        return ResponseEntity.status(HttpStatus.CREATED).header(HttpHeaders.SET_COOKIE, cookie.toString()).body(accessToken);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(accessToken);
     }
 }

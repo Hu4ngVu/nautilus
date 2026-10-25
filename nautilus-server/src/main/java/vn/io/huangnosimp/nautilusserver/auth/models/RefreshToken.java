@@ -1,11 +1,10 @@
 package vn.io.huangnosimp.nautilusserver.auth.models;
 
 import jakarta.persistence.*;
+import java.time.Instant;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-
-import java.time.Instant;
 
 @Entity
 @Table(name = "refresh_tokens")

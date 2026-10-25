@@ -3,6 +3,8 @@ package vn.io.huangnosimp.nautilusserver.auth.models;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import java.util.Collection;
+import java.util.List;
 import lombok.*;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -11,9 +13,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import vn.io.huangnosimp.nautilusserver.auth.constants.Provider;
 import vn.io.huangnosimp.nautilusserver.auth.constants.Role;
-
-import java.util.Collection;
-import java.util.List;
 
 @Entity
 @Table(name = "auth_user")

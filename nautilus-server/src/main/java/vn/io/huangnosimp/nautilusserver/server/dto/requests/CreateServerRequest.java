@@ -8,20 +8,15 @@ import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 
 public record CreateServerRequest(
         @NotBlank
-        @Pattern(regexp = "^[a-zA-Z0-9_@.]+$", message = "Server name can only contain letters, numbers, underscores, @ and .")
-        @Size(max = 50, message = "Server name cannot exceed 50 characters")
-        String servername,
-
-        @NotNull
-        Boolean visibility,
-
-        @NotNull
-        Boolean requiresPremium,
-
-        @NotNull
-        ServerType type,
-
-        @NotBlank
-        @Size(max = 255, message = "Server summary cannot exceed 255 characters")
-        String summary) {
-}
+                @Pattern(
+                        regexp = "^[a-zA-Z0-9_@.]+$",
+                        message =
+                                "Server name can only contain letters, numbers, underscores, @ and"
+                                        + " .")
+                @Size(max = 50, message = "Server name cannot exceed 50 characters")
+                String servername,
+        @NotNull Boolean visibility,
+        @NotNull Boolean requiresPremium,
+        @NotNull ServerType type,
+        @NotBlank @Size(max = 255, message = "Server summary cannot exceed 255 characters")
+                String summary) {}

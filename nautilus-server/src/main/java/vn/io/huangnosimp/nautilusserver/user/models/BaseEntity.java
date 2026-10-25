@@ -1,13 +1,12 @@
 package vn.io.huangnosimp.nautilusserver.user.models;
 
 import jakarta.persistence.*;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.Instant;
 
 @Getter
 @Setter
@@ -16,7 +15,7 @@ import java.time.Instant;
 public abstract class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", columnDefinition = "char(36)", nullable = false)
+    @Column(name = "id", columnDefinition = "char(36)", updatable = false, nullable = false)
     private String id;
 
     @CreatedDate

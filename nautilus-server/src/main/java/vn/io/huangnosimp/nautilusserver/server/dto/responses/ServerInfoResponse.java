@@ -1,8 +1,7 @@
 package vn.io.huangnosimp.nautilusserver.server.dto.responses;
 
-import lombok.Builder;
-
 import java.util.List;
+import lombok.Builder;
 
 @Builder
 public record ServerInfoResponse(
@@ -17,7 +16,4 @@ public record ServerInfoResponse(
         String bedrockAddress,
         String imageUrl,
         String bannerUrl,
-        List<GalleryResponse> gallery
-) {
-}
-
+        List<GalleryResponse> gallery) {}

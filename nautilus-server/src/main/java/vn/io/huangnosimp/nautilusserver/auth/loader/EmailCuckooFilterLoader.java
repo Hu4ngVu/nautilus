@@ -20,13 +20,16 @@ public class EmailCuckooFilterLoader implements ApplicationRunner {
     private static final int BATCH_SIZE = 5000;
 
     private final RedissonClient redissonClient;
+
     @Qualifier("emailCuckooFilter")
     private final RCuckooFilter<String> filter;
+
     private final JdbcClient jdbcClient;
 
     @Override
     public void run(@NonNull ApplicationArguments args) {
-        RBucket<String> ready = redissonClient.getBucket(CuckooFilter.email.BUCKET, StringCodec.INSTANCE);
+        RBucket<String> ready =
+                redissonClient.getBucket(CuckooFilter.email.BUCKET, StringCodec.INSTANCE);
         if (ready.isExists()) {
             log.info("Email Cuckoo filter is already loaded, skipping");
             return;
@@ -44,20 +47,22 @@ public class EmailCuckooFilterLoader implements ApplicationRunner {
             String last = "";
             int total = 0;
             while (true) {
-                var emails = jdbcClient
-                        .sql(
-                                "SELECT email FROM user WHERE email > :last ORDER BY email LIMIT :batchSize"
-                        )
-                        .param("last", last)
-                        .param("batchSize", BATCH_SIZE)
-                        .query(String.class)
-                        .list();
+                var emails =
+                        jdbcClient
+                                .sql(
+                                        "SELECT email FROM user WHERE email > :last ORDER BY email"
+                                                + " LIMIT :batchSize")
+                                .param("last", last)
+                                .param("batchSize", BATCH_SIZE)
+                                .query(String.class)
+                                .list();
                 if (emails.isEmpty()) {
                     break;
                 }
 
                 RBatch batch = redissonClient.createBatch();
-                RCuckooFilterAsync<String> asyncFilter = batch.getCuckooFilter(CuckooFilter.email.NAME, StringCodec.INSTANCE);
+                RCuckooFilterAsync<String> asyncFilter =
+                        batch.getCuckooFilter(CuckooFilter.email.NAME, StringCodec.INSTANCE);
 
                 last = emails.getLast();
                 for (String email : emails) {

@@ -1,5 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.auth.services;
 
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
@@ -15,8 +16,6 @@ import vn.io.huangnosimp.nautilusserver.auth.constants.Role;
 import vn.io.huangnosimp.nautilusserver.auth.models.AuthUser;
 import vn.io.huangnosimp.nautilusserver.auth.repositories.AuthUserRepository;
 
-import java.util.Optional;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,7 +27,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     @NullMarked
     @Transactional(rollbackFor = Exception.class)
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        log.debug("Loading OAuth2 user: {}", userRequest.getClientRegistration().getRegistrationId());
+        log.debug(
+                "Loading OAuth2 user: {}", userRequest.getClientRegistration().getRegistrationId());
         OAuth2User oAuth2User = defaultOAuth2UserService.loadUser(userRequest);
         String email = oAuth2User.getAttribute("email");
         if (email == null || email.isEmpty()) {
@@ -48,14 +48,14 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 authUser.setProvider(Provider.BOTH);
                 authUserRepository.save(authUser);
             }
-        }
-        else {
-            AuthUser authUser = AuthUser.builder()
-                    .username(username)
-                    .email(email)
-                    .provider(Provider.GOOGLE)
-                    .role(Role.USER)
-                    .build();
+        } else {
+            AuthUser authUser =
+                    AuthUser.builder()
+                            .username(username)
+                            .email(email)
+                            .provider(Provider.GOOGLE)
+                            .role(Role.USER)
+                            .build();
             authUserRepository.save(authUser);
         }
         log.info("OAuth2 user loaded: {}", email);
