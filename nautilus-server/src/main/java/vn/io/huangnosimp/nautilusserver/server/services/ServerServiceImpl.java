@@ -1,10 +1,16 @@
 package vn.io.huangnosimp.nautilusserver.server.services;
 
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
+import java.util.List;
 import java.util.UUID;
 import jodd.io.FileNameUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,12 +19,16 @@ import vn.io.huangnosimp.nautilusserver.server.DeleteServerAvatarEvent;
 import vn.io.huangnosimp.nautilusserver.server.DeleteServerBannerEvent;
 import vn.io.huangnosimp.nautilusserver.server.ServerCreatedEvent;
 import vn.io.huangnosimp.nautilusserver.server.ServerDeletedEvent;
+import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
+import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.CreateServerRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateServerInfoRequest;
+import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoDetailResponse;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoResponse;
 import vn.io.huangnosimp.nautilusserver.server.exceptions.ServerNotFound;
 import vn.io.huangnosimp.nautilusserver.server.exceptions.UsernameNotFound;
 import vn.io.huangnosimp.nautilusserver.server.models.Server;
+import vn.io.huangnosimp.nautilusserver.server.models.ServerTag;
 import vn.io.huangnosimp.nautilusserver.server.repositories.ServerRepository;
 import vn.io.huangnosimp.nautilusserver.storage.StorageService;
 
@@ -33,7 +43,35 @@ public class ServerServiceImpl implements ServerService {
     private final StorageService storageService;
 
     @Override
-    public ServerInfoResponse getServerInfo(String username, String servername)
+    public Page<ServerInfoResponse> getAllServer(
+            Boolean requiresPremium,
+            ServerType serverType,
+            ServerPlatform serverPlatform,
+            List<String> tags,
+            Pageable pageable) {
+        Specification<Server> specification =
+                getServerSpecification(requiresPremium, serverType, serverPlatform, tags);
+
+        return serverRepository
+                .findAllByVisibilityIsTrue(specification, pageable)
+                .map(
+                        server ->
+                                ServerInfoResponse.builder()
+                                        .avatarUrl(
+                                                server.getAvatarKey() != null
+                                                        ? storageService.createSignedGetUrl(
+                                                                server.getAvatarKey())
+                                                        : null)
+                                        .livePlayerCount(null)
+                                        .maxPlayerCount(null)
+                                        .requiresPremium(server.getRequiresPremium())
+                                        .servername(server.getServername())
+                                        .summary(server.getSummary())
+                                        .build());
+    }
+
+    @Override
+    public ServerInfoDetailResponse getServerInfo(String username, String servername)
             throws ServerNotFound {
         log.debug("Fetching server info for user: {}, server: {}", username, servername);
         String userId =
@@ -45,14 +83,13 @@ public class ServerServiceImpl implements ServerService {
                         .findByUserIdAndServername(userId, servername)
                         .orElseThrow(() -> new ServerNotFound(servername));
         var response =
-                ServerInfoResponse.builder()
+                ServerInfoDetailResponse.builder()
                         .servername(server.getServername())
                         .visibility(server.getVisibility())
                         .requiresPremium(server.getRequiresPremium())
                         .javaAddress(server.getJavaAddress())
                         .bedrockAddress(server.getBedrockAddress())
-                        .gallery(galleryService.getGallery(username, servername))
-                        .imageUrl(
+                        .avatarUrl(
                                 server.getAvatarKey() != null
                                         ? storageService.createSignedGetUrl(server.getAvatarKey())
                                         : null)
@@ -60,6 +97,10 @@ public class ServerServiceImpl implements ServerService {
                                 server.getBannerKey() != null
                                         ? storageService.createSignedGetUrl(server.getBannerKey())
                                         : null)
+                        .summary(server.getSummary())
+                        .bio(server.getBio())
+                        .livePlayerCount(null)
+                        .maxPlayerCount(null)
                         .build();
         log.info("Server info for user: {}, server: {} fetched successfully", username, servername);
         return response;
@@ -81,6 +122,7 @@ public class ServerServiceImpl implements ServerService {
                         .visibility(body.visibility())
                         .type(body.type())
                         .summary(body.summary())
+                        .platform(body.platform())
                         .build();
         serverRepository.save(server);
         eventPublisher.publishEvent(new ServerCreatedEvent(username));
@@ -232,6 +274,40 @@ public class ServerServiceImpl implements ServerService {
                 "Server banner for user: {}, server: {} deleted successfully",
                 username,
                 servername);
+    }
+
+    private Specification<Server> getServerSpecification(
+            Boolean requiresPremium,
+            ServerType serverType,
+            ServerPlatform serverPlatform,
+            List<String> tags) {
+        return (root, query, criteriaBuilder) -> {
+            var predicates = criteriaBuilder.conjunction();
+            if (requiresPremium != null) {
+                predicates
+                        .getExpressions()
+                        .add(criteriaBuilder.equal(root.get("requiresPremium"), requiresPremium));
+            }
+            if (serverType != null) {
+                predicates
+                        .getExpressions()
+                        .add(criteriaBuilder.equal(root.get("type"), serverType));
+            }
+            if (serverPlatform != null) {
+                predicates
+                        .getExpressions()
+                        .add(criteriaBuilder.equal(root.get("platform"), serverPlatform));
+            }
+            if (tags != null && !tags.isEmpty()) {
+                Subquery<Server> subquery = query.subquery(Server.class);
+                Root<ServerTag> subRoot = subquery.from(ServerTag.class);
+                subquery.select(subRoot.get("server"));
+                subquery.where(subRoot.get("tag").in(tags));
+                predicates.getExpressions().add(criteriaBuilder.in(root).value(subquery));
+            }
+
+            return predicates;
+        };
     }
 
     private Server getServer(String username, String servername) {

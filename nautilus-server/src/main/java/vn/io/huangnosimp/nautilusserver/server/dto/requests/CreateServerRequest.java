@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 
 public record CreateServerRequest(
@@ -18,5 +19,6 @@ public record CreateServerRequest(
         @NotNull Boolean visibility,
         @NotNull Boolean requiresPremium,
         @NotNull ServerType type,
+        @NotNull ServerPlatform platform,
         @NotBlank @Size(max = 255, message = "Server summary cannot exceed 255 characters")
                 String summary) {}

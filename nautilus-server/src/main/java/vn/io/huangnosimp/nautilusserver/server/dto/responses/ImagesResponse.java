@@ -4,10 +4,9 @@ import java.time.Instant;
 import lombok.Builder;
 
 @Builder
-public record GalleryResponse(
+public record ImagesResponse(
         String imageId,
         String imageUrl,
         String imageTitle,
-        String imageSummary,
-        int orderIndex,
+        Integer orderIndex,
         Instant createdAt) {}
