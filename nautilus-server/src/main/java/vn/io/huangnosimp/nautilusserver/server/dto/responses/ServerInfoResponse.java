@@ -7,4 +7,5 @@ public record ServerInfoResponse(
         String servername,
         Boolean requiresPremium,
         String avatarUrl,
-        String summary) {}
+        String summary,
+        Integer starCount) {}

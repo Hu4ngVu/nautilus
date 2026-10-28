@@ -55,4 +55,7 @@ public class Server extends BaseEntity {
 
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
+
+    @Column(name = "star_count", columnDefinition = "INTEGER")
+    private Integer starCount;
 }

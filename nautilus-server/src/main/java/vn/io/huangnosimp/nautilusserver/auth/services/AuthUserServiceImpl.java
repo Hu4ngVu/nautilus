@@ -20,6 +20,6 @@ public class AuthUserServiceImpl implements AuthUserService {
                 .orElseThrow(
                         () ->
                                 new UsernameNotFoundException(
-                                        "User not found with username: " + username));
+                                        "User not found with userId: " + username));
     }
 }

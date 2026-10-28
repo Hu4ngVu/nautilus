@@ -24,11 +24,11 @@ import vn.io.huangnosimp.nautilusserver.auth.constants.Role;
 import vn.io.huangnosimp.nautilusserver.auth.dto.requests.LoginRequest;
 import vn.io.huangnosimp.nautilusserver.auth.dto.requests.RegisterRequest;
 import vn.io.huangnosimp.nautilusserver.auth.dto.results.TokenResult;
-import vn.io.huangnosimp.nautilusserver.auth.exceptions.AuthUserNotFound;
-import vn.io.huangnosimp.nautilusserver.auth.exceptions.DuplicateEmail;
-import vn.io.huangnosimp.nautilusserver.auth.exceptions.DuplicateUsername;
 import vn.io.huangnosimp.nautilusserver.auth.models.AuthUser;
 import vn.io.huangnosimp.nautilusserver.auth.repositories.AuthUserRepository;
+import vn.io.huangnosimp.nautilusserver.exceptions.AuthUserNotFound;
+import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateEmail;
+import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateUsername;
 
 @Slf4j
 @Service
@@ -102,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
         AuthUser authUser = (AuthUser) authentication.getPrincipal();
         SecurityContextHolder.getContext().setAuthentication(authentication);
         if (authUser == null) {
-            throw new BadCredentialsException("Invalid username or password");
+            throw new BadCredentialsException("Invalid userId or password");
         }
         String accessToken = generateAccessToken(authUser);
         String refreshToken = refreshTokenService.generateRefreshToken(authUser);

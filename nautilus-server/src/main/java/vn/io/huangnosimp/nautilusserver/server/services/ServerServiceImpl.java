@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
+import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
+import vn.io.huangnosimp.nautilusserver.exceptions.UsernameNotFound;
 import vn.io.huangnosimp.nautilusserver.server.DeleteServerAvatarEvent;
 import vn.io.huangnosimp.nautilusserver.server.DeleteServerBannerEvent;
 import vn.io.huangnosimp.nautilusserver.server.ServerCreatedEvent;
@@ -25,8 +27,6 @@ import vn.io.huangnosimp.nautilusserver.server.dto.requests.CreateServerRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateServerInfoRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoDetailResponse;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoResponse;
-import vn.io.huangnosimp.nautilusserver.server.exceptions.ServerNotFound;
-import vn.io.huangnosimp.nautilusserver.server.exceptions.UsernameNotFound;
 import vn.io.huangnosimp.nautilusserver.server.models.Server;
 import vn.io.huangnosimp.nautilusserver.server.models.ServerTag;
 import vn.io.huangnosimp.nautilusserver.server.repositories.ServerRepository;
@@ -62,11 +62,10 @@ public class ServerServiceImpl implements ServerService {
                                                         ? storageService.createSignedGetUrl(
                                                                 server.getAvatarKey())
                                                         : null)
-                                        .livePlayerCount(null)
-                                        .maxPlayerCount(null)
                                         .requiresPremium(server.getRequiresPremium())
                                         .servername(server.getServername())
                                         .summary(server.getSummary())
+                                        .starCount(server.getStarCount())
                                         .build());
     }
 
@@ -99,8 +98,7 @@ public class ServerServiceImpl implements ServerService {
                                         : null)
                         .summary(server.getSummary())
                         .bio(server.getBio())
-                        .livePlayerCount(null)
-                        .maxPlayerCount(null)
+                        .starCount(server.getStarCount())
                         .build();
         log.info("Server info for user: {}, server: {} fetched successfully", username, servername);
         return response;
@@ -123,9 +121,10 @@ public class ServerServiceImpl implements ServerService {
                         .type(body.type())
                         .summary(body.summary())
                         .platform(body.platform())
+                        .starCount(0)
                         .build();
         serverRepository.save(server);
-        eventPublisher.publishEvent(new ServerCreatedEvent(username));
+        eventPublisher.publishEvent(new ServerCreatedEvent(userId));
         log.info(
                 "Server for user: {}, servername: {} created successfully",
                 username,
@@ -145,7 +144,7 @@ public class ServerServiceImpl implements ServerService {
             eventPublisher.publishEvent(new DeleteServerAvatarEvent(server.getAvatarKey()));
         }
         serverRepository.delete(server);
-        eventPublisher.publishEvent(new ServerDeletedEvent(username));
+        eventPublisher.publishEvent(new ServerDeletedEvent(server.getUserId(), server.getId()));
         log.info("Server for user: {}, servername: {} deleted successfully", username, servername);
     }
 

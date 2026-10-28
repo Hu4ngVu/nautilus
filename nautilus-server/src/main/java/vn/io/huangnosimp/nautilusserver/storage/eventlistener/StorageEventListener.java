@@ -13,7 +13,7 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import vn.io.huangnosimp.nautilusserver.server.*;
-import vn.io.huangnosimp.nautilusserver.user.DeleteUserAvatar;
+import vn.io.huangnosimp.nautilusserver.user.DeleteUserAvatarEvent;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +28,7 @@ public class StorageEventListener {
     // from user
     @Retryable(value = {S3Exception.class})
     @ApplicationModuleListener
-    public void on(DeleteUserAvatar event) {
+    public void on(DeleteUserAvatarEvent event) {
         s3Template.deleteObject(bucketName, event.key());
     }
 

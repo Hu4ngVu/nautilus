@@ -21,4 +21,5 @@ public record ServerInfoDetailResponse(
         List<String> javaVersions,
         List<String> bedrockVersions,
         ServerType serverType,
-        ServerPlatform serverPlatform) {}
+        ServerPlatform serverPlatform,
+        Integer starCount) {}

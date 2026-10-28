@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.server.exceptions;
+package vn.io.huangnosimp.nautilusserver.exceptions;
 
 public class InvalidMcVersion extends RuntimeException {
     public InvalidMcVersion(String message) {
