@@ -2,6 +2,7 @@ package vn.io.huangnosimp.nautilusserver.server.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 
 @Entity
@@ -41,6 +42,10 @@ public class Server extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 20)
     private ServerType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "platform", nullable = false, length = 20)
+    private ServerPlatform platform;
 
     @Column(name = "banner_key")
     private String bannerKey;

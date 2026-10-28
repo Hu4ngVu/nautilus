@@ -34,6 +34,6 @@ public class Image extends BaseEntity {
     @Column(name = "summary")
     private String summary;
 
-    @Column(name = "order_index", columnDefinition = "INTEGER DEFAULT 0")
+    @Column(name = "order_index", columnDefinition = "INTEGER")
     private Integer orderIndex;
 }
