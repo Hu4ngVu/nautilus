@@ -5,8 +5,6 @@ import lombok.Builder;
 @Builder
 public record ServerInfoResponse(
         String servername,
-        Integer livePlayerCount,
-        Integer maxPlayerCount,
         Boolean requiresPremium,
         String avatarUrl,
         String summary) {}

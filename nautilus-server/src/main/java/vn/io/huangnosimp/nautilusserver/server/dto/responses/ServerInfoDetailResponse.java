@@ -9,8 +9,6 @@ import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 public record ServerInfoDetailResponse(
         String servername,
         Boolean visibility,
-        Integer livePlayerCount,
-        Integer maxPlayerCount,
         Boolean requiresPremium,
         String javaAddress,
         String bedrockAddress,
