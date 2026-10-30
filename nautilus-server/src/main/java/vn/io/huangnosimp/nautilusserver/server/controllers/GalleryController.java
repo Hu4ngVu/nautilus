@@ -1,5 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.server.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,7 +46,7 @@ public class GalleryController {
     public ResponseEntity<?> uploadImage(
             @PathVariable String username,
             @PathVariable String servername,
-            @ModelAttribute UploadImageRequest body) {
+            @Valid @RequestBody UploadImageRequest body) {
         galleryService.uploadImage(username, servername, body);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -63,8 +64,8 @@ public class GalleryController {
     public ResponseEntity<?> updateImage(
             @PathVariable String username,
             @PathVariable String servername,
-            @PathVariable @ModelAttribute String imageId,
-            UpdateImageInfoRequest body) {
+            @PathVariable String imageId,
+            @Valid @RequestBody UpdateImageInfoRequest body) {
         galleryService.updateImageInfo(username, servername, imageId, body);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

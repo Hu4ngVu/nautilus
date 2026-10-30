@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
+import vn.io.huangnosimp.nautilusserver.server.dto.requests.ChangeServerVisibility;
+import vn.io.huangnosimp.nautilusserver.server.dto.requests.ChangeServernameRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.CreateServerRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateServerInfoRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoDetailResponse;
@@ -61,7 +63,7 @@ public class ServerController {
     public ResponseEntity<?> updateServer(
             @PathVariable String username,
             @PathVariable String servername,
-            @Valid @ModelAttribute UpdateServerInfoRequest body) {
+            @Valid @RequestBody UpdateServerInfoRequest body) {
         serverService.updateServerInfo(username, servername, body);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -77,6 +79,24 @@ public class ServerController {
     public ResponseEntity<?> deleteServerBanner(
             @PathVariable String username, @PathVariable String servername) {
         serverService.deleteServerBanner(username, servername);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PutMapping("/{username}/{servername}")
+    public ResponseEntity<?> changeServername(
+            @PathVariable String username,
+            @PathVariable String servername,
+            @Valid @RequestParam ChangeServernameRequest request) {
+        serverService.changeServername(username, servername, request.newServername());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PutMapping("/{username}/{servername}/visibility")
+    public ResponseEntity<?> changeServerVisibility(
+            @PathVariable String username,
+            @PathVariable String servername,
+            @RequestBody ChangeServerVisibility request) {
+        serverService.changeServerVisibility(username, servername, request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

@@ -1,5 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.user.repositories;
 
+import jakarta.validation.constraints.NotBlank;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,4 +25,13 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Transactional
     @Query("UPDATE User u SET u.serverCount = u.serverCount - :amount WHERE u.authUserId = :userId")
     void decreaseServerCount(@Param("userId") String userId, @Param("amount") Integer amount);
+
+    boolean existsByUsername(@NotBlank String s);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.username = :newUsername WHERE u.username = :oldUsername")
+    void updateUsername(
+            @Param("oldUsername") String oldUsername,
+            @Param("newUsername") @NotBlank String newUsername);
 }

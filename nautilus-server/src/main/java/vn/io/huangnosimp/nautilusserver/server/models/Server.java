@@ -36,9 +36,6 @@ public class Server extends BaseEntity {
     @Column(name = "bedrock_address")
     private String bedrockAddress;
 
-    @Column(name = "avatar_key")
-    private String avatarKey;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 20)
     private ServerType type;
@@ -46,9 +43,6 @@ public class Server extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "platform", nullable = false, length = 20)
     private ServerPlatform platform;
-
-    @Column(name = "banner_key")
-    private String bannerKey;
 
     @Column(name = "summary", nullable = false, columnDefinition = "TEXT")
     private String summary;

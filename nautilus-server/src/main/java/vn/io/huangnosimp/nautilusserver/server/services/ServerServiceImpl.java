@@ -3,8 +3,6 @@ package vn.io.huangnosimp.nautilusserver.server.services;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import java.util.List;
-import java.util.UUID;
-import jodd.io.FileNameUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -13,16 +11,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
+import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateServer;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
-import vn.io.huangnosimp.nautilusserver.exceptions.UsernameNotFound;
-import vn.io.huangnosimp.nautilusserver.server.DeleteServerAvatarEvent;
-import vn.io.huangnosimp.nautilusserver.server.DeleteServerBannerEvent;
+import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.server.ServerCreatedEvent;
 import vn.io.huangnosimp.nautilusserver.server.ServerDeletedEvent;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
+import vn.io.huangnosimp.nautilusserver.server.dto.requests.ChangeServerVisibility;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.CreateServerRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateServerInfoRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoDetailResponse;
@@ -30,7 +27,9 @@ import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoResponse;
 import vn.io.huangnosimp.nautilusserver.server.models.Server;
 import vn.io.huangnosimp.nautilusserver.server.models.ServerTag;
 import vn.io.huangnosimp.nautilusserver.server.repositories.ServerRepository;
-import vn.io.huangnosimp.nautilusserver.storage.StorageService;
+import vn.io.huangnosimp.nautilusserver.star.StarUtils;
+import vn.io.huangnosimp.nautilusserver.storage.StorageType;
+import vn.io.huangnosimp.nautilusserver.storage.StorageUtils;
 
 @Slf4j
 @Service
@@ -40,7 +39,8 @@ public class ServerServiceImpl implements ServerService {
     private final ServerRepository serverRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final GalleryService galleryService;
-    private final StorageService storageService;
+    private final StorageUtils storageUtils;
+    private final StarUtils starUtils;
 
     @Override
     public Page<ServerInfoResponse> getAllServer(
@@ -49,24 +49,38 @@ public class ServerServiceImpl implements ServerService {
             ServerPlatform serverPlatform,
             List<String> tags,
             Pageable pageable) {
+        log.debug(
+                "Fetching all servers with filters: requiresPremium={}, serverType={},"
+                        + " serverPlatform={}, tags={}",
+                requiresPremium,
+                serverType,
+                serverPlatform,
+                tags);
         Specification<Server> specification =
                 getServerSpecification(requiresPremium, serverType, serverPlatform, tags);
-
-        return serverRepository
-                .findAllByVisibilityIsTrue(specification, pageable)
-                .map(
-                        server ->
-                                ServerInfoResponse.builder()
-                                        .avatarUrl(
-                                                server.getAvatarKey() != null
-                                                        ? storageService.createSignedGetUrl(
-                                                                server.getAvatarKey())
-                                                        : null)
-                                        .requiresPremium(server.getRequiresPremium())
-                                        .servername(server.getServername())
-                                        .summary(server.getSummary())
-                                        .starCount(server.getStarCount())
-                                        .build());
+        var response =
+                serverRepository
+                        .findAllByVisibilityIsTrue(specification, pageable)
+                        .map(
+                                server ->
+                                        ServerInfoResponse.builder()
+                                                .avatarUrl(
+                                                        storageUtils.createSignedGetUrl(
+                                                                server.getId(),
+                                                                StorageType.SERVER_AVATAR))
+                                                .requiresPremium(server.getRequiresPremium())
+                                                .servername(server.getServername())
+                                                .summary(server.getSummary())
+                                                .starCount(server.getStarCount())
+                                                .build());
+        log.info(
+                "All servers fetched successfully with filters: requiresPremium={}, serverType={},"
+                        + " serverPlatform={}, tags={}",
+                requiresPremium,
+                serverType,
+                serverPlatform,
+                tags);
+        return response;
     }
 
     @Override
@@ -76,7 +90,7 @@ public class ServerServiceImpl implements ServerService {
         String userId =
                 authUserUtils
                         .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UsernameNotFound(username));
+                        .orElseThrow(() -> new UserNotFound(username));
         Server server =
                 serverRepository
                         .findByUserIdAndServername(userId, servername)
@@ -89,13 +103,11 @@ public class ServerServiceImpl implements ServerService {
                         .javaAddress(server.getJavaAddress())
                         .bedrockAddress(server.getBedrockAddress())
                         .avatarUrl(
-                                server.getAvatarKey() != null
-                                        ? storageService.createSignedGetUrl(server.getAvatarKey())
-                                        : null)
+                                storageUtils.createSignedGetUrl(
+                                        server.getId(), StorageType.SERVER_AVATAR))
                         .bannerUrl(
-                                server.getBannerKey() != null
-                                        ? storageService.createSignedGetUrl(server.getBannerKey())
-                                        : null)
+                                storageUtils.createSignedGetUrl(
+                                        server.getId(), StorageType.SERVER_BANNER))
                         .summary(server.getSummary())
                         .bio(server.getBio())
                         .starCount(server.getStarCount())
@@ -111,7 +123,14 @@ public class ServerServiceImpl implements ServerService {
         String userId =
                 authUserUtils
                         .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UsernameNotFound(username));
+                        .orElseThrow(() -> new UserNotFound(username));
+        if (serverRepository.existsByUserIdAndServername(userId, body.servername())) {
+            throw new DuplicateServer(
+                    "Server with name "
+                            + body.servername()
+                            + " already exists for user "
+                            + username);
+        }
         Server server =
                 Server.builder()
                         .userId(userId)
@@ -137,18 +156,17 @@ public class ServerServiceImpl implements ServerService {
         log.debug("Deleting server for user: {}, server: {}", username, servername);
         Server server = getServer(username, servername);
         galleryService.deleteGallery(server.getUserId(), servername);
-        if (server.getBannerKey() != null) {
-            eventPublisher.publishEvent(new DeleteServerBannerEvent(server.getBannerKey()));
-        }
-        if (server.getAvatarKey() != null) {
-            eventPublisher.publishEvent(new DeleteServerAvatarEvent(server.getAvatarKey()));
-        }
+        storageUtils.setResourceDeleted(
+                server.getId(), StorageType.SERVER_BANNER, server.getUserId());
+        storageUtils.setResourceDeleted(
+                server.getId(), StorageType.SERVER_AVATAR, server.getUserId());
         serverRepository.delete(server);
         eventPublisher.publishEvent(new ServerDeletedEvent(server.getUserId(), server.getId()));
         log.info("Server for user: {}, servername: {} deleted successfully", username, servername);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateServerInfo(String username, String servername, UpdateServerInfoRequest body) {
         log.debug("Updating server info for user: {}, server: {}", username, servername);
         if (allFieldIsNull(body)) {
@@ -156,91 +174,42 @@ public class ServerServiceImpl implements ServerService {
         }
         Server server = getServer(username, servername);
 
-        String oldBannerKey = server.getBannerKey();
-        String oldAvatarKey = server.getAvatarKey();
-        String newBannerKey = null;
-        String newAvatarKey = null;
-        boolean isBannerUploaded = false;
-        boolean isAvatarUploaded = false;
-
-        MultipartFile bannerFile = body.banner();
-        MultipartFile avatarFile = body.image();
-
-        if (body.banner() != null) {
-            String extension = FileNameUtil.getExtension(body.banner().getOriginalFilename());
-            if (isExtensionInvalid(extension)) {
-                throw new IllegalArgumentException(
-                        "Invalid file type. Only PNG, JPG, JPEG, WEBP, and GIF are allowed.");
-            }
-            newBannerKey =
-                    "server/banner/"
-                            + username
-                            + "/"
-                            + server.getServername()
-                            + "-"
-                            + UUID.randomUUID()
-                            + "."
-                            + extension;
-
-            storageService.uploadImage(bannerFile, newBannerKey);
-            isBannerUploaded = true;
+        if (body.avatarResourceId() != null) {
+            storageUtils.setResourceDeleted(
+                    server.getId(), StorageType.SERVER_AVATAR, server.getUserId());
+            storageUtils.setResourceActive(
+                    body.avatarResourceId(),
+                    server.getId(),
+                    StorageType.SERVER_AVATAR,
+                    server.getUserId());
         }
-        if (body.image() != null) {
-            String extension = FileNameUtil.getExtension(body.image().getOriginalFilename());
-            if (isExtensionInvalid(extension)) {
-                throw new IllegalArgumentException(
-                        "Invalid file type. Only PNG, JPG, JPEG, WEBP, and GIF are allowed.");
-            }
-            newAvatarKey =
-                    "server/avatar/"
-                            + username
-                            + "/"
-                            + server.getServername()
-                            + "-"
-                            + UUID.randomUUID()
-                            + "."
-                            + extension;
-            storageService.uploadImage(avatarFile, newAvatarKey);
-            isAvatarUploaded = true;
+        if (body.bannerResourceId() != null) {
+            storageUtils.setResourceDeleted(
+                    server.getId(), StorageType.SERVER_BANNER, server.getUserId());
+            storageUtils.setResourceActive(
+                    body.bannerResourceId(),
+                    server.getId(),
+                    StorageType.SERVER_BANNER,
+                    server.getUserId());
         }
-
-        try {
-            if (body.javaAddress() != null) {
-                server.setJavaAddress(body.javaAddress());
-            }
-            if (body.bedrockAddress() != null) {
-                server.setBedrockAddress(body.bedrockAddress());
-            }
-            if (body.bio() != null) {
-                server.setBio(body.bio());
-            }
-            if (isBannerUploaded) {
-                server.setBannerKey(newBannerKey);
-            }
-            if (isAvatarUploaded) {
-                server.setAvatarKey(newAvatarKey);
-            }
-            serverRepository.save(server);
-            log.info(
-                    "Server info for user: {}, server: {} updated successfully",
-                    username,
-                    servername);
-        } catch (Exception e) {
-            if (isBannerUploaded) {
-                eventPublisher.publishEvent(new DeleteServerBannerEvent(newBannerKey));
-            }
-            if (isAvatarUploaded) {
-                eventPublisher.publishEvent(new DeleteServerAvatarEvent(newAvatarKey));
-            }
-            throw e;
+        if (body.javaAddress() != null) {
+            server.setJavaAddress(body.javaAddress());
         }
-
-        if (isBannerUploaded && oldBannerKey != null) {
-            eventPublisher.publishEvent(new DeleteServerBannerEvent(oldBannerKey));
+        if (body.bedrockAddress() != null) {
+            server.setBedrockAddress(body.bedrockAddress());
         }
-        if (isAvatarUploaded && oldAvatarKey != null) {
-            eventPublisher.publishEvent(new DeleteServerAvatarEvent(oldAvatarKey));
+        if (body.summary() != null) {
+            server.setSummary(body.summary());
         }
+        if (body.bio() != null) {
+            server.setBio(body.bio());
+        }
+        if (body.requiresPremium() != null
+                && !body.requiresPremium().equals(server.getRequiresPremium())) {
+            server.setRequiresPremium(body.requiresPremium());
+        }
+        serverRepository.save(server);
+        log.info("Server info for user: {}, server: {} updated successfully", username, servername);
     }
 
     @Override
@@ -248,12 +217,8 @@ public class ServerServiceImpl implements ServerService {
     public void deleteServerAvatar(String username, String servername) {
         log.debug("Deleting server image for user: {}, server: {}", username, servername);
         Server server = getServer(username, servername);
-        String oldKey = server.getAvatarKey();
-        server.setAvatarKey(null);
-        serverRepository.save(server);
-        if (oldKey != null) {
-            eventPublisher.publishEvent(new DeleteServerAvatarEvent(oldKey));
-        }
+        storageUtils.setResourceDeleted(
+                server.getId(), StorageType.SERVER_AVATAR, server.getUserId());
         log.info(
                 "Server image for user: {}, server: {} deleted successfully", username, servername);
     }
@@ -263,16 +228,58 @@ public class ServerServiceImpl implements ServerService {
     public void deleteServerBanner(String username, String servername) {
         log.debug("Deleting server banner for user: {}, server: {}", username, servername);
         Server server = getServer(username, servername);
-        String oldKey = server.getBannerKey();
-        server.setBannerKey(null);
-        serverRepository.save(server);
-        if (oldKey != null) {
-            eventPublisher.publishEvent(new DeleteServerBannerEvent(oldKey));
-        }
+        storageUtils.setResourceDeleted(
+                server.getId(), StorageType.SERVER_BANNER, server.getUserId());
         log.info(
                 "Server banner for user: {}, server: {} deleted successfully",
                 username,
                 servername);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void changeServername(String username, String servername, String newServername) {
+        log.debug(
+                "Changing server name for user: {}, server: {} to {}",
+                username,
+                servername,
+                newServername);
+        Server server = getServer(username, servername);
+        if (serverRepository.existsByUserIdAndServername(server.getUserId(), newServername)) {
+            throw new DuplicateServer(
+                    "Server with name " + newServername + " already exists for user " + username);
+        }
+        server.setServername(newServername);
+        serverRepository.save(server);
+        log.info(
+                "Server name for user: {}, server: {} changed to {}",
+                username,
+                servername,
+                newServername);
+    }
+
+    @Override
+    public void changeServerVisibility(
+            String username, String servername, ChangeServerVisibility request) {
+        log.debug(
+                "Changing server visibility for user: {}, server: {} to {}",
+                username,
+                servername,
+                request.visibility());
+        Server server = getServer(username, servername);
+        if (server.getVisibility().equals(request.visibility())) {
+            return;
+        }
+        server.setVisibility(request.visibility());
+        serverRepository.save(server);
+        if (request.visibility().equals(Boolean.FALSE)) {
+            starUtils.deleteAllStar(server.getId());
+        }
+        log.info(
+                "Server visibility for user: {}, server: {} changed to {}",
+                username,
+                servername,
+                request.visibility());
     }
 
     private Specification<Server> getServerSpecification(
@@ -313,26 +320,18 @@ public class ServerServiceImpl implements ServerService {
         String userId =
                 authUserUtils
                         .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UsernameNotFound(username));
+                        .orElseThrow(() -> new UserNotFound(username));
         return serverRepository
                 .findByUserIdAndServername(userId, servername)
                 .orElseThrow(() -> new ServerNotFound(servername));
     }
 
-    private boolean isExtensionInvalid(String extension) {
-        return extension == null
-                || !extension.equalsIgnoreCase("png")
-                        && !extension.equalsIgnoreCase("jpg")
-                        && !extension.equalsIgnoreCase("jpeg")
-                        && !extension.equalsIgnoreCase("webp")
-                        && !extension.equalsIgnoreCase("gif");
-    }
-
     private boolean allFieldIsNull(UpdateServerInfoRequest body) {
-        return body.banner() == null
-                && body.image() == null
+        return body.avatarResourceId() == null
+                && body.bannerResourceId() == null
                 && body.javaAddress() == null
                 && body.bedrockAddress() == null
-                && body.bio() == null;
+                && body.bio() == null
+                && body.summary() == null;
     }
 }

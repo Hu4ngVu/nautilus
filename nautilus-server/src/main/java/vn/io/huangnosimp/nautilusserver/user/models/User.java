@@ -20,9 +20,6 @@ public class User extends BaseEntity {
     @Column(name = "server_count", nullable = false, columnDefinition = "INTEGER")
     private Integer serverCount;
 
-    @Column(name = "avatar_key")
-    private String avatarKey;
-
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 }

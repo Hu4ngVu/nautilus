@@ -14,9 +14,9 @@ import vn.io.huangnosimp.nautilusserver.server.models.Server;
 @Repository
 public interface GalleryRepository extends JpaRepository<Image, String> {
     @Query(
-            "SELECT i.imageKey FROM Image i WHERE i.server.userId = :userId AND i.server.servername"
+            "SELECT i.id FROM Image i WHERE i.server.userId = :userId AND i.server.servername"
                     + " = :servername")
-    List<String> findAllImageKeysByUserIdAndServername(
+    List<String> findAllImageIdsByUserIdAndServername(
             @Param("userId") String userId, @Param("servername") String servername);
 
     Page<Image> findAllByServer(Server server, Pageable pageable);

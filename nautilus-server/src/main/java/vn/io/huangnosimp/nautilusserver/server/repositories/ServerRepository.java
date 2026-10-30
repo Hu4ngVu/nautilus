@@ -37,4 +37,6 @@ public interface ServerRepository
     @Transactional
     @Query("UPDATE Server s SET s.starCount = s.starCount - :amount WHERE s.id = :serverId")
     void decreaseStarCount(String serverId, Integer amount);
+
+    boolean existsByUserIdAndServername(String userId, String servername);
 }
