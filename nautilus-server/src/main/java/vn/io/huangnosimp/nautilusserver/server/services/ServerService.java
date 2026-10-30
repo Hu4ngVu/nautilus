@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
+import vn.io.huangnosimp.nautilusserver.server.dto.requests.ChangeServerVisibility;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.CreateServerRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateServerInfoRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoDetailResponse;
@@ -29,4 +30,8 @@ public interface ServerService {
     void deleteServerAvatar(String username, String servername);
 
     void deleteServerBanner(String username, String servername);
+
+    void changeServername(String username, String servername, String newServername);
+
+    void changeServerVisibility(String username, String servername, ChangeServerVisibility request);
 }

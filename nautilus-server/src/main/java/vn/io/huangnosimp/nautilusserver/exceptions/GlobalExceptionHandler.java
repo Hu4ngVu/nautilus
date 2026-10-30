@@ -28,12 +28,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
-    // User
-    @ExceptionHandler(UserNotFound.class)
-    public ResponseEntity<String> handleUserNotFound() {
-        return ResponseEntity.notFound().build();
-    }
-
     // Server
     @ExceptionHandler(ImageNotFound.class)
     public ResponseEntity<String> handleImageNotFound() {
@@ -45,7 +39,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.notFound().build();
     }
 
-    @ExceptionHandler(UsernameNotFound.class)
+    @ExceptionHandler(UserNotFound.class)
     public ResponseEntity<String> handleUsernameNotFound() {
         return ResponseEntity.notFound().build();
     }
@@ -60,10 +54,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
+    @ExceptionHandler(DuplicateServer.class)
+    public ResponseEntity<String> handleDuplicateServer(DuplicateServer e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
     // Storage
     @ExceptionHandler(CannotUpload.class)
     public ResponseEntity<?> handleCannotUpload() {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    @ExceptionHandler(InvalidContentType.class)
+    public ResponseEntity<String> handleInvalidContentType(InvalidContentType e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(ResourceNotFound.class)
+    public ResponseEntity<String> handleResourceNotFound() {
+        return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(InvalidWebhookSecretKey.class)
+    public ResponseEntity<String> handleInvalidWebhookSecretKey(InvalidWebhookSecretKey e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
     }
 
     // Star

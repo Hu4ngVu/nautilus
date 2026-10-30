@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RCuckooFilter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +17,6 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.auth.UserRegisteredEvent;
 import vn.io.huangnosimp.nautilusserver.auth.constants.Provider;
 import vn.io.huangnosimp.nautilusserver.auth.constants.Role;
 import vn.io.huangnosimp.nautilusserver.auth.dto.requests.LoginRequest;
@@ -29,6 +27,7 @@ import vn.io.huangnosimp.nautilusserver.auth.repositories.AuthUserRepository;
 import vn.io.huangnosimp.nautilusserver.exceptions.AuthUserNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateEmail;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateUsername;
+import vn.io.huangnosimp.nautilusserver.user.UserUtils;
 
 @Slf4j
 @Service
@@ -42,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
     private final TokenBlacklistService tokenBlacklistService;
     private final RCuckooFilter<String> usernameCuckooFilter;
     private final RCuckooFilter<String> emailCuckooFilter;
-    private final ApplicationEventPublisher eventPublisher;
+    private final UserUtils userUtils;
 
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
@@ -87,8 +86,7 @@ public class AuthServiceImpl implements AuthService {
         authUserRepository.save(authUser);
         usernameCuckooFilter.add(authUser.getUsername());
         emailCuckooFilter.add(authUser.getEmail());
-        eventPublisher.publishEvent(
-                new UserRegisteredEvent(authUser.getId(), authUser.getUsername()));
+        userUtils.createUser(authUser.getId(), authUser.getUsername());
         log.info("registered user: {}", authUser.getUsername());
     }
 

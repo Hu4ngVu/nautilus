@@ -3,7 +3,6 @@ package vn.io.huangnosimp.nautilusserver.user.eventslistener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
-import vn.io.huangnosimp.nautilusserver.auth.UserRegisteredEvent;
 import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.server.ServerCreatedEvent;
 import vn.io.huangnosimp.nautilusserver.server.ServerDeletedEvent;
@@ -14,17 +13,6 @@ import vn.io.huangnosimp.nautilusserver.user.repositories.UserRepository;
 @RequiredArgsConstructor
 public class UserEventListener {
     private final UserRepository userRepository;
-
-    @ApplicationModuleListener
-    public void on(UserRegisteredEvent event) {
-        User user =
-                User.builder()
-                        .authUserId(event.authUserId())
-                        .username(event.username())
-                        .serverCount(0)
-                        .build();
-        userRepository.save(user);
-    }
 
     @ApplicationModuleListener
     public void on(ServerCreatedEvent event) {

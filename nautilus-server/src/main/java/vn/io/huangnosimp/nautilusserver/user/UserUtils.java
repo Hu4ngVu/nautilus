@@ -4,4 +4,6 @@ import java.util.Optional;
 
 public interface UserUtils {
     Optional<UserData> getUserDataByAuthUserId(String authUserId);
+
+    void createUser(String authUserId, String username);
 }

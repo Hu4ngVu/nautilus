@@ -1,9 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.star.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -12,7 +9,11 @@ import lombok.*;
         uniqueConstraints =
                 @UniqueConstraint(
                         name = "uc_user_id_server_id",
-                        columnNames = {"user_id", "server_id"}))
+                        columnNames = {"user_id", "server_id"}),
+        indexes = {
+            @Index(name = "idx_user_id", columnList = "user_id"),
+            @Index(name = "idx_server_id", columnList = "server_id")
+        })
 @Getter
 @Setter
 @NoArgsConstructor

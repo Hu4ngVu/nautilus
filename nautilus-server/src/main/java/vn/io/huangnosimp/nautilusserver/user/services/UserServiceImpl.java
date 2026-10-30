@@ -1,16 +1,15 @@
 package vn.io.huangnosimp.nautilusserver.user.services;
 
-import java.util.UUID;
-import jodd.io.FileNameUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
+import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateUsername;
 import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
-import vn.io.huangnosimp.nautilusserver.storage.StorageService;
-import vn.io.huangnosimp.nautilusserver.user.DeleteUserAvatarEvent;
+import vn.io.huangnosimp.nautilusserver.storage.StorageType;
+import vn.io.huangnosimp.nautilusserver.storage.StorageUtils;
+import vn.io.huangnosimp.nautilusserver.user.dto.requests.ChangeUsernameRequest;
 import vn.io.huangnosimp.nautilusserver.user.dto.requests.UpdateUserInfoRequest;
 import vn.io.huangnosimp.nautilusserver.user.dto.responses.UserInfoResponse;
 import vn.io.huangnosimp.nautilusserver.user.models.User;
@@ -21,8 +20,8 @@ import vn.io.huangnosimp.nautilusserver.user.repositories.UserRepository;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final StorageService storageService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final StorageUtils storageUtils;
+    private final AuthUserUtils authUserUtils;
 
     @Override
     public UserInfoResponse getUserInfo(String username) {
@@ -31,22 +30,21 @@ public class UserServiceImpl implements UserService {
                 userRepository
                         .findByUsername(username)
                         .orElseThrow(() -> new UserNotFound(username));
-        if (user.getAvatarKey() == null) {
-            var response =
-                    new UserInfoResponse(
-                            user.getUsername(), user.getServerCount(), user.getBio(), null);
-            log.info("User info for {} fetched successfully", username);
-            return response;
-        }
-        String avatarUrl = storageService.createSignedGetUrl(user.getAvatarKey());
+        String avatarUrl =
+                storageUtils.createSignedGetUrl(user.getAuthUserId(), StorageType.USER_AVATAR);
         var response =
-                new UserInfoResponse(
-                        user.getUsername(), user.getServerCount(), user.getBio(), avatarUrl);
+                UserInfoResponse.builder()
+                        .username(user.getUsername())
+                        .serverCount(user.getServerCount())
+                        .bio(user.getBio())
+                        .avatarUrl(avatarUrl)
+                        .build();
         log.info("User info for {} fetched successfully", username);
         return response;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateUserInfo(String username, UpdateUserInfoRequest updateUserInfoRequest) {
         log.debug("Updating user info for {}", username);
         if (allFieldIsNull(updateUserInfoRequest)) {
@@ -57,75 +55,47 @@ public class UserServiceImpl implements UserService {
                         .findByUsername(username)
                         .orElseThrow(() -> new UserNotFound(username));
 
-        String oldKey = user.getAvatarKey();
-        String newKey = null;
-        boolean isNewAvatarUploaded = false;
-
-        MultipartFile avatarFile = updateUserInfoRequest.avatar();
-
-        if (avatarFile != null) {
-            String extension = FileNameUtil.getExtension(avatarFile.getOriginalFilename());
-            if (isExtensionInvalid(extension)) {
-                throw new IllegalArgumentException(
-                        "Invalid file type. Only PNG, JPG, JPEG, and WEBP are allowed.");
-            }
-
-            newKey =
-                    "user/avatar/" + user.getUsername() + "-" + UUID.randomUUID() + "." + extension;
-
-            storageService.uploadImage(avatarFile, newKey);
-            isNewAvatarUploaded = true;
+        if (updateUserInfoRequest.resourceId() != null) {
+            storageUtils.setResourceDeleted(
+                    user.getAuthUserId(), StorageType.USER_AVATAR, user.getAuthUserId());
+            storageUtils.setResourceActive(
+                    updateUserInfoRequest.resourceId(),
+                    user.getAuthUserId(),
+                    StorageType.USER_AVATAR,
+                    user.getAuthUserId());
         }
-
-        try {
-            if (updateUserInfoRequest.bio() != null) {
-                user.setBio(updateUserInfoRequest.bio());
-            }
-            if (isNewAvatarUploaded) {
-                user.setAvatarKey(newKey);
-            }
-            userRepository.save(user);
-            log.info("Updated user info for {}", username);
-
-        } catch (Exception e) {
-            if (isNewAvatarUploaded) {
-                eventPublisher.publishEvent(new DeleteUserAvatarEvent(newKey));
-            }
-            throw e;
+        if (updateUserInfoRequest.bio() != null) {
+            user.setBio(updateUserInfoRequest.bio());
         }
-
-        if (isNewAvatarUploaded && oldKey != null) {
-            eventPublisher.publishEvent(new DeleteUserAvatarEvent(oldKey));
-        }
+        userRepository.save(user);
+        log.info("User info for {} updated successfully", username);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteUserAvatar(String username) {
         log.debug("Deleting avatar for user {}", username);
-        User user =
-                userRepository
-                        .findByUsername(username)
+        String userId =
+                authUserUtils
+                        .getAuthUserIdByUsername(username)
                         .orElseThrow(() -> new UserNotFound(username));
-        String oldKey = user.getAvatarKey();
-        if (oldKey != null) {
-            eventPublisher.publishEvent(new DeleteUserAvatarEvent(oldKey));
-        }
-        user.setAvatarKey(null);
-        userRepository.save(user);
+        storageUtils.setResourceDeleted(userId, StorageType.USER_AVATAR, userId);
         log.info("Deleted avatar for user {}", username);
     }
 
-    private boolean isExtensionInvalid(String extension) {
-        return extension == null
-                || extension.isBlank()
-                || !extension.equalsIgnoreCase("png")
-                        && !extension.equalsIgnoreCase("jpg")
-                        && !extension.equalsIgnoreCase("jpeg")
-                        && !extension.equalsIgnoreCase("webp");
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void changeUsername(String username, ChangeUsernameRequest request) {
+        log.debug("Changing username from {} to {}", username, request.newUsername());
+        userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
+        if (userRepository.existsByUsername(request.newUsername())) {
+            throw new DuplicateUsername("Username already exists: " + request.newUsername());
+        }
+        userRepository.updateUsername(username, request.newUsername());
+        log.info("Username changed from {} to {}", username, request.newUsername());
     }
 
     private boolean allFieldIsNull(UpdateUserInfoRequest body) {
-        return body.avatar() == null && body.bio() == null;
+        return body.resourceId() == null && body.bio() == null;
     }
 }

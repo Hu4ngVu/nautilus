@@ -8,11 +8,6 @@ import org.hibernate.annotations.OnDeleteAction;
 @Entity
 @Table(
         name = "image",
-        uniqueConstraints = {
-            @UniqueConstraint(
-                    name = "uc_server_id_image_key",
-                    columnNames = {"server_id", "image_key"})
-        },
         indexes = @Index(name = "idx_server_id", columnList = "server_id"))
 @Getter
 @Setter
@@ -24,9 +19,6 @@ public class Image extends BaseEntity {
     @JoinColumn(name = "server_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Server server;
-
-    @Column(name = "image_key", nullable = false)
-    private String imageKey;
 
     @Column(name = "title")
     private String title;

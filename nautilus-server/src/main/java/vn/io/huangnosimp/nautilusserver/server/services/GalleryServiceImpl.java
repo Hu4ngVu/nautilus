@@ -1,23 +1,16 @@
 package vn.io.huangnosimp.nautilusserver.server.services;
 
-import java.util.List;
-import java.util.UUID;
-import jodd.io.FileNameUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.ImageNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
-import vn.io.huangnosimp.nautilusserver.exceptions.UsernameNotFound;
-import vn.io.huangnosimp.nautilusserver.server.DeleteImageEvent;
-import vn.io.huangnosimp.nautilusserver.server.DeleteImagesBatchEvent;
+import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateImageInfoRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UploadImageRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ImageDetailResponse;
@@ -26,7 +19,8 @@ import vn.io.huangnosimp.nautilusserver.server.models.Image;
 import vn.io.huangnosimp.nautilusserver.server.models.Server;
 import vn.io.huangnosimp.nautilusserver.server.repositories.GalleryRepository;
 import vn.io.huangnosimp.nautilusserver.server.repositories.ServerRepository;
-import vn.io.huangnosimp.nautilusserver.storage.StorageService;
+import vn.io.huangnosimp.nautilusserver.storage.StorageType;
+import vn.io.huangnosimp.nautilusserver.storage.StorageUtils;
 
 @Slf4j
 @Service
@@ -35,8 +29,7 @@ public class GalleryServiceImpl implements GalleryService {
     private final GalleryRepository galleryRepository;
     private final AuthUserUtils authUserUtils;
     private final ServerRepository serverRepository;
-    private final StorageService storageService;
-    private final ApplicationEventPublisher eventPublisher;
+    private final StorageUtils storageUtils;
 
     @Override
     @Transactional(readOnly = true)
@@ -55,8 +48,9 @@ public class GalleryServiceImpl implements GalleryService {
                                                 .orderIndex(image.getOrderIndex())
                                                 .createdAt(image.getCreatedAt())
                                                 .imageUrl(
-                                                        storageService.createSignedGetUrl(
-                                                                image.getImageKey()))
+                                                        storageUtils.createSignedGetUrl(
+                                                                image.getId(),
+                                                                StorageType.GALLERY_IMAGE))
                                                 .build());
 
         log.info("Gallery for user: {}, server: {} fetched successfully", username, servername);
@@ -77,41 +71,25 @@ public class GalleryServiceImpl implements GalleryService {
                 .summary(image.getSummary())
                 .orderIndex(image.getOrderIndex())
                 .createdAt(image.getCreatedAt())
-                .imageUrl(storageService.createSignedGetUrl(image.getImageKey()))
+                .imageUrl(storageUtils.createSignedGetUrl(image.getId(), StorageType.GALLERY_IMAGE))
                 .build();
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void uploadImage(String username, String servername, UploadImageRequest body) {
         log.debug("Uploading image for user: {}, server: {}", username, servername);
         Server server = getServer(username, servername);
-
-        String extension = FileNameUtil.getExtension(body.image().getOriginalFilename());
-        if (isExtensionInvalid(extension)) {
-            throw new IllegalArgumentException(
-                    "Invalid image extension. Only png, jpg, jpeg, and webp are allowed.");
-        }
-
-        String key =
-                "gallery/"
-                        + username
-                        + "/"
-                        + server.getServername()
-                        + "-"
-                        + UUID.randomUUID()
-                        + "."
-                        + extension;
-        storageService.uploadImage(body.image(), key);
-        try {
-            Image image = new Image();
-            setInfo(image, body.title(), body.summary(), body.orderIndex());
-            image.setServer(server);
-            image.setImageKey(key);
-            galleryRepository.save(image);
-        } catch (Exception e) {
-            eventPublisher.publishEvent(new DeleteImageEvent(key));
-            throw e;
-        }
+        Image image =
+                Image.builder()
+                        .server(server)
+                        .title(body.title())
+                        .orderIndex(body.orderIndex())
+                        .summary(body.summary())
+                        .build();
+        storageUtils.setResourceActive(
+                body.resourceId(), image.getId(), StorageType.GALLERY_IMAGE, server.getUserId());
+        galleryRepository.save(image);
         log.info("Image uploaded successfully for user: {}, server: {}", username, servername);
     }
 
@@ -128,8 +106,9 @@ public class GalleryServiceImpl implements GalleryService {
                 galleryRepository
                         .findByServerAndId(server, imageId)
                         .orElseThrow(() -> new ImageNotFound("Image not found"));
+        storageUtils.setResourceDeleted(
+                image.getId(), StorageType.GALLERY_IMAGE, server.getUserId());
         galleryRepository.delete(image);
-        eventPublisher.publishEvent(new DeleteImageEvent(image.getImageKey()));
         log.info(
                 "Image deleted successfully for user: {}, server: {}, image: {}",
                 username,
@@ -138,6 +117,7 @@ public class GalleryServiceImpl implements GalleryService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateImageInfo(
             String username, String servername, String imageId, UpdateImageInfoRequest body) {
         log.debug(
@@ -154,60 +134,32 @@ public class GalleryServiceImpl implements GalleryService {
                         .findByServerAndId(server, imageId)
                         .orElseThrow(() -> new ImageNotFound("Image not found"));
 
-        String oldKey = image.getImageKey();
-        String newKey = null;
-        boolean isImageUploaded = false;
-
-        MultipartFile imageFile = body.image();
-        if (imageFile != null) {
-            String extension = FileNameUtil.getExtension(body.image().getOriginalFilename());
-            if (isExtensionInvalid(extension)) {
-                throw new IllegalArgumentException(
-                        "Invalid image extension. Only png, jpg, jpeg, and webp are allowed.");
-            }
-            newKey =
-                    "gallery/"
-                            + username
-                            + "/"
-                            + image.getServer().getServername()
-                            + "-"
-                            + UUID.randomUUID()
-                            + "."
-                            + extension;
-            storageService.uploadImage(imageFile, newKey);
-            isImageUploaded = true;
+        if (body.resourceId() != null) {
+            storageUtils.setResourceDeleted(
+                    image.getId(), StorageType.GALLERY_IMAGE, server.getUserId());
+            storageUtils.setResourceActive(
+                    body.resourceId(),
+                    image.getId(),
+                    StorageType.GALLERY_IMAGE,
+                    server.getUserId());
         }
-
-        try {
-            setInfo(image, body.title(), body.summary(), body.orderIndex());
-            galleryRepository.save(image);
-            log.info(
-                    "Image info updated successfully for user: {}, server: {}, image: {}",
-                    username,
-                    servername,
-                    imageId);
-        } catch (Exception e) {
-            if (isImageUploaded) {
-                eventPublisher.publishEvent(new DeleteImageEvent(newKey));
-            }
-            throw e;
-        }
-
-        if (isImageUploaded && oldKey != null) {
-            eventPublisher.publishEvent(new DeleteImageEvent(oldKey));
-        }
+        setInfo(image, body.title(), body.summary(), body.orderIndex());
+        galleryRepository.save(image);
+        log.info(
+                "Image info updated successfully for user: {}, server: {}, image: {}",
+                username,
+                servername,
+                imageId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteGallery(String userId, String servername) {
         log.debug("Deleting gallery for user: {}, server: {}", userId, servername);
-        List<String> keys =
-                galleryRepository.findAllImageKeysByUserIdAndServername(userId, servername);
-        if (keys.isEmpty()) {
-            return;
+        var imageIds = galleryRepository.findAllImageIdsByUserIdAndServername(userId, servername);
+        if (!imageIds.isEmpty()) {
+            storageUtils.setResourceDeletedBatch(imageIds, StorageType.GALLERY_IMAGE, userId);
         }
-        eventPublisher.publishEvent(new DeleteImagesBatchEvent(keys));
         log.info("Gallery deleted successfully for user: {}, server: {}", userId, servername);
     }
 
@@ -215,7 +167,7 @@ public class GalleryServiceImpl implements GalleryService {
         String userId =
                 authUserUtils
                         .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UsernameNotFound(username));
+                        .orElseThrow(() -> new UserNotFound(username));
         return serverRepository
                 .findByUserIdAndServername(userId, servername)
                 .orElseThrow(() -> new ServerNotFound(servername));
@@ -236,17 +188,8 @@ public class GalleryServiceImpl implements GalleryService {
         }
     }
 
-    private boolean isExtensionInvalid(String extension) {
-        return extension == null
-                || extension.isBlank()
-                || !extension.equalsIgnoreCase("png")
-                        && !extension.equalsIgnoreCase("jpg")
-                        && !extension.equalsIgnoreCase("jpeg")
-                        && !extension.equalsIgnoreCase("webp");
-    }
-
     private boolean allFieldIsNull(@NonNull UpdateImageInfoRequest body) {
-        return body.image() == null
+        return body.resourceId() == null
                 && body.title() == null
                 && body.summary() == null
                 && body.orderIndex() == null;
