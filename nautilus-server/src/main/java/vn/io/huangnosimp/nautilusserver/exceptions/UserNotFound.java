@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.user.exceptions;
+package vn.io.huangnosimp.nautilusserver.exceptions;
 
 public class UserNotFound extends RuntimeException {
     public UserNotFound(String message) {

@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.storage.exceptions;
+package vn.io.huangnosimp.nautilusserver.exceptions;
 
 public class CannotUpload extends RuntimeException {
     public CannotUpload(String message) {

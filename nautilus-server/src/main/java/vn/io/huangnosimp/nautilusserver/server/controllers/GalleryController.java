@@ -25,7 +25,7 @@ public class GalleryController {
             @PathVariable String username,
             @PathVariable String servername,
             @PageableDefault(
-                            sort = {"order_index", "created_at"},
+                            sort = {"orderIndex", "createdAt"},
                             direction = Sort.Direction.ASC)
                     Pageable pageable) {
         var response = galleryService.getAllGallery(username, servername, pageable);

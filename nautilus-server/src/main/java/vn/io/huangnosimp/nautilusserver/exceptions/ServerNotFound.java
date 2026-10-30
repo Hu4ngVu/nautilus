@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.server.exceptions;
+package vn.io.huangnosimp.nautilusserver.exceptions;
 
 public class ServerNotFound extends RuntimeException {
     public ServerNotFound(String message) {

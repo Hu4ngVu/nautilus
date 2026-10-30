@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import vn.io.huangnosimp.nautilusserver.auth.UserRegisteredEvent;
+import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.server.ServerCreatedEvent;
 import vn.io.huangnosimp.nautilusserver.server.ServerDeletedEvent;
-import vn.io.huangnosimp.nautilusserver.user.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.user.models.User;
 import vn.io.huangnosimp.nautilusserver.user.repositories.UserRepository;
 
@@ -30,19 +30,17 @@ public class UserEventListener {
     public void on(ServerCreatedEvent event) {
         User user =
                 userRepository
-                        .findByUsername(event.username())
-                        .orElseThrow(() -> new UserNotFound("User not found: " + event.username()));
-        user.setServerCount(user.getServerCount() + 1);
-        userRepository.save(user);
+                        .findByAuthUserId(event.userId())
+                        .orElseThrow(() -> new UserNotFound("User not found: " + event.userId()));
+        userRepository.increaseServerCount(user.getAuthUserId(), 1);
     }
 
     @ApplicationModuleListener
     public void on(ServerDeletedEvent event) {
         User user =
                 userRepository
-                        .findByUsername(event.username())
-                        .orElseThrow(() -> new UserNotFound("User not found: " + event.username()));
-        user.setServerCount(user.getServerCount() - 1);
-        userRepository.save(user);
+                        .findByAuthUserId(event.userId())
+                        .orElseThrow(() -> new UserNotFound("User not found: " + event.userId()));
+        userRepository.decreaseServerCount(user.getAuthUserId(), 1);
     }
 }

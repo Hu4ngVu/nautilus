@@ -8,11 +8,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.storage.StorageService;
-import vn.io.huangnosimp.nautilusserver.user.DeleteUserAvatar;
+import vn.io.huangnosimp.nautilusserver.user.DeleteUserAvatarEvent;
 import vn.io.huangnosimp.nautilusserver.user.dto.requests.UpdateUserInfoRequest;
 import vn.io.huangnosimp.nautilusserver.user.dto.responses.UserInfoResponse;
-import vn.io.huangnosimp.nautilusserver.user.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.user.models.User;
 import vn.io.huangnosimp.nautilusserver.user.repositories.UserRepository;
 
@@ -89,13 +89,13 @@ public class UserServiceImpl implements UserService {
 
         } catch (Exception e) {
             if (isNewAvatarUploaded) {
-                eventPublisher.publishEvent(new DeleteUserAvatar(newKey));
+                eventPublisher.publishEvent(new DeleteUserAvatarEvent(newKey));
             }
             throw e;
         }
 
         if (isNewAvatarUploaded && oldKey != null) {
-            eventPublisher.publishEvent(new DeleteUserAvatar(oldKey));
+            eventPublisher.publishEvent(new DeleteUserAvatarEvent(oldKey));
         }
     }
 
@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService {
                         .orElseThrow(() -> new UserNotFound(username));
         String oldKey = user.getAvatarKey();
         if (oldKey != null) {
-            eventPublisher.publishEvent(new DeleteUserAvatar(oldKey));
+            eventPublisher.publishEvent(new DeleteUserAvatarEvent(oldKey));
         }
         user.setAvatarKey(null);
         userRepository.save(user);

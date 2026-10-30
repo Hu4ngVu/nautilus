@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.auth.exceptions;
+package vn.io.huangnosimp.nautilusserver.exceptions;
 
 public class AuthUserNotFound extends RuntimeException {
     public AuthUserNotFound(String message) {

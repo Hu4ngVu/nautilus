@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.auth.exceptions;
+package vn.io.huangnosimp.nautilusserver.exceptions;
 
 public class DuplicateUsername extends RuntimeException {
     public DuplicateUsername(String message) {

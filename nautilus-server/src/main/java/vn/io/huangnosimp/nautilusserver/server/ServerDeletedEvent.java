@@ -1,3 +1,3 @@
 package vn.io.huangnosimp.nautilusserver.server;
 
-public record ServerDeletedEvent(String username) {}
+public record ServerDeletedEvent(String userId, String serverId) {}
