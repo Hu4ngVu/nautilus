@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import vn.io.huangnosimp.nautilusserver.schedule.DeleteTrashResourceEvent;
 import vn.io.huangnosimp.nautilusserver.storage.repositories.ResourceRepository;
@@ -23,7 +24,7 @@ public class DeleteTrashResourceEventListener {
     private static final int EXPIRATION_HOURS = 24; // Set the expiration time in hours
     private static final int BATCH_SIZE = 1000; // Set the batch size for deletion
 
-    @Value("${aws.s3.bucket-name}")
+    @Value("${app.s3.bucket-name}")
     private String bucketName;
 
     @ApplicationModuleListener
@@ -47,7 +48,22 @@ public class DeleteTrashResourceEventListener {
             Delete delete = Delete.builder().objects(objectIdentifiers).quiet(true).build();
             DeleteObjectsRequest request =
                     DeleteObjectsRequest.builder().delete(delete).bucket(bucketName).build();
-            s3Client.deleteObjects(request);
+            DeleteObjectsResponse response = s3Client.deleteObjects(request);
+            if (!response.errors().isEmpty()) {
+                String errors =
+                        response.errors().stream()
+                                .map(
+                                        error ->
+                                                "%s (%s): %s"
+                                                        .formatted(
+                                                                error.key(),
+                                                                error.code(),
+                                                                error.message()))
+                                .reduce((first, second) -> first + ", " + second)
+                                .orElse("unknown S3 deletion error");
+                throw new IllegalStateException(
+                        "Failed to delete trash resources from S3: " + errors);
+            }
         }
     }
 }
