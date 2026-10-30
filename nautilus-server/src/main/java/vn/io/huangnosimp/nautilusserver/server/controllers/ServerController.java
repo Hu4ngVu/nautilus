@@ -30,7 +30,7 @@ public class ServerController {
             @RequestParam(required = false) ServerType serverType,
             @RequestParam(required = false) List<String> tags,
             @RequestParam(required = false) ServerPlatform serverPlatform,
-            @PageableDefault(sort = "servername", direction = Sort.Direction.ASC)
+            @PageableDefault(sort = "starCount", direction = Sort.Direction.DESC)
                     Pageable pageable) {
         return ResponseEntity.ok(
                 serverService.getAllServer(
