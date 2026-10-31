@@ -6,9 +6,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(
-        name = "image",
-        indexes = @Index(name = "idx_server_id", columnList = "server_id"))
+@Table(name = "image", indexes = @Index(name = "idx_server_id", columnList = "server_id"))
 @Getter
 @Setter
 @NoArgsConstructor

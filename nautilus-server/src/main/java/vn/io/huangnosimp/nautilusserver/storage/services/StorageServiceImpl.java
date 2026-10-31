@@ -5,7 +5,6 @@ import io.awspring.cloud.s3.S3Template;
 import java.time.Duration;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,13 +12,13 @@ import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidContentType;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidWebhookSecretKey;
 import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
+import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.storage.constants.StorageStatus;
 import vn.io.huangnosimp.nautilusserver.storage.dto.requests.UploadCompleteRequest;
 import vn.io.huangnosimp.nautilusserver.storage.dto.responses.UploadUrlResponse;
 import vn.io.huangnosimp.nautilusserver.storage.models.Resource;
 import vn.io.huangnosimp.nautilusserver.storage.repositories.ResourceRepository;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StorageServiceImpl implements StorageService {
@@ -38,13 +37,10 @@ public class StorageServiceImpl implements StorageService {
     private String webhookSecretKey;
 
     @Override
+    @Logging(logArguments = true)
+    @Transactional(rollbackFor = Exception.class)
     public UploadUrlResponse generateUploadUrl(
             String username, String contentType, Long contentLength) {
-        log.debug(
-                "Generating upload URL for user: {}, contentType: {}, contentLength: {}",
-                username,
-                contentType,
-                contentLength);
         if (!ALLOWED_CONTENT_TYPES.contains(contentType)) {
             throw new InvalidContentType("Invalid content type: " + contentType);
         }
@@ -71,24 +67,17 @@ public class StorageServiceImpl implements StorageService {
                         .createSignedPutURL(
                                 bucketName, storage.getId(), Duration.ofMinutes(1), metadata, null)
                         .toString();
-        var response = new UploadUrlResponse(uploadUrl, storage.getId());
-        log.info(
-                "Upload URL generated for user: {}, resourceId: {}, uploadUrl: {}",
-                username,
-                storage.getId(),
-                uploadUrl);
-        return response;
+        return new UploadUrlResponse(uploadUrl, storage.getId());
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
     public void completeUpload(String secretKey, UploadCompleteRequest request) {
-        log.debug("Completing upload for resourceId: {}", request.resourceId());
         if (!secretKey.equals(webhookSecretKey)) {
             throw new InvalidWebhookSecretKey("Invalid webhook secret key");
         }
         String resourceId = request.resourceId();
         resourceRepository.setUploadedById(resourceId);
-        log.info("Upload completed for resourceId: {}", resourceId);
     }
 }

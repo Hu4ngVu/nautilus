@@ -2,17 +2,17 @@ package vn.io.huangnosimp.nautilusserver.auth.loader;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.*;
 import org.redisson.client.codec.StringCodec;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import vn.io.huangnosimp.nautilusserver.auth.constants.CuckooFilter;
+import vn.io.huangnosimp.nautilusserver.logging.Logging;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EmailCuckooFilterLoader implements ApplicationRunner {
@@ -27,30 +27,27 @@ public class EmailCuckooFilterLoader implements ApplicationRunner {
     private final JdbcClient jdbcClient;
 
     @Override
+    @Logging(level = Level.DEBUG)
     public void run(@NonNull ApplicationArguments args) {
         RBucket<String> ready =
                 redissonClient.getBucket(CuckooFilter.email.BUCKET, StringCodec.INSTANCE);
         if (ready.isExists()) {
-            log.info("Email Cuckoo filter is already loaded, skipping");
             return;
         }
         RLock lock = redissonClient.getLock(CuckooFilter.email.LOCK);
         lock.lock();
         try {
             if (ready.isExists()) {
-                log.info("Email Cuckoo filter is already loaded, skipping");
                 return;
             }
-            log.info("Loading emails into Cuckoo filter");
             filter.delete();
             filter.init(EXPECTED_INSERTION);
             String last = "";
-            int total = 0;
             while (true) {
                 var emails =
                         jdbcClient
                                 .sql(
-                                        "SELECT email FROM user WHERE email > :last ORDER BY email"
+                                        "SELECT email FROM auth_user WHERE email > :last ORDER BY email"
                                                 + " LIMIT :batchSize")
                                 .param("last", last)
                                 .param("batchSize", BATCH_SIZE)
@@ -69,9 +66,7 @@ public class EmailCuckooFilterLoader implements ApplicationRunner {
                     asyncFilter.addAsync(email);
                 }
                 batch.execute();
-                total += emails.size();
             }
-            log.info("Loaded {} emails into Cuckoo filter", total);
             ready.set("1");
         } finally {
             lock.unlock();

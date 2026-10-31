@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateImageInfoRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UploadImageRequest;
@@ -22,6 +23,7 @@ public class GalleryController {
     private final GalleryService galleryService;
 
     @GetMapping("/{username}/{servername}")
+    @PreAuthorize("@authorizationServiceImpl.canView(authentication.name, #username, #servername)")
     public ResponseEntity<Page<ImagesResponse>> getGallery(
             @PathVariable String username,
             @PathVariable String servername,
@@ -34,6 +36,7 @@ public class GalleryController {
     }
 
     @GetMapping("/{username}/{servername}/{imageId}")
+    @PreAuthorize("@authorizationServiceImpl.canView(authentication.name, #username, #servername)")
     public ResponseEntity<ImageDetailResponse> getImageDetail(
             @PathVariable String username,
             @PathVariable String servername,
@@ -43,6 +46,7 @@ public class GalleryController {
     }
 
     @PostMapping("/{username}/{servername}")
+    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
     public ResponseEntity<?> uploadImage(
             @PathVariable String username,
             @PathVariable String servername,
@@ -52,6 +56,7 @@ public class GalleryController {
     }
 
     @DeleteMapping("/{username}/{servername}/{imageId}")
+    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
     public ResponseEntity<?> deleteImage(
             @PathVariable String username,
             @PathVariable String servername,
@@ -61,6 +66,7 @@ public class GalleryController {
     }
 
     @PatchMapping("/{username}/{servername}/{imageId}")
+    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
     public ResponseEntity<?> updateImage(
             @PathVariable String username,
             @PathVariable String servername,

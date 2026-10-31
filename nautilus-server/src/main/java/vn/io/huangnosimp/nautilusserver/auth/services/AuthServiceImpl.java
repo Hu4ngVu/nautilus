@@ -3,7 +3,6 @@ package vn.io.huangnosimp.nautilusserver.auth.services;
 import java.time.Instant;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RCuckooFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,9 +26,9 @@ import vn.io.huangnosimp.nautilusserver.auth.repositories.AuthUserRepository;
 import vn.io.huangnosimp.nautilusserver.exceptions.AuthUserNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateEmail;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateUsername;
+import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.user.UserUtils;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -64,10 +63,10 @@ public class AuthServiceImpl implements AuthService {
         return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claimsSet)).getTokenValue();
     }
 
+    @Logging
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void registerUser(RegisterRequest registerRequest) {
-        log.debug("registering user: {}", registerRequest.username());
         if (authUserRepository.existsByUsername(registerRequest.username())) {
             throw new DuplicateUsername("Username is already taken: " + registerRequest.username());
         }
@@ -87,12 +86,11 @@ public class AuthServiceImpl implements AuthService {
         usernameCuckooFilter.add(authUser.getUsername());
         emailCuckooFilter.add(authUser.getEmail());
         userUtils.createUser(authUser.getId(), authUser.getUsername());
-        log.info("registered user: {}", authUser.getUsername());
     }
 
+    @Logging
     @Override
     public TokenResult loginUser(LoginRequest loginRequest) {
-        log.debug("logging in user: {}", loginRequest.username());
         Authentication authentication =
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(
@@ -104,14 +102,13 @@ public class AuthServiceImpl implements AuthService {
         }
         String accessToken = generateAccessToken(authUser);
         String refreshToken = refreshTokenService.generateRefreshToken(authUser);
-        log.info("user {} logged in successfully", loginRequest.username());
         return new TokenResult(accessToken, refreshToken);
     }
 
+    @Logging
     @Override
     @Transactional(rollbackFor = Exception.class)
     public TokenResult refreshToken(String refreshToken) {
-        log.debug("refreshing token");
         refreshTokenService.validateRefreshToken(refreshToken);
         String ownerId = refreshTokenService.getOwnerId(refreshToken);
         AuthUser authUser =
@@ -120,15 +117,13 @@ public class AuthServiceImpl implements AuthService {
                         .orElseThrow(() -> new AuthUserNotFound("User not found: " + ownerId));
         String accessToken = generateAccessToken(authUser);
         refreshTokenService.deleteRefreshToken(authUser);
-        log.info("user {} refreshed access token successfully", authUser.getUsername());
         String newRefreshToken = refreshTokenService.generateRefreshToken(authUser);
-        log.info("user {} generated new refresh token successfully", authUser.getUsername());
         return new TokenResult(accessToken, newRefreshToken);
     }
 
+    @Logging
     @Override
     public void logoutUser(Jwt token) {
-        log.debug("logging out user: {}", token.getSubject());
         AuthUser authUser =
                 authUserRepository
                         .findByUsername(token.getSubject())
@@ -139,6 +134,5 @@ public class AuthServiceImpl implements AuthService {
         tokenBlacklistService.addToken(token);
         refreshTokenService.deleteRefreshToken(authUser);
         SecurityContextHolder.clearContext();
-        log.info("user {} logged out successfully", token.getSubject());
     }
 }

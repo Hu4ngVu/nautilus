@@ -1,0 +1,23 @@
+model
+  schema 1.1
+
+type user
+
+# for team feature in the future, we can add a team type and define relations for it. For now, we will keep it simple with user and server types.
+type team
+  relations
+    define member: [user]
+
+# for group feature in the future, we can add a group type and define relations for it. For now, we will keep it simple with user and server types.
+type group
+  relations
+    define member: [user]
+
+type server
+  relations
+    define owner: [user]
+    define is_public: [user:*]
+    define editor_member: [user, team#member]
+    define viewer_member: [user, group#member]
+    define editor: editor_member or owner
+    define viewer: viewer_member or editor or is_public

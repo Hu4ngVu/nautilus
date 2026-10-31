@@ -1,3 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.server;
 
-public record ServerDeletedEvent(String userId, String serverId) {}
+import lombok.Builder;
+
+@Builder
+public record ServerDeletedEvent(String userId, String serverId, boolean wasPublic) {}

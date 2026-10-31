@@ -2,18 +2,18 @@ package vn.io.huangnosimp.nautilusserver.auth.loader;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.redisson.api.*;
 import org.redisson.client.codec.StringCodec;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import vn.io.huangnosimp.nautilusserver.auth.constants.CuckooFilter;
+import vn.io.huangnosimp.nautilusserver.logging.Logging;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class UsernameCuckooFilterLoader implements ApplicationRunner {
@@ -28,30 +28,27 @@ public class UsernameCuckooFilterLoader implements ApplicationRunner {
     private final JdbcClient jdbcClient;
 
     @Override
+    @Logging(level = Level.DEBUG)
     public void run(@NonNull ApplicationArguments args) {
         RBucket<String> ready =
                 redissonClient.getBucket(CuckooFilter.username.BUCKET, StringCodec.INSTANCE);
         if (ready.isExists()) {
-            log.info("Bloom filter is already loaded, skipping");
             return;
         }
         RLock lock = redissonClient.getLock(CuckooFilter.username.LOCK);
         lock.lock();
         try {
             if (ready.isExists()) {
-                log.info("Bloom filter is already loaded, skipping");
                 return;
             }
-            log.info("Loading usernames into Bloom filter");
             filter.delete();
             filter.init(EXPECTED_INSERTION);
             String last = "";
-            int total = 0;
             while (true) {
                 List<String> usernames =
                         jdbcClient
                                 .sql(
-                                        "SELECT username FROM user WHERE username > :last ORDER BY"
+                                        "SELECT username FROM auth_user WHERE username > :last ORDER BY"
                                                 + " username LIMIT :batchSize")
                                 .param("last", last)
                                 .param("batchSize", BATCH_SIZE)
@@ -70,10 +67,8 @@ public class UsernameCuckooFilterLoader implements ApplicationRunner {
                     asyncFilter.addAsync(username);
                 }
                 batch.execute();
-                total += usernames.size();
             }
             ready.set("1");
-            log.info("Loaded {} usernames into Bloom filter", total);
         } finally {
             lock.unlock();
         }

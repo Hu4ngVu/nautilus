@@ -8,14 +8,15 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.event.Level;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidMcVersion;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
+import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.server.constants.McVersion;
 import vn.io.huangnosimp.nautilusserver.server.dto.data.VersionData;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.AddBedrockVersionRequest;
@@ -29,7 +30,6 @@ import vn.io.huangnosimp.nautilusserver.server.repositories.BedrockMcVersionRepo
 import vn.io.huangnosimp.nautilusserver.server.repositories.JavaMcVersionRepository;
 import vn.io.huangnosimp.nautilusserver.server.repositories.ServerRepository;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ServerMcVersionServiceImpl implements ServerMcVersionService {
@@ -39,41 +39,33 @@ public class ServerMcVersionServiceImpl implements ServerMcVersionService {
     private final BedrockMcVersionRepository bedrockMcVersionRepository;
 
     @Override
+    @Logging(level = Level.DEBUG, logArguments = true)
     public JavaVersionResponse getAllJavaVersion(String username, String servername) {
-        log.debug("Fetching Java versions for user: {}, server: {}", username, servername);
         Server server = findServer(username, servername);
         VersionData versionData =
                 buildVersionData(
                         javaMcVersionRepository.findAllByServer(server),
                         JavaMcVersion::getMcVersion,
                         JavaMcVersion::getIsPrimaryMcVersion);
-        log.info(
-                "Java versions for user: {}, server: {} fetched successfully",
-                username,
-                servername);
         return new JavaVersionResponse(versionData.versions(), versionData.primaryVersion());
     }
 
     @Override
+    @Logging(level = Level.DEBUG, logArguments = true)
     public BedrockVersionResponse getAllBedrockVersion(String username, String servername) {
-        log.debug("Fetching Bedrock versions for user: {}, server: {}", username, servername);
         Server server = findServer(username, servername);
         VersionData versionData =
                 buildVersionData(
                         bedrockMcVersionRepository.findAllByServer(server),
                         BedrockMcVersion::getMcVersion,
                         BedrockMcVersion::getIsPrimaryMcVersion);
-        log.info(
-                "Bedrock versions for user: {}, server: {} fetched successfully",
-                username,
-                servername);
         return new BedrockVersionResponse(versionData.versions(), versionData.primaryVersion());
     }
 
     @Override
+    @Logging(level = Level.DEBUG, logArguments = true)
     @Transactional(rollbackFor = Exception.class)
     public void addJavaVersion(String username, String servername, AddJavaVersionRequest body) {
-        log.debug("Adding Java versions for user: {}, server: {}", username, servername);
         Server server = findServer(username, servername);
         if (body == null) {
             throw new InvalidMcVersion("Version payload is invalid");
@@ -90,14 +82,13 @@ public class ServerMcVersionServiceImpl implements ServerMcVersionService {
                                                 version,
                                                 version.equals(body.primaryJavaVersion())))
                         .toList());
-        log.info("Java versions for user: {}, server: {} added successfully", username, servername);
     }
 
     @Override
+    @Logging(level = Level.DEBUG, logArguments = true)
     @Transactional(rollbackFor = Exception.class)
     public void addBedrockVersion(
             String username, String servername, AddBedrockVersionRequest body) {
-        log.debug("Adding Bedrock versions for user: {}, server: {}", username, servername);
         Server server = findServer(username, servername);
         if (body == null) {
             throw new InvalidMcVersion("Version payload is invalid");
@@ -114,10 +105,6 @@ public class ServerMcVersionServiceImpl implements ServerMcVersionService {
                                                 version,
                                                 version.equals(body.primaryBedrockVersion())))
                         .toList());
-        log.info(
-                "Bedrock versions for user: {}, server: {} added successfully",
-                username,
-                servername);
     }
 
     private @NonNull Server findServer(String username, String servername) {

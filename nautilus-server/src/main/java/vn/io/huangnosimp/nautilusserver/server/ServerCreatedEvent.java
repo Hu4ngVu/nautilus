@@ -1,3 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.server;
 
-public record ServerCreatedEvent(String userId) {}
+import lombok.Builder;
+
+@Builder
+public record ServerCreatedEvent(String userId, String serverId, boolean isPublic) {}

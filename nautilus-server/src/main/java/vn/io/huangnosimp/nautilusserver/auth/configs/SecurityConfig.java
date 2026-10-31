@@ -40,7 +40,8 @@ public class SecurityConfig {
                                                 "/auth/login",
                                                 "/auth/refresh",
                                                 "/auth/check-username",
-                                                "/auth/check-email")
+                                                "/auth/check-email",
+                                                "/storage/webhook/upload-complete")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

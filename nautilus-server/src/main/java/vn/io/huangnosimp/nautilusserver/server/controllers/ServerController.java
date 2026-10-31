@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
@@ -40,12 +41,14 @@ public class ServerController {
     }
 
     @GetMapping("/{username}/{servername}")
+    @PreAuthorize("@authorizationServiceImpl.canView(authentication.name, #username, #servername)")
     public ResponseEntity<ServerInfoDetailResponse> getServerInfo(
             @PathVariable String username, @PathVariable String servername) {
         return ResponseEntity.ok(serverService.getServerInfo(username, servername));
     }
 
     @PostMapping("/{username}")
+    @PreAuthorize("authentication.name == #username")
     public ResponseEntity<?> createServer(
             @PathVariable String username, @Valid @RequestBody CreateServerRequest body) {
         serverService.createServer(username, body);
@@ -53,6 +56,8 @@ public class ServerController {
     }
 
     @DeleteMapping("/{username}/{servername}")
+    @PreAuthorize(
+            "@authorizationServiceImpl.canDelete(authentication.name, #username, #servername)")
     public ResponseEntity<?> deleteServer(
             @PathVariable String username, @PathVariable String servername) {
         serverService.deleteServer(username, servername);
@@ -60,6 +65,7 @@ public class ServerController {
     }
 
     @PatchMapping("/{username}/{servername}")
+    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
     public ResponseEntity<?> updateServer(
             @PathVariable String username,
             @PathVariable String servername,
@@ -69,6 +75,7 @@ public class ServerController {
     }
 
     @DeleteMapping("/{username}/{servername}/avatar")
+    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
     public ResponseEntity<?> deleteServerAvatar(
             @PathVariable String username, @PathVariable String servername) {
         serverService.deleteServerAvatar(username, servername);
@@ -76,6 +83,7 @@ public class ServerController {
     }
 
     @DeleteMapping("/{username}/{servername}/banner")
+    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
     public ResponseEntity<?> deleteServerBanner(
             @PathVariable String username, @PathVariable String servername) {
         serverService.deleteServerBanner(username, servername);
@@ -83,6 +91,7 @@ public class ServerController {
     }
 
     @PutMapping("/{username}/{servername}")
+    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
     public ResponseEntity<?> changeServername(
             @PathVariable String username,
             @PathVariable String servername,
@@ -92,6 +101,7 @@ public class ServerController {
     }
 
     @PutMapping("/{username}/{servername}/visibility")
+    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
     public ResponseEntity<?> changeServerVisibility(
             @PathVariable String username,
             @PathVariable String servername,

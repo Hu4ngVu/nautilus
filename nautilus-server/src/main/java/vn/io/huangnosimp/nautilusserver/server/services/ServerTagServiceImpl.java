@@ -8,13 +8,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.event.Level;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidServerTag;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
+import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.server.constants.Tag;
 import vn.io.huangnosimp.nautilusserver.server.constants.TagCategory;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.AddTagRequest;
@@ -24,7 +25,6 @@ import vn.io.huangnosimp.nautilusserver.server.models.ServerTag;
 import vn.io.huangnosimp.nautilusserver.server.repositories.ServerRepository;
 import vn.io.huangnosimp.nautilusserver.server.repositories.TagRepository;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ServerTagServiceImpl implements ServerTagService {
@@ -33,8 +33,8 @@ public class ServerTagServiceImpl implements ServerTagService {
     private final TagRepository tagRepository;
 
     @Override
+    @Logging(level = Level.DEBUG, logArguments = true)
     public TagResponse getAllServerTag(String username, String servername) {
-        log.debug("Fetching tags for user: {}, server: {}", username, servername);
         String userId =
                 authUserUtils
                         .getAuthUserIdByUsername(username)
@@ -55,19 +55,13 @@ public class ServerTagServiceImpl implements ServerTagService {
                                         Collectors.mapping(
                                                 ServerTag::getTag,
                                                 Collectors.toCollection(LinkedHashSet::new))));
-        var response = new TagResponse(tagMap);
-        log.info(
-                "Tags for user: {}, server: {} fetched successfully with {} categories",
-                username,
-                servername,
-                response.tags().size());
-        return response;
+        return new TagResponse(tagMap);
     }
 
     @Override
+    @Logging(level = Level.DEBUG, logArguments = true)
     @Transactional(rollbackFor = Exception.class)
     public void addServerTag(String username, String servername, AddTagRequest body) {
-        log.debug("Adding tags for user: {}, server: {}", username, servername);
         String userId =
                 authUserUtils
                         .getAuthUserIdByUsername(username)
@@ -94,7 +88,6 @@ public class ServerTagServiceImpl implements ServerTagService {
                                                                         entry.getKey())))
                         .collect(Collectors.toList());
         tagRepository.saveAll(tags);
-        log.info("Tags for user: {}, server: {} added successfully", username, servername);
     }
 
     private void validateTags(Map<TagCategory, Set<String>> tags) {

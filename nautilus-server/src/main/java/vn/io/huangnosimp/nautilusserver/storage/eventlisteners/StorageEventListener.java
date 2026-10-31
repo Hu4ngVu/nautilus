@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
@@ -12,12 +13,13 @@ import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
+import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.schedule.DeleteTrashResourceEvent;
 import vn.io.huangnosimp.nautilusserver.storage.repositories.ResourceRepository;
 
 @Service
 @RequiredArgsConstructor
-public class DeleteTrashResourceEventListener {
+public class StorageEventListener {
     private final ResourceRepository resourceRepository;
     private final S3Client s3Client;
 
@@ -27,6 +29,7 @@ public class DeleteTrashResourceEventListener {
     @Value("${app.s3.bucket-name}")
     private String bucketName;
 
+    @Logging(level = Level.DEBUG)
     @ApplicationModuleListener
     public void on(DeleteTrashResourceEvent event) {
         var targetTime = Instant.now().minus(EXPIRATION_HOURS, ChronoUnit.HOURS);

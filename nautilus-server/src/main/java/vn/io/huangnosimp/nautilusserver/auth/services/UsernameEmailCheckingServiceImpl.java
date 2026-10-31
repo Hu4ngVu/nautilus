@@ -2,9 +2,11 @@ package vn.io.huangnosimp.nautilusserver.auth.services;
 
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RCuckooFilter;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import vn.io.huangnosimp.nautilusserver.auth.repositories.AuthUserRepository;
+import vn.io.huangnosimp.nautilusserver.logging.Logging;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +20,7 @@ public class UsernameEmailCheckingServiceImpl implements UsernameEmailCheckingSe
     private final AuthUserRepository authUserRepository;
 
     @Override
+    @Logging(level = Level.DEBUG)
     public boolean isUsernameExists(String username) {
         if (usernameCuckooFilter.exists(username)) {
             return authUserRepository.existsByUsername(username);
@@ -26,6 +29,7 @@ public class UsernameEmailCheckingServiceImpl implements UsernameEmailCheckingSe
     }
 
     @Override
+    @Logging(level = Level.DEBUG)
     public boolean isEmailExists(String email) {
         if (emailCuckooFilter.exists(email)) {
             return authUserRepository.existsByEmail(email);

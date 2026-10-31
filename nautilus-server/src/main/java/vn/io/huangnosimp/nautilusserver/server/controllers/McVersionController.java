@@ -3,6 +3,7 @@ package vn.io.huangnosimp.nautilusserver.server.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.AddBedrockVersionRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.AddJavaVersionRequest;
@@ -17,6 +18,7 @@ public class McVersionController {
     private final ServerMcVersionService serverMcVersionService;
 
     @GetMapping("/java/{username}/{servername}")
+    @PreAuthorize("@authorizationServiceImpl.canView(authentication.name, #username, #servername)")
     public ResponseEntity<JavaVersionResponse> getJavaVersions(
             @PathVariable String username, @PathVariable String servername) {
         JavaVersionResponse response =
@@ -25,6 +27,7 @@ public class McVersionController {
     }
 
     @GetMapping("/bedrock/{username}/{servername}")
+    @PreAuthorize("@authorizationServiceImpl.canView(authentication.name, #username, #servername)")
     public ResponseEntity<BedrockVersionResponse> getBedrockVersions(
             @PathVariable String username, @PathVariable String servername) {
         BedrockVersionResponse response =
@@ -33,6 +36,7 @@ public class McVersionController {
     }
 
     @PutMapping("/java/{username}/{servername}")
+    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
     public ResponseEntity<?> addJavaVersion(
             @PathVariable String username,
             @PathVariable String servername,
@@ -42,6 +46,7 @@ public class McVersionController {
     }
 
     @PutMapping("/bedrock/{username}/{servername}")
+    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
     public ResponseEntity<?> addBedrockVersion(
             @PathVariable String username,
             @PathVariable String servername,
