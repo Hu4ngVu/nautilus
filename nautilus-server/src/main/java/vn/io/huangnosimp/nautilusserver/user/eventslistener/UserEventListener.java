@@ -2,6 +2,7 @@ package vn.io.huangnosimp.nautilusserver.user.eventslistener;
 
 import lombok.RequiredArgsConstructor;
 import org.slf4j.event.Level;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
@@ -18,6 +19,7 @@ public class UserEventListener {
 
     @Logging(level = Level.DEBUG, logArguments = true)
     @ApplicationModuleListener
+    @CacheEvict(cacheNames = "userInfoCache", key = "#event.userId()")
     public void on(ServerCreatedEvent event) {
         User user =
                 userRepository
@@ -28,6 +30,7 @@ public class UserEventListener {
 
     @Logging(level = Level.DEBUG, logArguments = true)
     @ApplicationModuleListener
+    @CacheEvict(cacheNames = "userInfoCache", key = "#event.userId()")
     public void on(ServerDeletedEvent event) {
         User user =
                 userRepository

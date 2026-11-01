@@ -3,6 +3,8 @@ package vn.io.huangnosimp.nautilusserver.user.services;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.io.huangnosimp.nautilusserver.authentication.AuthUserUtils;
@@ -25,8 +27,11 @@ public class UserServiceImpl implements UserService {
     private final AuthUserUtils authUserUtils;
     private final CacheManager cacheManager;
 
+    private static final String USER_INFO_CACHE = "userInfoCache";
+
     @Override
     @Logging(logArguments = true)
+    @Cacheable(cacheNames = USER_INFO_CACHE, key = "#authUserId")
     public UserInfoResponse getUserInfo(String authUserId) {
         User user =
                 userRepository
@@ -45,6 +50,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(cacheNames = USER_INFO_CACHE, key = "#authUserId")
     public void updateUserInfo(String authUserId, UpdateUserInfoRequest updateUserInfoRequest) {
         if (allFieldIsNull(updateUserInfoRequest)) {
             return;
@@ -72,6 +78,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(cacheNames = USER_INFO_CACHE, key = "#authUserId")
     public void deleteUserAvatar(String authUserId) {
         storageUtils.setResourceDeleted(authUserId, StorageType.USER_AVATAR, authUserId);
     }
@@ -79,6 +86,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(cacheNames = USER_INFO_CACHE, key = "#authUserId")
     public void changeUsername(String authUserId, ChangeUsernameRequest request) {
         if (userRepository.existsByUsername(request.newUsername())) {
             throw new DuplicateUsername("Username already exists: " + request.newUsername());

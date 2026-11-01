@@ -3,6 +3,7 @@ package vn.io.huangnosimp.nautilusserver.server.eventslistener;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.event.Level;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
@@ -19,6 +20,7 @@ public class ServerEventListener {
 
     @Logging(level = Level.DEBUG, logArguments = true)
     @ApplicationModuleListener
+    @CacheEvict(cacheNames = "serverInfoCache", key = "#event.serverId()")
     public void on(AddStarEvent event) {
         Server server = getServer(event.serverId());
         serverRepository.increaseStarCount(server.getId(), 1);
@@ -26,6 +28,7 @@ public class ServerEventListener {
 
     @Logging(level = Level.DEBUG, logArguments = true)
     @ApplicationModuleListener
+    @CacheEvict(cacheNames = "serverInfoCache", key = "#event.serverId()")
     public void on(DeleteStarEvent event) {
         Server server = getServer(event.serverId());
         serverRepository.decreaseStarCount(server.getId(), 1);
