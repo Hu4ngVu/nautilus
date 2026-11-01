@@ -8,16 +8,15 @@ import vn.io.huangnosimp.nautilusserver.server.dto.responses.ImageDetailResponse
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ImagesResponse;
 
 public interface GalleryService {
-    Page<ImagesResponse> getAllGallery(String userId, String servername, Pageable pageable);
+    Page<ImagesResponse> getAllGallery(String serverId, Pageable pageable);
 
-    void uploadImage(String userId, String servername, UploadImageRequest body);
+    void uploadImage(String serverId, UploadImageRequest body);
 
-    void deleteImage(String userId, String servername, String imageId);
+    void deleteImage(String serverId, String imageId);
 
-    void updateImageInfo(
-            String userId, String servername, String imageId, UpdateImageInfoRequest body);
+    void updateImageInfo(String serverId, String imageId, UpdateImageInfoRequest body);
 
-    void deleteGallery(String userId, String servername);
+    void deleteGallery(String serverId);
 
-    ImageDetailResponse getImageDetail(String username, String servername, String imageId);
+    ImageDetailResponse getImageDetail(String serverId, String imageId);
 }

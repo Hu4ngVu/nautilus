@@ -19,19 +19,19 @@ public interface ServerService {
             List<String> tags,
             Pageable pageable);
 
-    ServerInfoDetailResponse getServerInfo(String username, String servername);
+    ServerInfoDetailResponse getServerInfo(String serverId);
 
-    void createServer(String username, CreateServerRequest body);
+    void createServer(String authUserId, CreateServerRequest body);
 
-    void deleteServer(String username, String servername);
+    void deleteServer(String serverId);
 
-    void updateServerInfo(String username, String servername, UpdateServerInfoRequest body);
+    void updateServerInfo(String serverId, UpdateServerInfoRequest body);
 
-    void deleteServerAvatar(String username, String servername);
+    void deleteServerAvatar(String serverId);
 
-    void deleteServerBanner(String username, String servername);
+    void deleteServerBanner(String serverId);
 
-    void changeServername(String username, String servername, String newServername);
+    void changeServername(String serverId, String newServername);
 
-    void changeServerVisibility(String username, String servername, ChangeServerVisibility request);
+    void changeServerVisibility(String serverId, ChangeServerVisibility request);
 }

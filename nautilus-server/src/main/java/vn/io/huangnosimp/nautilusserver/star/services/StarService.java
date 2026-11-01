@@ -6,11 +6,11 @@ import vn.io.huangnosimp.nautilusserver.star.dto.ServerStaredInfo;
 import vn.io.huangnosimp.nautilusserver.star.dto.UserStaredInfo;
 
 public interface StarService {
-    Page<UserStaredInfo> getUserStaredInfo(String username, String servername, Pageable pageable);
+    Page<UserStaredInfo> getUserStaredInfo(String serverId, Pageable pageable);
 
-    Page<ServerStaredInfo> getServerStaredInfo(String username, Pageable pageable);
+    Page<ServerStaredInfo> getServerStaredInfo(String userId, Pageable pageable);
 
-    void addStar(String authenticationName, String username, String servername);
+    void addStar(String userId, String serverId);
 
-    void deleteStar(String authenticationName, String username, String servername);
+    void deleteStar(String userId, String serverId);
 }

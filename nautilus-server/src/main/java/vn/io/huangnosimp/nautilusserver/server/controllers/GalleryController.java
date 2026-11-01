@@ -8,7 +8,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateImageInfoRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UploadImageRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ImageDetailResponse;
@@ -20,8 +22,12 @@ import vn.io.huangnosimp.nautilusserver.server.services.GalleryService;
 @RequiredArgsConstructor
 public class GalleryController {
     private final GalleryService galleryService;
+    private final GlobalIdResolver globalIdResolver;
 
     @GetMapping("/{username}/{servername}")
+    @PreAuthorize(
+            "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<Page<ImagesResponse>> getGallery(
             @PathVariable String username,
             @PathVariable String servername,
@@ -29,44 +35,60 @@ public class GalleryController {
                             sort = {"orderIndex", "createdAt"},
                             direction = Sort.Direction.ASC)
                     Pageable pageable) {
-        var response = galleryService.getAllGallery(username, servername, pageable);
+        var response = galleryService.getAllGallery(getServerId(username, servername), pageable);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{username}/{servername}/{imageId}")
+    @PreAuthorize(
+            "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<ImageDetailResponse> getImageDetail(
             @PathVariable String username,
             @PathVariable String servername,
             @PathVariable String imageId) {
-        var response = galleryService.getImageDetail(username, servername, imageId);
+        var response = galleryService.getImageDetail(getServerId(username, servername), imageId);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{username}/{servername}")
+    @PreAuthorize(
+            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<?> uploadImage(
             @PathVariable String username,
             @PathVariable String servername,
             @Valid @RequestBody UploadImageRequest body) {
-        galleryService.uploadImage(username, servername, body);
+        galleryService.uploadImage(getServerId(username, servername), body);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @DeleteMapping("/{username}/{servername}/{imageId}")
+    @PreAuthorize(
+            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<?> deleteImage(
             @PathVariable String username,
             @PathVariable String servername,
             @PathVariable String imageId) {
-        galleryService.deleteImage(username, servername, imageId);
+        galleryService.deleteImage(getServerId(username, servername), imageId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PatchMapping("/{username}/{servername}/{imageId}")
+    @PreAuthorize(
+            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<?> updateImage(
             @PathVariable String username,
             @PathVariable String servername,
             @PathVariable String imageId,
             @Valid @RequestBody UpdateImageInfoRequest body) {
-        galleryService.updateImageInfo(username, servername, imageId, body);
+        galleryService.updateImageInfo(getServerId(username, servername), imageId, body);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    private String getServerId(String username, String servername) {
+        return globalIdResolver.resolveServerId(username, servername);
     }
 }

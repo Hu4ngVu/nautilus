@@ -3,20 +3,22 @@ package vn.io.huangnosimp.nautilusserver.server.services;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
+import vn.io.huangnosimp.nautilusserver.authentication.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateServer;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
-import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
-import vn.io.huangnosimp.nautilusserver.server.ServerCreatedEvent;
-import vn.io.huangnosimp.nautilusserver.server.ServerDeletedEvent;
+import vn.io.huangnosimp.nautilusserver.logging.Logging;
+import vn.io.huangnosimp.nautilusserver.server.*;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.ChangeServerVisibility;
@@ -31,109 +33,80 @@ import vn.io.huangnosimp.nautilusserver.star.StarUtils;
 import vn.io.huangnosimp.nautilusserver.storage.StorageType;
 import vn.io.huangnosimp.nautilusserver.storage.StorageUtils;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ServerServiceImpl implements ServerService {
-    private final AuthUserUtils authUserUtils;
     private final ServerRepository serverRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final GalleryService galleryService;
     private final StorageUtils storageUtils;
     private final StarUtils starUtils;
+    private final CacheManager cacheManager;
+    private final AuthUserUtils authUserUtils;
+
+    private static final String SERVER_INFO_CACHE = "serverInfoCache";
 
     @Override
+    @Logging(logArguments = true)
     public Page<ServerInfoResponse> getAllServer(
             Boolean requiresPremium,
             ServerType serverType,
             ServerPlatform serverPlatform,
             List<String> tags,
             Pageable pageable) {
-        log.debug(
-                "Fetching all servers with filters: requiresPremium={}, serverType={},"
-                        + " serverPlatform={}, tags={}",
-                requiresPremium,
-                serverType,
-                serverPlatform,
-                tags);
         Specification<Server> specification =
                 getServerSpecification(requiresPremium, serverType, serverPlatform, tags);
-        var response =
-                serverRepository
-                        .findAllByVisibilityIsTrue(specification, pageable)
-                        .map(
-                                server ->
-                                        ServerInfoResponse.builder()
-                                                .avatarUrl(
-                                                        storageUtils.createSignedGetUrl(
-                                                                server.getId(),
-                                                                StorageType.SERVER_AVATAR))
-                                                .requiresPremium(server.getRequiresPremium())
-                                                .servername(server.getServername())
-                                                .summary(server.getSummary())
-                                                .starCount(server.getStarCount())
-                                                .build());
-        log.info(
-                "All servers fetched successfully with filters: requiresPremium={}, serverType={},"
-                        + " serverPlatform={}, tags={}",
-                requiresPremium,
-                serverType,
-                serverPlatform,
-                tags);
-        return response;
+        return serverRepository
+                .findAllByVisibilityIsTrue(specification, pageable)
+                .map(
+                        server ->
+                                ServerInfoResponse.builder()
+                                        .avatarUrl(
+                                                storageUtils.createSignedGetUrl(
+                                                        server.getId(), StorageType.SERVER_AVATAR))
+                                        .requiresPremium(server.getRequiresPremium())
+                                        .servername(server.getServername())
+                                        .summary(server.getSummary())
+                                        .starCount(server.getStarCount())
+                                        .build());
     }
 
     @Override
-    public ServerInfoDetailResponse getServerInfo(String username, String servername)
-            throws ServerNotFound {
-        log.debug("Fetching server info for user: {}, server: {}", username, servername);
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
+    @Logging(logArguments = true)
+    @Cacheable(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    public ServerInfoDetailResponse getServerInfo(String serverId) throws ServerNotFound {
         Server server =
-                serverRepository
-                        .findByUserIdAndServername(userId, servername)
-                        .orElseThrow(() -> new ServerNotFound(servername));
-        var response =
-                ServerInfoDetailResponse.builder()
-                        .servername(server.getServername())
-                        .visibility(server.getVisibility())
-                        .requiresPremium(server.getRequiresPremium())
-                        .javaAddress(server.getJavaAddress())
-                        .bedrockAddress(server.getBedrockAddress())
-                        .avatarUrl(
-                                storageUtils.createSignedGetUrl(
-                                        server.getId(), StorageType.SERVER_AVATAR))
-                        .bannerUrl(
-                                storageUtils.createSignedGetUrl(
-                                        server.getId(), StorageType.SERVER_BANNER))
-                        .summary(server.getSummary())
-                        .bio(server.getBio())
-                        .starCount(server.getStarCount())
-                        .build();
-        log.info("Server info for user: {}, server: {} fetched successfully", username, servername);
-        return response;
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
+        return ServerInfoDetailResponse.builder()
+                .servername(server.getServername())
+                .visibility(server.getVisibility())
+                .requiresPremium(server.getRequiresPremium())
+                .javaAddress(server.getJavaAddress())
+                .bedrockAddress(server.getBedrockAddress())
+                .avatarUrl(
+                        storageUtils.createSignedGetUrl(server.getId(), StorageType.SERVER_AVATAR))
+                .bannerUrl(
+                        storageUtils.createSignedGetUrl(server.getId(), StorageType.SERVER_BANNER))
+                .summary(server.getSummary())
+                .bio(server.getBio())
+                .starCount(server.getStarCount())
+                .build();
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void createServer(String username, CreateServerRequest body) {
-        log.debug("Creating server for user: {}, servername: {}", username, body.servername());
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
-        if (serverRepository.existsByUserIdAndServername(userId, body.servername())) {
+    public void createServer(String authUserId, CreateServerRequest body) {
+        if (serverRepository.existsByUserIdAndServername(authUserId, body.servername())) {
             throw new DuplicateServer(
                     "Server with name "
                             + body.servername()
                             + " already exists for user "
-                            + username);
+                            + authUserId);
         }
         Server server =
                 Server.builder()
-                        .userId(userId)
+                        .userId(authUserId)
                         .servername(body.servername())
                         .requiresPremium(body.requiresPremium())
                         .visibility(body.visibility())
@@ -143,36 +116,50 @@ public class ServerServiceImpl implements ServerService {
                         .starCount(0)
                         .build();
         serverRepository.save(server);
-        eventPublisher.publishEvent(new ServerCreatedEvent(userId));
-        log.info(
-                "Server for user: {}, servername: {} created successfully",
-                username,
-                body.servername());
+        eventPublisher.publishEvent(
+                ServerCreatedEvent.builder()
+                        .userId(authUserId)
+                        .serverId(server.getId())
+                        .isPublic(server.getVisibility())
+                        .build());
     }
 
     @Override
+    @Logging(logArguments = true)
+    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
     @Transactional(rollbackFor = Exception.class)
-    public void deleteServer(String username, String servername) {
-        log.debug("Deleting server for user: {}, server: {}", username, servername);
-        Server server = getServer(username, servername);
-        galleryService.deleteGallery(server.getUserId(), servername);
+    public void deleteServer(String serverId) {
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
+        galleryService.deleteGallery(server.getId());
         storageUtils.setResourceDeleted(
                 server.getId(), StorageType.SERVER_BANNER, server.getUserId());
         storageUtils.setResourceDeleted(
                 server.getId(), StorageType.SERVER_AVATAR, server.getUserId());
         serverRepository.delete(server);
-        eventPublisher.publishEvent(new ServerDeletedEvent(server.getUserId(), server.getId()));
-        log.info("Server for user: {}, servername: {} deleted successfully", username, servername);
+        Objects.requireNonNull(cacheManager.getCache("serverIdCache"))
+                .evict(
+                        authUserUtils.getUsernameByAuthUserId(server.getUserId())
+                                + "_"
+                                + server.getServername());
+        eventPublisher.publishEvent(
+                ServerDeletedEvent.builder()
+                        .userId(server.getUserId())
+                        .serverId(server.getId())
+                        .wasPublic(server.getVisibility())
+                        .build());
     }
 
     @Override
+    @Logging(logArguments = true)
+    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
     @Transactional(rollbackFor = Exception.class)
-    public void updateServerInfo(String username, String servername, UpdateServerInfoRequest body) {
-        log.debug("Updating server info for user: {}, server: {}", username, servername);
+    public void updateServerInfo(String serverId, UpdateServerInfoRequest body) {
         if (allFieldIsNull(body)) {
             return;
         }
-        Server server = getServer(username, servername);
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
 
         if (body.avatarResourceId() != null) {
             storageUtils.setResourceDeleted(
@@ -209,77 +196,68 @@ public class ServerServiceImpl implements ServerService {
             server.setRequiresPremium(body.requiresPremium());
         }
         serverRepository.save(server);
-        log.info("Server info for user: {}, server: {} updated successfully", username, servername);
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void deleteServerAvatar(String username, String servername) {
-        log.debug("Deleting server image for user: {}, server: {}", username, servername);
-        Server server = getServer(username, servername);
+    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    public void deleteServerAvatar(String serverId) {
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
         storageUtils.setResourceDeleted(
                 server.getId(), StorageType.SERVER_AVATAR, server.getUserId());
-        log.info(
-                "Server image for user: {}, server: {} deleted successfully", username, servername);
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void deleteServerBanner(String username, String servername) {
-        log.debug("Deleting server banner for user: {}, server: {}", username, servername);
-        Server server = getServer(username, servername);
+    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    public void deleteServerBanner(String serverId) {
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
         storageUtils.setResourceDeleted(
                 server.getId(), StorageType.SERVER_BANNER, server.getUserId());
-        log.info(
-                "Server banner for user: {}, server: {} deleted successfully",
-                username,
-                servername);
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void changeServername(String username, String servername, String newServername) {
-        log.debug(
-                "Changing server name for user: {}, server: {} to {}",
-                username,
-                servername,
-                newServername);
-        Server server = getServer(username, servername);
+    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    public void changeServername(String serverId, String newServername) {
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
         if (serverRepository.existsByUserIdAndServername(server.getUserId(), newServername)) {
             throw new DuplicateServer(
-                    "Server with name " + newServername + " already exists for user " + username);
+                    "Server with name "
+                            + newServername
+                            + " already exists for user "
+                            + server.getUserId());
         }
         server.setServername(newServername);
         serverRepository.save(server);
-        log.info(
-                "Server name for user: {}, server: {} changed to {}",
-                username,
-                servername,
-                newServername);
     }
 
     @Override
-    public void changeServerVisibility(
-            String username, String servername, ChangeServerVisibility request) {
-        log.debug(
-                "Changing server visibility for user: {}, server: {} to {}",
-                username,
-                servername,
-                request.visibility());
-        Server server = getServer(username, servername);
+    @Logging(logArguments = true)
+    @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    public void changeServerVisibility(String serverId, ChangeServerVisibility request) {
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
         if (server.getVisibility().equals(request.visibility())) {
             return;
         }
         server.setVisibility(request.visibility());
-        serverRepository.save(server);
         if (request.visibility().equals(Boolean.FALSE)) {
             starUtils.deleteAllStar(server.getId());
         }
-        log.info(
-                "Server visibility for user: {}, server: {} changed to {}",
-                username,
-                servername,
-                request.visibility());
+        serverRepository.save(server);
+        eventPublisher.publishEvent(
+                ServerVisibilityChangedEvent.builder()
+                        .serverId(server.getId())
+                        .isPublic(server.getVisibility())
+                        .build());
     }
 
     private Specification<Server> getServerSpecification(
@@ -314,16 +292,6 @@ public class ServerServiceImpl implements ServerService {
 
             return predicates;
         };
-    }
-
-    private Server getServer(String username, String servername) {
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
-        return serverRepository
-                .findByUserIdAndServername(userId, servername)
-                .orElseThrow(() -> new ServerNotFound(servername));
     }
 
     private boolean allFieldIsNull(UpdateServerInfoRequest body) {

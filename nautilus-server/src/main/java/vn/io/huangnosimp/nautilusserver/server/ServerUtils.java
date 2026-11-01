@@ -6,4 +6,6 @@ public interface ServerUtils {
     Optional<ServerData> getPublicServerDataByServerId(String serverId);
 
     Optional<String> getPublicServerId(String userId, String servername);
+
+    Optional<String> getServerId(String userId, String servername);
 }

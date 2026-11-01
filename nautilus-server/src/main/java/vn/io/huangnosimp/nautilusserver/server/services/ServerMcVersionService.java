@@ -6,11 +6,11 @@ import vn.io.huangnosimp.nautilusserver.server.dto.responses.BedrockVersionRespo
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.JavaVersionResponse;
 
 public interface ServerMcVersionService {
-    JavaVersionResponse getAllJavaVersion(String username, String servername);
+    JavaVersionResponse getAllJavaVersion(String serverId);
 
-    BedrockVersionResponse getAllBedrockVersion(String username, String servername);
+    BedrockVersionResponse getAllBedrockVersion(String serverId);
 
-    void addJavaVersion(String username, String servername, AddJavaVersionRequest body);
+    void addJavaVersion(String serverId, AddJavaVersionRequest body);
 
-    void addBedrockVersion(String username, String servername, AddBedrockVersionRequest body);
+    void addBedrockVersion(String serverId, AddBedrockVersionRequest body);
 }

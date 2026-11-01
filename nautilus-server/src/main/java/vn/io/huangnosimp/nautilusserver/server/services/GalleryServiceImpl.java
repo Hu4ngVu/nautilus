@@ -1,16 +1,14 @@
 package vn.io.huangnosimp.nautilusserver.server.services;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.ImageNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
-import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
+import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateImageInfoRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UploadImageRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ImageDetailResponse;
@@ -22,45 +20,38 @@ import vn.io.huangnosimp.nautilusserver.server.repositories.ServerRepository;
 import vn.io.huangnosimp.nautilusserver.storage.StorageType;
 import vn.io.huangnosimp.nautilusserver.storage.StorageUtils;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GalleryServiceImpl implements GalleryService {
     private final GalleryRepository galleryRepository;
-    private final AuthUserUtils authUserUtils;
     private final ServerRepository serverRepository;
     private final StorageUtils storageUtils;
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(readOnly = true)
-    public Page<ImagesResponse> getAllGallery(
-            String username, String servername, Pageable pageable) {
-        log.debug("Fetching gallery for user: {}, server: {}", username, servername);
-        Server server = getServer(username, servername);
-        Page<ImagesResponse> responses =
-                galleryRepository
-                        .findAllByServer(server, pageable)
-                        .map(
-                                image ->
-                                        ImagesResponse.builder()
-                                                .imageId(image.getId())
-                                                .imageTitle(image.getTitle())
-                                                .orderIndex(image.getOrderIndex())
-                                                .createdAt(image.getCreatedAt())
-                                                .imageUrl(
-                                                        storageUtils.createSignedGetUrl(
-                                                                image.getId(),
-                                                                StorageType.GALLERY_IMAGE))
-                                                .build());
-
-        log.info("Gallery for user: {}, server: {} fetched successfully", username, servername);
-        return responses;
+    public Page<ImagesResponse> getAllGallery(String serverId, Pageable pageable) {
+        Server server = getServer(serverId);
+        return galleryRepository
+                .findAllByServer(server, pageable)
+                .map(
+                        image ->
+                                ImagesResponse.builder()
+                                        .imageId(image.getId())
+                                        .imageTitle(image.getTitle())
+                                        .orderIndex(image.getOrderIndex())
+                                        .createdAt(image.getCreatedAt())
+                                        .imageUrl(
+                                                storageUtils.createSignedGetUrl(
+                                                        image.getId(), StorageType.GALLERY_IMAGE))
+                                        .build());
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(readOnly = true)
-    public ImageDetailResponse getImageDetail(String username, String servername, String imageId) {
-        Server server = getServer(username, servername);
+    public ImageDetailResponse getImageDetail(String serverId, String imageId) {
+        Server server = getServer(serverId);
         Image image =
                 galleryRepository
                         .findByServerAndId(server, imageId)
@@ -76,10 +67,10 @@ public class GalleryServiceImpl implements GalleryService {
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void uploadImage(String username, String servername, UploadImageRequest body) {
-        log.debug("Uploading image for user: {}, server: {}", username, servername);
-        Server server = getServer(username, servername);
+    public void uploadImage(String serverId, UploadImageRequest body) {
+        Server server = getServer(serverId);
         Image image =
                 Image.builder()
                         .server(server)
@@ -90,18 +81,13 @@ public class GalleryServiceImpl implements GalleryService {
         storageUtils.setResourceActive(
                 body.resourceId(), image.getId(), StorageType.GALLERY_IMAGE, server.getUserId());
         galleryRepository.save(image);
-        log.info("Image uploaded successfully for user: {}, server: {}", username, servername);
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void deleteImage(String username, String servername, String imageId) {
-        log.debug(
-                "Deleting image for user: {}, server: {}, image: {}",
-                username,
-                servername,
-                imageId);
-        Server server = getServer(username, servername);
+    public void deleteImage(String serverId, String imageId) {
+        Server server = getServer(serverId);
         Image image =
                 galleryRepository
                         .findByServerAndId(server, imageId)
@@ -109,26 +95,16 @@ public class GalleryServiceImpl implements GalleryService {
         storageUtils.setResourceDeleted(
                 image.getId(), StorageType.GALLERY_IMAGE, server.getUserId());
         galleryRepository.delete(image);
-        log.info(
-                "Image deleted successfully for user: {}, server: {}, image: {}",
-                username,
-                servername,
-                imageId);
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void updateImageInfo(
-            String username, String servername, String imageId, UpdateImageInfoRequest body) {
-        log.debug(
-                "Updating image info for user: {}, server: {}, image: {}",
-                username,
-                servername,
-                imageId);
+    public void updateImageInfo(String serverId, String imageId, UpdateImageInfoRequest body) {
         if (allFieldIsNull(body)) {
             return;
         }
-        Server server = getServer(username, servername);
+        Server server = getServer(serverId);
         Image image =
                 galleryRepository
                         .findByServerAndId(server, imageId)
@@ -145,32 +121,25 @@ public class GalleryServiceImpl implements GalleryService {
         }
         setInfo(image, body.title(), body.summary(), body.orderIndex());
         galleryRepository.save(image);
-        log.info(
-                "Image info updated successfully for user: {}, server: {}, image: {}",
-                username,
-                servername,
-                imageId);
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void deleteGallery(String userId, String servername) {
-        log.debug("Deleting gallery for user: {}, server: {}", userId, servername);
-        var imageIds = galleryRepository.findAllImageIdsByUserIdAndServername(userId, servername);
+    public void deleteGallery(String serverId) {
+        Server server = getServer(serverId);
+        var imageIds =
+                galleryRepository.findAllByServer(server).stream().map(Image::getId).toList();
         if (!imageIds.isEmpty()) {
-            storageUtils.setResourceDeletedBatch(imageIds, StorageType.GALLERY_IMAGE, userId);
+            storageUtils.setResourceDeletedBatch(
+                    imageIds, StorageType.GALLERY_IMAGE, server.getUserId());
         }
-        log.info("Gallery deleted successfully for user: {}, server: {}", userId, servername);
     }
 
-    private @NonNull Server getServer(String username, String servername) {
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
+    private @NonNull Server getServer(String serverId) {
         return serverRepository
-                .findByUserIdAndServername(userId, servername)
-                .orElseThrow(() -> new ServerNotFound(servername));
+                .findById(serverId)
+                .orElseThrow(() -> new ServerNotFound("Server not found"));
     }
 
     private void setInfo(Image image, String title, String summary, Integer orderIndex) {

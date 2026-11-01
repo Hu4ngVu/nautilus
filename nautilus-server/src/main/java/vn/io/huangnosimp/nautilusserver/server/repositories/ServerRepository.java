@@ -25,18 +25,22 @@ public interface ServerRepository
     @Query(
             "SELECT s.id FROM Server s WHERE s.userId = :userId AND s.servername = :servername AND"
                     + " s.visibility = true")
-    Optional<String> findServerId(
+    Optional<String> findPublicServerId(
             @Param("userId") String userId, @Param("servername") String servername);
 
     @Modifying
     @Transactional
     @Query("UPDATE Server s SET s.starCount = s.starCount + :amount WHERE s.id = :serverId")
-    void increaseStarCount(String serverId, Integer amount);
+    void increaseStarCount(@Param("serverId") String serverId, @Param("amount") Integer amount);
 
     @Modifying
     @Transactional
     @Query("UPDATE Server s SET s.starCount = s.starCount - :amount WHERE s.id = :serverId")
-    void decreaseStarCount(String serverId, Integer amount);
+    void decreaseStarCount(@Param("serverId") String serverId, @Param("amount") Integer amount);
 
     boolean existsByUserIdAndServername(String userId, String servername);
+
+    @Query("SELECT s.id FROM Server s WHERE s.userId = :userId AND s.servername = :servername")
+    Optional<String> findServerId(
+            @Param("userId") String userId, @Param("servername") String servername);
 }

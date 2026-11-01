@@ -1,12 +1,16 @@
 package vn.io.huangnosimp.nautilusserver.user.services;
 
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
+import vn.io.huangnosimp.nautilusserver.authentication.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateUsername;
 import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
+import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.storage.StorageType;
 import vn.io.huangnosimp.nautilusserver.storage.StorageUtils;
 import vn.io.huangnosimp.nautilusserver.user.dto.requests.ChangeUsernameRequest;
@@ -15,45 +19,46 @@ import vn.io.huangnosimp.nautilusserver.user.dto.responses.UserInfoResponse;
 import vn.io.huangnosimp.nautilusserver.user.models.User;
 import vn.io.huangnosimp.nautilusserver.user.repositories.UserRepository;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final StorageUtils storageUtils;
     private final AuthUserUtils authUserUtils;
+    private final CacheManager cacheManager;
+
+    private static final String USER_INFO_CACHE = "userInfoCache";
 
     @Override
-    public UserInfoResponse getUserInfo(String username) {
-        log.debug("Fetching user info for {}", username);
+    @Logging(logArguments = true)
+    @Cacheable(cacheNames = USER_INFO_CACHE, key = "#authUserId")
+    public UserInfoResponse getUserInfo(String authUserId) {
         User user =
                 userRepository
-                        .findByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
+                        .findByAuthUserId(authUserId)
+                        .orElseThrow(() -> new UserNotFound(authUserId));
         String avatarUrl =
                 storageUtils.createSignedGetUrl(user.getAuthUserId(), StorageType.USER_AVATAR);
-        var response =
-                UserInfoResponse.builder()
-                        .username(user.getUsername())
-                        .serverCount(user.getServerCount())
-                        .bio(user.getBio())
-                        .avatarUrl(avatarUrl)
-                        .build();
-        log.info("User info for {} fetched successfully", username);
-        return response;
+        return UserInfoResponse.builder()
+                .username(user.getUsername())
+                .serverCount(user.getServerCount())
+                .bio(user.getBio())
+                .avatarUrl(avatarUrl)
+                .build();
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void updateUserInfo(String username, UpdateUserInfoRequest updateUserInfoRequest) {
-        log.debug("Updating user info for {}", username);
+    @CacheEvict(cacheNames = USER_INFO_CACHE, key = "#authUserId")
+    public void updateUserInfo(String authUserId, UpdateUserInfoRequest updateUserInfoRequest) {
         if (allFieldIsNull(updateUserInfoRequest)) {
             return;
         }
         User user =
                 userRepository
-                        .findByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
+                        .findByAuthUserId(authUserId)
+                        .orElseThrow(() -> new UserNotFound(authUserId));
 
         if (updateUserInfoRequest.resourceId() != null) {
             storageUtils.setResourceDeleted(
@@ -68,31 +73,31 @@ public class UserServiceImpl implements UserService {
             user.setBio(updateUserInfoRequest.bio());
         }
         userRepository.save(user);
-        log.info("User info for {} updated successfully", username);
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void deleteUserAvatar(String username) {
-        log.debug("Deleting avatar for user {}", username);
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
-        storageUtils.setResourceDeleted(userId, StorageType.USER_AVATAR, userId);
-        log.info("Deleted avatar for user {}", username);
+    @CacheEvict(cacheNames = USER_INFO_CACHE, key = "#authUserId")
+    public void deleteUserAvatar(String authUserId) {
+        storageUtils.setResourceDeleted(authUserId, StorageType.USER_AVATAR, authUserId);
     }
 
     @Override
+    @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void changeUsername(String username, ChangeUsernameRequest request) {
-        log.debug("Changing username from {} to {}", username, request.newUsername());
-        userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
+    @CacheEvict(cacheNames = USER_INFO_CACHE, key = "#authUserId")
+    public void changeUsername(String authUserId, ChangeUsernameRequest request) {
         if (userRepository.existsByUsername(request.newUsername())) {
             throw new DuplicateUsername("Username already exists: " + request.newUsername());
         }
-        userRepository.updateUsername(username, request.newUsername());
-        log.info("Username changed from {} to {}", username, request.newUsername());
+        var user =
+                userRepository
+                        .findByAuthUserId(authUserId)
+                        .orElseThrow(() -> new UserNotFound(authUserId));
+        Objects.requireNonNull(cacheManager.getCache("userIdCache")).evict(user.getUsername());
+        authUserUtils.changeUsername(authUserId, request.newUsername());
+        userRepository.updateUsername(authUserId, request.newUsername());
     }
 
     private boolean allFieldIsNull(UpdateUserInfoRequest body) {
