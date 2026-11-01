@@ -5,11 +5,11 @@ import vn.io.huangnosimp.nautilusserver.user.dto.requests.UpdateUserInfoRequest;
 import vn.io.huangnosimp.nautilusserver.user.dto.responses.UserInfoResponse;
 
 public interface UserService {
-    UserInfoResponse getUserInfo(String username);
+    UserInfoResponse getUserInfo(String authUserId);
 
-    void updateUserInfo(String username, UpdateUserInfoRequest updateUserInfoRequest);
+    void updateUserInfo(String authUserId, UpdateUserInfoRequest updateUserInfoRequest);
 
-    void deleteUserAvatar(String username);
+    void deleteUserAvatar(String authUserId);
 
-    void changeUsername(String username, ChangeUsernameRequest request);
+    void changeUsername(String authUserId, ChangeUsernameRequest request);
 }

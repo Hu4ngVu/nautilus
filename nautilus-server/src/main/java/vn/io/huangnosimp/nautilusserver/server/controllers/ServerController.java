@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.ChangeServerVisibility;
@@ -26,6 +27,7 @@ import vn.io.huangnosimp.nautilusserver.server.services.ServerService;
 @RequiredArgsConstructor
 public class ServerController {
     private final ServerService serverService;
+    private final GlobalIdResolver globalIdResolver;
 
     @GetMapping
     public ResponseEntity<Page<ServerInfoResponse>> getServer(
@@ -41,72 +43,93 @@ public class ServerController {
     }
 
     @GetMapping("/{username}/{servername}")
-    @PreAuthorize("@authorizationServiceImpl.canView(authentication.name, #username, #servername)")
+    @PreAuthorize(
+            "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<ServerInfoDetailResponse> getServerInfo(
             @PathVariable String username, @PathVariable String servername) {
-        return ResponseEntity.ok(serverService.getServerInfo(username, servername));
+        return ResponseEntity.ok(serverService.getServerInfo(getServerId(username, servername)));
     }
 
     @PostMapping("/{username}")
     @PreAuthorize("authentication.name == #username")
     public ResponseEntity<?> createServer(
             @PathVariable String username, @Valid @RequestBody CreateServerRequest body) {
-        serverService.createServer(username, body);
+        serverService.createServer(getUserId(username), body);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @DeleteMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationServiceImpl.canDelete(authentication.name, #username, #servername)")
+            "@authorizationUtilsImpl.isOwner(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<?> deleteServer(
             @PathVariable String username, @PathVariable String servername) {
-        serverService.deleteServer(username, servername);
+        serverService.deleteServer(getServerId(username, servername));
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PatchMapping("/{username}/{servername}")
-    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
+    @PreAuthorize(
+            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<?> updateServer(
             @PathVariable String username,
             @PathVariable String servername,
             @Valid @RequestBody UpdateServerInfoRequest body) {
-        serverService.updateServerInfo(username, servername, body);
+        serverService.updateServerInfo(getServerId(username, servername), body);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @DeleteMapping("/{username}/{servername}/avatar")
-    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
+    @PreAuthorize(
+            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<?> deleteServerAvatar(
             @PathVariable String username, @PathVariable String servername) {
-        serverService.deleteServerAvatar(username, servername);
+        serverService.deleteServerAvatar(getServerId(username, servername));
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @DeleteMapping("/{username}/{servername}/banner")
-    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
+    @PreAuthorize(
+            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<?> deleteServerBanner(
             @PathVariable String username, @PathVariable String servername) {
-        serverService.deleteServerBanner(username, servername);
+        serverService.deleteServerBanner(getServerId(username, servername));
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping("/{username}/{servername}")
-    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
+    @PreAuthorize(
+            "@authorizationUtilsImpl.isOwner(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<?> changeServername(
             @PathVariable String username,
             @PathVariable String servername,
             @Valid @RequestParam ChangeServernameRequest request) {
-        serverService.changeServername(username, servername, request.newServername());
+        serverService.changeServername(getServerId(username, servername), request.newServername());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping("/{username}/{servername}/visibility")
-    @PreAuthorize("@authorizationServiceImpl.canEdit(authentication.name, #username, #servername)")
+    @PreAuthorize(
+            "@authorizationUtilsImpl.isOwner(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<?> changeServerVisibility(
             @PathVariable String username,
             @PathVariable String servername,
-            @RequestBody ChangeServerVisibility request) {
-        serverService.changeServerVisibility(username, servername, request);
+            @Valid @RequestBody ChangeServerVisibility request) {
+        serverService.changeServerVisibility(getServerId(username, servername), request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    private String getServerId(String username, String servername) {
+        return globalIdResolver.resolveServerId(username, servername);
+    }
+
+    private String getUserId(String username) {
+        return globalIdResolver.resolveUserId(username);
     }
 }

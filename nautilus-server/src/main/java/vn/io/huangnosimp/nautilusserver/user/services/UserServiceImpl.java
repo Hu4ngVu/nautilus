@@ -1,9 +1,11 @@
 package vn.io.huangnosimp.nautilusserver.user.services;
 
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
+import vn.io.huangnosimp.nautilusserver.authentication.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateUsername;
 import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
@@ -21,14 +23,15 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final StorageUtils storageUtils;
     private final AuthUserUtils authUserUtils;
+    private final CacheManager cacheManager;
 
     @Override
     @Logging(logArguments = true)
-    public UserInfoResponse getUserInfo(String username) {
+    public UserInfoResponse getUserInfo(String authUserId) {
         User user =
                 userRepository
-                        .findByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
+                        .findByAuthUserId(authUserId)
+                        .orElseThrow(() -> new UserNotFound(authUserId));
         String avatarUrl =
                 storageUtils.createSignedGetUrl(user.getAuthUserId(), StorageType.USER_AVATAR);
         return UserInfoResponse.builder()
@@ -42,14 +45,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void updateUserInfo(String username, UpdateUserInfoRequest updateUserInfoRequest) {
+    public void updateUserInfo(String authUserId, UpdateUserInfoRequest updateUserInfoRequest) {
         if (allFieldIsNull(updateUserInfoRequest)) {
             return;
         }
         User user =
                 userRepository
-                        .findByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
+                        .findByAuthUserId(authUserId)
+                        .orElseThrow(() -> new UserNotFound(authUserId));
 
         if (updateUserInfoRequest.resourceId() != null) {
             storageUtils.setResourceDeleted(
@@ -69,23 +72,24 @@ public class UserServiceImpl implements UserService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void deleteUserAvatar(String username) {
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
-        storageUtils.setResourceDeleted(userId, StorageType.USER_AVATAR, userId);
+    public void deleteUserAvatar(String authUserId) {
+        storageUtils.setResourceDeleted(authUserId, StorageType.USER_AVATAR, authUserId);
     }
 
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void changeUsername(String username, ChangeUsernameRequest request) {
-        userRepository.findByUsername(username).orElseThrow(() -> new UserNotFound(username));
+    public void changeUsername(String authUserId, ChangeUsernameRequest request) {
         if (userRepository.existsByUsername(request.newUsername())) {
             throw new DuplicateUsername("Username already exists: " + request.newUsername());
         }
-        userRepository.updateUsername(username, request.newUsername());
+        var user =
+                userRepository
+                        .findByAuthUserId(authUserId)
+                        .orElseThrow(() -> new UserNotFound(authUserId));
+        Objects.requireNonNull(cacheManager.getCache("userIdCache")).evict(user.getUsername());
+        authUserUtils.changeUsername(authUserId, request.newUsername());
+        userRepository.updateUsername(authUserId, request.newUsername());
     }
 
     private boolean allFieldIsNull(UpdateUserInfoRequest body) {

@@ -11,10 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.event.Level;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidServerTag;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
-import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.server.constants.Tag;
 import vn.io.huangnosimp.nautilusserver.server.constants.TagCategory;
@@ -28,21 +26,13 @@ import vn.io.huangnosimp.nautilusserver.server.repositories.TagRepository;
 @Service
 @RequiredArgsConstructor
 public class ServerTagServiceImpl implements ServerTagService {
-    private final AuthUserUtils authUserUtils;
     private final ServerRepository serverRepository;
     private final TagRepository tagRepository;
 
     @Override
     @Logging(level = Level.DEBUG, logArguments = true)
-    public TagResponse getAllServerTag(String username, String servername) {
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UserNotFound("User not found"));
-        Server server =
-                serverRepository
-                        .findByUserIdAndServername(userId, servername)
-                        .orElseThrow(() -> new ServerNotFound("Server not found"));
+    public TagResponse getAllServerTag(String serverId) {
+        Server server = getServer(serverId);
         Map<TagCategory, Set<String>> tagMap =
                 tagRepository.findAllByServer(server).stream()
                         .sorted(
@@ -61,15 +51,8 @@ public class ServerTagServiceImpl implements ServerTagService {
     @Override
     @Logging(level = Level.DEBUG, logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void addServerTag(String username, String servername, AddTagRequest body) {
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UserNotFound("User not found"));
-        Server server =
-                serverRepository
-                        .findByUserIdAndServername(userId, servername)
-                        .orElseThrow(() -> new ServerNotFound("Server not found"));
+    public void addServerTag(String serverId, AddTagRequest body) {
+        Server server = getServer(serverId);
         if (body == null || body.tags() == null) {
             throw new InvalidServerTag("Tags must not be null");
         }
@@ -88,6 +71,12 @@ public class ServerTagServiceImpl implements ServerTagService {
                                                                         entry.getKey())))
                         .collect(Collectors.toList());
         tagRepository.saveAll(tags);
+    }
+
+    private Server getServer(String serverId) {
+        return serverRepository
+                .findById(serverId)
+                .orElseThrow(() -> new ServerNotFound("Server not found"));
     }
 
     private void validateTags(Map<TagCategory, Set<String>> tags) {

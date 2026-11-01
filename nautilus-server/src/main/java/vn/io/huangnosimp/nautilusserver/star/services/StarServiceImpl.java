@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.StarNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
@@ -25,7 +24,6 @@ import vn.io.huangnosimp.nautilusserver.user.UserUtils;
 @Service
 @RequiredArgsConstructor
 public class StarServiceImpl implements StarService {
-    private final AuthUserUtils authUserUtils;
     private final UserUtils userUtils;
     private final ServerUtils serverUtils;
     private final StarRepository starRepository;
@@ -34,9 +32,7 @@ public class StarServiceImpl implements StarService {
     @Override
     @Logging(logArguments = true)
     @Transactional(readOnly = true)
-    public Page<UserStaredInfo> getUserStaredInfo(
-            String username, String servername, Pageable pageable) {
-        var serverId = getServerId(getUserId(username), servername);
+    public Page<UserStaredInfo> getUserStaredInfo(String serverId, Pageable pageable) {
         return starRepository
                 .findAllByServerId(serverId, pageable)
                 .map(
@@ -52,15 +48,15 @@ public class StarServiceImpl implements StarService {
     @Override
     @Logging(logArguments = true)
     @Transactional(readOnly = true)
-    public Page<ServerStaredInfo> getServerStaredInfo(String username, Pageable pageable) {
-        var userId = getUserId(username);
+    public Page<ServerStaredInfo> getServerStaredInfo(String userId, Pageable pageable) {
         return starRepository
                 .findAllByUserId(userId, pageable)
                 .map(
                         star -> {
                             var serverData = getServerData(star.getServerId());
+                            var userdata = getUserData(userId);
                             return ServerStaredInfo.builder()
-                                    .username(username)
+                                    .username(userdata.username())
                                     .servername(serverData.servername())
                                     .serverAvatarUrl(serverData.serverAvatarUrl())
                                     .serverTotalStar(serverData.serverTotalStar())
@@ -71,10 +67,7 @@ public class StarServiceImpl implements StarService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void addStar(String authenticationName, String username, String servername) {
-        var userId = getUserId(authenticationName);
-        var ownerId = getUserId(username);
-        var serverId = getServerId(ownerId, servername);
+    public void addStar(String userId, String serverId) {
         starRepository.save(Star.builder().userId(userId).serverId(serverId).build());
         eventPublisher.publishEvent(new AddStarEvent(serverId));
     }
@@ -82,28 +75,13 @@ public class StarServiceImpl implements StarService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void deleteStar(String authenticationName, String username, String servername) {
-        var userId = getUserId(authenticationName);
-        var ownerId = getUserId(username);
-        var serverId = getServerId(ownerId, servername);
+    public void deleteStar(String userId, String serverId) {
         var star =
                 starRepository
                         .findByUserIdAndServerId(userId, serverId)
                         .orElseThrow(() -> new StarNotFound("Star not found"));
         starRepository.delete(star);
         eventPublisher.publishEvent(new DeleteStarEvent(serverId));
-    }
-
-    private String getUserId(String username) {
-        return authUserUtils
-                .getAuthUserIdByUsername(username)
-                .orElseThrow(() -> new UserNotFound(username));
-    }
-
-    private String getServerId(String userId, String servername) {
-        return serverUtils
-                .getPublicServerId(userId, servername)
-                .orElseThrow(() -> new ServerNotFound(servername));
     }
 
     private UserData getUserData(String userId) {

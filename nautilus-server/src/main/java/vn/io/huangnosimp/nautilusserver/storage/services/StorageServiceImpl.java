@@ -8,10 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidContentType;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidWebhookSecretKey;
-import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.storage.constants.StorageStatus;
 import vn.io.huangnosimp.nautilusserver.storage.dto.requests.UploadCompleteRequest;
@@ -23,7 +21,6 @@ import vn.io.huangnosimp.nautilusserver.storage.repositories.ResourceRepository;
 @RequiredArgsConstructor
 public class StorageServiceImpl implements StorageService {
     private final ResourceRepository resourceRepository;
-    private final AuthUserUtils authUserUtils;
     private final S3Template s3Template;
 
     private static final List<String> ALLOWED_CONTENT_TYPES =
@@ -40,20 +37,13 @@ public class StorageServiceImpl implements StorageService {
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
     public UploadUrlResponse generateUploadUrl(
-            String username, String contentType, Long contentLength) {
+            String userId, String contentType, Long contentLength) {
         if (!ALLOWED_CONTENT_TYPES.contains(contentType)) {
             throw new InvalidContentType("Invalid content type: " + contentType);
         }
         if (contentLength == null || contentLength > MAX_FILE_SIZE || contentLength <= 0) {
             throw new InvalidContentType("Invalid file size: " + contentLength);
         }
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(
-                                () ->
-                                        new UserNotFound(
-                                                "User not found with username: " + username));
         var storage =
                 Resource.builder().userId(userId).storageStatus(StorageStatus.PENDING).build();
         resourceRepository.save(storage);

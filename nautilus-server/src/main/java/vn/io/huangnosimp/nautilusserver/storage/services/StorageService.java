@@ -4,7 +4,7 @@ import vn.io.huangnosimp.nautilusserver.storage.dto.requests.UploadCompleteReque
 import vn.io.huangnosimp.nautilusserver.storage.dto.responses.UploadUrlResponse;
 
 public interface StorageService {
-    UploadUrlResponse generateUploadUrl(String username, String contentType, Long contentLength);
+    UploadUrlResponse generateUploadUrl(String userId, String contentType, Long contentLength);
 
     void completeUpload(String secretKey, UploadCompleteRequest request);
 }

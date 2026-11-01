@@ -3,17 +3,18 @@ package vn.io.huangnosimp.nautilusserver.server.services;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.auth.AuthUserUtils;
+import vn.io.huangnosimp.nautilusserver.authentication.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateServer;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
-import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.server.*;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
@@ -33,12 +34,13 @@ import vn.io.huangnosimp.nautilusserver.storage.StorageUtils;
 @Service
 @RequiredArgsConstructor
 public class ServerServiceImpl implements ServerService {
-    private final AuthUserUtils authUserUtils;
     private final ServerRepository serverRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final GalleryService galleryService;
     private final StorageUtils storageUtils;
     private final StarUtils starUtils;
+    private final CacheManager cacheManager;
+    private final AuthUserUtils authUserUtils;
 
     @Override
     @Logging(logArguments = true)
@@ -67,16 +69,9 @@ public class ServerServiceImpl implements ServerService {
 
     @Override
     @Logging(logArguments = true)
-    public ServerInfoDetailResponse getServerInfo(String username, String servername)
-            throws ServerNotFound {
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
+    public ServerInfoDetailResponse getServerInfo(String serverId) throws ServerNotFound {
         Server server =
-                serverRepository
-                        .findByUserIdAndServername(userId, servername)
-                        .orElseThrow(() -> new ServerNotFound(servername));
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
         return ServerInfoDetailResponse.builder()
                 .servername(server.getServername())
                 .visibility(server.getVisibility())
@@ -96,21 +91,17 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void createServer(String username, CreateServerRequest body) {
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
-        if (serverRepository.existsByUserIdAndServername(userId, body.servername())) {
+    public void createServer(String authUserId, CreateServerRequest body) {
+        if (serverRepository.existsByUserIdAndServername(authUserId, body.servername())) {
             throw new DuplicateServer(
                     "Server with name "
                             + body.servername()
                             + " already exists for user "
-                            + username);
+                            + authUserId);
         }
         Server server =
                 Server.builder()
-                        .userId(userId)
+                        .userId(authUserId)
                         .servername(body.servername())
                         .requiresPremium(body.requiresPremium())
                         .visibility(body.visibility())
@@ -122,7 +113,7 @@ public class ServerServiceImpl implements ServerService {
         serverRepository.save(server);
         eventPublisher.publishEvent(
                 ServerCreatedEvent.builder()
-                        .userId(userId)
+                        .userId(authUserId)
                         .serverId(server.getId())
                         .isPublic(server.getVisibility())
                         .build());
@@ -131,14 +122,20 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void deleteServer(String username, String servername) {
-        Server server = getServer(username, servername);
-        galleryService.deleteGallery(server.getUserId(), servername);
+    public void deleteServer(String serverId) {
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
+        galleryService.deleteGallery(server.getId());
         storageUtils.setResourceDeleted(
                 server.getId(), StorageType.SERVER_BANNER, server.getUserId());
         storageUtils.setResourceDeleted(
                 server.getId(), StorageType.SERVER_AVATAR, server.getUserId());
         serverRepository.delete(server);
+        Objects.requireNonNull(cacheManager.getCache("serverIdCache"))
+                .evict(
+                        authUserUtils.getUsernameByAuthUserId(server.getUserId())
+                                + "_"
+                                + server.getServername());
         eventPublisher.publishEvent(
                 ServerDeletedEvent.builder()
                         .userId(server.getUserId())
@@ -150,11 +147,12 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void updateServerInfo(String username, String servername, UpdateServerInfoRequest body) {
+    public void updateServerInfo(String serverId, UpdateServerInfoRequest body) {
         if (allFieldIsNull(body)) {
             return;
         }
-        Server server = getServer(username, servername);
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
 
         if (body.avatarResourceId() != null) {
             storageUtils.setResourceDeleted(
@@ -196,8 +194,9 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void deleteServerAvatar(String username, String servername) {
-        Server server = getServer(username, servername);
+    public void deleteServerAvatar(String serverId) {
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
         storageUtils.setResourceDeleted(
                 server.getId(), StorageType.SERVER_AVATAR, server.getUserId());
     }
@@ -205,8 +204,9 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void deleteServerBanner(String username, String servername) {
-        Server server = getServer(username, servername);
+    public void deleteServerBanner(String serverId) {
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
         storageUtils.setResourceDeleted(
                 server.getId(), StorageType.SERVER_BANNER, server.getUserId());
     }
@@ -214,11 +214,15 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void changeServername(String username, String servername, String newServername) {
-        Server server = getServer(username, servername);
+    public void changeServername(String serverId, String newServername) {
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
         if (serverRepository.existsByUserIdAndServername(server.getUserId(), newServername)) {
             throw new DuplicateServer(
-                    "Server with name " + newServername + " already exists for user " + username);
+                    "Server with name "
+                            + newServername
+                            + " already exists for user "
+                            + server.getUserId());
         }
         server.setServername(newServername);
         serverRepository.save(server);
@@ -227,9 +231,9 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    public void changeServerVisibility(
-            String username, String servername, ChangeServerVisibility request) {
-        Server server = getServer(username, servername);
+    public void changeServerVisibility(String serverId, ChangeServerVisibility request) {
+        Server server =
+                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
         if (server.getVisibility().equals(request.visibility())) {
             return;
         }
@@ -277,16 +281,6 @@ public class ServerServiceImpl implements ServerService {
 
             return predicates;
         };
-    }
-
-    private Server getServer(String username, String servername) {
-        String userId =
-                authUserUtils
-                        .getAuthUserIdByUsername(username)
-                        .orElseThrow(() -> new UserNotFound(username));
-        return serverRepository
-                .findByUserIdAndServername(userId, servername)
-                .orElseThrow(() -> new ServerNotFound(servername));
     }
 
     private boolean allFieldIsNull(UpdateServerInfoRequest body) {
