@@ -7,6 +7,7 @@ plugins {
     id("com.diffplug.spotless") version "8.10.4"
 }
 val springModulithVersion = "2.1.1"
+val testcontainersVersion = "1.21.4"
 
 group = "vn.io.huangnosimp"
 version = "1.0.0-SNAPSHOT"
@@ -83,6 +84,7 @@ tasks.withType(BootJar::class) {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.modulith:spring-modulith-bom:$springModulithVersion")
+        mavenBom("org.testcontainers:testcontainers-bom:$testcontainersVersion")
     }
 }
 

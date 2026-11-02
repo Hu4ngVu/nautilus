@@ -6,7 +6,7 @@ import org.quartz.JobExecutionContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
-import vn.io.huangnosimp.nautilusserver.schedule.DeleteTrashResourceEvent;
+import vn.io.huangnosimp.nautilusserver.events.DeleteTrashResourceEvent;
 
 @Component
 @RequiredArgsConstructor

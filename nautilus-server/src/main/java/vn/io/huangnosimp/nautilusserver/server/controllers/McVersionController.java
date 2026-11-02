@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
+import vn.io.huangnosimp.nautilusserver.resolver.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.AddBedrockVersionRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.AddJavaVersionRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.BedrockVersionResponse;
@@ -21,10 +21,10 @@ public class McVersionController {
 
     @GetMapping("/java/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isServerPublic(@globalIdResolverImpl.resolveServerId(#username,"
+            "@permissionCheckerImpl.isServerPublic(@globalIdResolver.resolveServerId(#username,"
                 + " #servername)) || "
-                + "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+                + "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<JavaVersionResponse> getJavaVersions(
             @PathVariable String username, @PathVariable String servername) {
         JavaVersionResponse response =
@@ -34,10 +34,10 @@ public class McVersionController {
 
     @GetMapping("/bedrock/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isServerPublic(@globalIdResolverImpl.resolveServerId(#username,"
+            "@permissionCheckerImpl.isServerPublic(@globalIdResolver.resolveServerId(#username,"
                 + " #servername)) || "
-                + "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+                + "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<BedrockVersionResponse> getBedrockVersions(
             @PathVariable String username, @PathVariable String servername) {
         BedrockVersionResponse response =
@@ -47,8 +47,8 @@ public class McVersionController {
 
     @PutMapping("/java/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> addJavaVersion(
             @PathVariable String username,
             @PathVariable String servername,
@@ -59,8 +59,8 @@ public class McVersionController {
 
     @PutMapping("/bedrock/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> addBedrockVersion(
             @PathVariable String username,
             @PathVariable String servername,

@@ -1,11 +1,8 @@
 package vn.io.huangnosimp.nautilusserver.storage.controllers;
 
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.storage.dto.requests.UploadCompleteRequest;
 import vn.io.huangnosimp.nautilusserver.storage.dto.responses.UploadUrlResponse;
 import vn.io.huangnosimp.nautilusserver.storage.services.StorageService;
@@ -15,13 +12,11 @@ import vn.io.huangnosimp.nautilusserver.storage.services.StorageService;
 @RequiredArgsConstructor
 public class StorageController {
     private final StorageService storageService;
-    private final GlobalIdResolver globalIdResolver;
 
     @GetMapping("/upload-url")
     public ResponseEntity<UploadUrlResponse> getUploadUrl(
             @RequestParam String contentType, @RequestParam Long contentLength) {
-        return ResponseEntity.ok(
-                storageService.generateUploadUrl(getId(), contentType, contentLength));
+        return ResponseEntity.ok(storageService.generateUploadUrl(contentType, contentLength));
     }
 
     @PutMapping("webhook/upload-complete")
@@ -30,11 +25,5 @@ public class StorageController {
             @RequestBody UploadCompleteRequest request) {
         storageService.completeUpload(secretKey, request);
         return ResponseEntity.ok().build();
-    }
-
-    private String getId() {
-        return globalIdResolver.resolveUserId(
-                Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication())
-                        .getName());
     }
 }

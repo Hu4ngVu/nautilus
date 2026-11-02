@@ -12,8 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.constraints.CacheName;
+import vn.io.huangnosimp.nautilusserver.resolver.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.ChangeServerVisibility;
@@ -46,10 +46,10 @@ public class ServerController {
 
     @GetMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isServerPublic(@globalIdResolverImpl.resolveServerId(#username,"
+            "@permissionCheckerImpl.isServerPublic(@globalIdResolver.resolveServerId(#username,"
                 + " #servername)) || "
-                + "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+                + "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<ServerInfoDetailResponse> getServerInfo(
             @PathVariable String username, @PathVariable String servername) {
         return ResponseEntity.ok(serverService.getServerInfo(getServerId(username, servername)));
@@ -65,8 +65,8 @@ public class ServerController {
 
     @DeleteMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isOwner(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isOwner(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> deleteServer(
             @PathVariable String username, @PathVariable String servername) {
         serverService.deleteServer(getServerId(username, servername));
@@ -75,8 +75,8 @@ public class ServerController {
 
     @PatchMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> updateServer(
             @PathVariable String username,
             @PathVariable String servername,
@@ -87,8 +87,8 @@ public class ServerController {
 
     @DeleteMapping("/{username}/{servername}/avatar")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> deleteServerAvatar(
             @PathVariable String username, @PathVariable String servername) {
         serverService.deleteServerAvatar(getServerId(username, servername));
@@ -97,8 +97,8 @@ public class ServerController {
 
     @DeleteMapping("/{username}/{servername}/banner")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> deleteServerBanner(
             @PathVariable String username, @PathVariable String servername) {
         serverService.deleteServerBanner(getServerId(username, servername));
@@ -108,8 +108,8 @@ public class ServerController {
     @PutMapping("/{username}/{servername}")
     @CacheEvict(cacheNames = CacheName.SERVER_ID_CACHE, key = "#username + ':' + #servername")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isOwner(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isOwner(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> changeServername(
             @PathVariable String username,
             @PathVariable String servername,
@@ -120,8 +120,8 @@ public class ServerController {
 
     @PutMapping("/{username}/{servername}/visibility")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isOwner(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isOwner(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> changeServerVisibility(
             @PathVariable String username,
             @PathVariable String servername,

@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
+import vn.io.huangnosimp.nautilusserver.resolver.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateImageInfoRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UploadImageRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ImageDetailResponse;
@@ -26,10 +26,10 @@ public class GalleryController {
 
     @GetMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isServerPublic(@globalIdResolverImpl.resolveServerId(#username,"
+            "@permissionCheckerImpl.isServerPublic(@globalIdResolver.resolveServerId(#username,"
                 + " #servername)) || "
-                + "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+                + "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<Page<ImagesResponse>> getGallery(
             @PathVariable String username,
             @PathVariable String servername,
@@ -43,10 +43,10 @@ public class GalleryController {
 
     @GetMapping("/{username}/{servername}/{imageId}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isServerPublic(@globalIdResolverImpl.resolveServerId(#username,"
+            "@permissionCheckerImpl.isServerPublic(@globalIdResolver.resolveServerId(#username,"
                 + " #servername)) || "
-                + "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+                + "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<ImageDetailResponse> getImageDetail(
             @PathVariable String username,
             @PathVariable String servername,
@@ -57,8 +57,8 @@ public class GalleryController {
 
     @PostMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> uploadImage(
             @PathVariable String username,
             @PathVariable String servername,
@@ -69,8 +69,8 @@ public class GalleryController {
 
     @DeleteMapping("/{username}/{servername}/{imageId}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> deleteImage(
             @PathVariable String username,
             @PathVariable String servername,
@@ -81,8 +81,8 @@ public class GalleryController {
 
     @PatchMapping("/{username}/{servername}/{imageId}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> updateImage(
             @PathVariable String username,
             @PathVariable String servername,

@@ -22,4 +22,7 @@ public class User extends BaseEntity {
 
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
+
+    @Column(name = "avatar_id", columnDefinition = "CHAR(36)")
+    private String avatarId;
 }
