@@ -6,6 +6,4 @@ public interface AuthUserUtils {
     Optional<String> getAuthUserIdByUsername(String username);
 
     void changeUsername(String userId, String newUsername);
-
-    Optional<String> getUsernameByAuthUserId(String userId);
 }

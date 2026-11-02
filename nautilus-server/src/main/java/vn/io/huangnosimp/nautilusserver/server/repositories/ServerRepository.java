@@ -16,17 +16,11 @@ import vn.io.huangnosimp.nautilusserver.server.models.Server;
 @Repository
 public interface ServerRepository
         extends JpaRepository<Server, String>, JpaSpecificationExecutor<Server> {
-    Optional<Server> findByUserIdAndServername(String userId, String servername);
+    boolean existsByIdAndVisibilityIsTrue(String serverId);
 
     Page<Server> findAllByVisibilityIsTrue(Specification<Server> specification, Pageable pageable);
 
     Optional<Server> findByIdAndVisibilityIsTrue(String serverId);
-
-    @Query(
-            "SELECT s.id FROM Server s WHERE s.userId = :userId AND s.servername = :servername AND"
-                    + " s.visibility = true")
-    Optional<String> findPublicServerId(
-            @Param("userId") String userId, @Param("servername") String servername);
 
     @Modifying
     @Transactional

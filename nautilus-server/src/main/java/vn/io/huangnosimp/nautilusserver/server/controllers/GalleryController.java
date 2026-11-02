@@ -26,7 +26,9 @@ public class GalleryController {
 
     @GetMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+            "@authorizationUtilsImpl.isServerPublic(@globalIdResolverImpl.resolveServerId(#username,"
+                + " #servername)) || "
+                + "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
                 + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<Page<ImagesResponse>> getGallery(
             @PathVariable String username,
@@ -41,7 +43,9 @@ public class GalleryController {
 
     @GetMapping("/{username}/{servername}/{imageId}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+            "@authorizationUtilsImpl.isServerPublic(@globalIdResolverImpl.resolveServerId(#username,"
+                + " #servername)) || "
+                + "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
                 + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<ImageDetailResponse> getImageDetail(
             @PathVariable String username,

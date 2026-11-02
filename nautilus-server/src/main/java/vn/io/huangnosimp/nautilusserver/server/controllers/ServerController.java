@@ -3,6 +3,7 @@ package vn.io.huangnosimp.nautilusserver.server.controllers;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
+import vn.io.huangnosimp.nautilusserver.constraints.CacheName;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.ChangeServerVisibility;
@@ -44,7 +46,9 @@ public class ServerController {
 
     @GetMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+            "@authorizationUtilsImpl.isServerPublic(@globalIdResolverImpl.resolveServerId(#username,"
+                + " #servername)) || "
+                + "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
                 + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<ServerInfoDetailResponse> getServerInfo(
             @PathVariable String username, @PathVariable String servername) {
@@ -102,6 +106,7 @@ public class ServerController {
     }
 
     @PutMapping("/{username}/{servername}")
+    @CacheEvict(cacheNames = CacheName.SERVER_ID_CACHE, key = "#username + ':' + #servername")
     @PreAuthorize(
             "@authorizationUtilsImpl.isOwner(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
                 + " @globalIdResolverImpl.resolveServerId(#username, #servername))")

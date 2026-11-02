@@ -3,6 +3,7 @@ package vn.io.huangnosimp.nautilusserver.authentication.configs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -41,8 +42,11 @@ public class SecurityConfig {
                                                 "/auth/refresh",
                                                 "/auth/check-username",
                                                 "/auth/check-email",
-                                                "/storage/webhook/upload-complete",
-                                                "/servers")
+                                                "/storage/webhook/upload-complete")
+                                        .permitAll()
+                                        .requestMatchers("/storage/upload-url")
+                                        .authenticated()
+                                        .requestMatchers(HttpMethod.GET, "/**")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

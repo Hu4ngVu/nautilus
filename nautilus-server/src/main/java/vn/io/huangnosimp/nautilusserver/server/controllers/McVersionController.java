@@ -21,7 +21,9 @@ public class McVersionController {
 
     @GetMapping("/java/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+            "@authorizationUtilsImpl.isServerPublic(@globalIdResolverImpl.resolveServerId(#username,"
+                + " #servername)) || "
+                + "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
                 + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<JavaVersionResponse> getJavaVersions(
             @PathVariable String username, @PathVariable String servername) {
@@ -32,7 +34,9 @@ public class McVersionController {
 
     @GetMapping("/bedrock/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
+            "@authorizationUtilsImpl.isServerPublic(@globalIdResolverImpl.resolveServerId(#username,"
+                + " #servername)) || "
+                + "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
                 + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
     public ResponseEntity<BedrockVersionResponse> getBedrockVersions(
             @PathVariable String username, @PathVariable String servername) {
