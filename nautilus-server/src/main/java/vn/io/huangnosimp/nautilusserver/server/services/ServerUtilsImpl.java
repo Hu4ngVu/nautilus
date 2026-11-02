@@ -36,13 +36,13 @@ public class ServerUtilsImpl implements ServerUtils {
 
     @Override
     @Logging(level = Level.DEBUG, logArguments = true)
-    public Optional<String> getPublicServerId(String userId, String servername) {
-        return serverRepository.findPublicServerId(userId, servername);
+    public Optional<String> getServerId(String userId, String servername) {
+        return serverRepository.findServerId(userId, servername);
     }
 
     @Override
     @Logging(level = Level.DEBUG, logArguments = true)
-    public Optional<String> getServerId(String userId, String servername) {
-        return serverRepository.findServerId(userId, servername);
+    public boolean isServerPublic(String serverId) {
+        return serverRepository.existsByIdAndVisibilityIsTrue(serverId);
     }
 }

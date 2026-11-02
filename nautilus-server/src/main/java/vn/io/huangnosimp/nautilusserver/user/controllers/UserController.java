@@ -2,10 +2,12 @@ package vn.io.huangnosimp.nautilusserver.user.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
+import vn.io.huangnosimp.nautilusserver.constraints.CacheName;
 import vn.io.huangnosimp.nautilusserver.user.dto.requests.ChangeUsernameRequest;
 import vn.io.huangnosimp.nautilusserver.user.dto.requests.UpdateUserInfoRequest;
 import vn.io.huangnosimp.nautilusserver.user.dto.responses.UserInfoResponse;
@@ -40,6 +42,7 @@ public class UserController {
 
     @PutMapping("/{username}")
     @PreAuthorize("authentication.name == #username")
+    @CacheEvict(cacheNames = CacheName.USER_ID_CACHE, key = "#username")
     public ResponseEntity<?> changeUsername(
             @PathVariable String username, @RequestBody ChangeUsernameRequest request) {
         userService.changeUsername(getId(username), request);

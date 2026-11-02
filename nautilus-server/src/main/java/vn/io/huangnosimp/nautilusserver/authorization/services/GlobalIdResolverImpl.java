@@ -6,6 +6,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import vn.io.huangnosimp.nautilusserver.authentication.AuthUserUtils;
 import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
+import vn.io.huangnosimp.nautilusserver.constraints.CacheName;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
@@ -19,7 +20,7 @@ public class GlobalIdResolverImpl implements GlobalIdResolver {
 
     @Override
     @Logging(level = Level.DEBUG, logArguments = true)
-    @Cacheable(cacheNames = "userIdCache", key = "#username")
+    @Cacheable(cacheNames = CacheName.USER_ID_CACHE, key = "#username")
     public String resolveUserId(String username) {
         return authUserUtils
                 .getAuthUserIdByUsername(username)
@@ -28,7 +29,7 @@ public class GlobalIdResolverImpl implements GlobalIdResolver {
 
     @Override
     @Logging(level = Level.DEBUG, logArguments = true)
-    @Cacheable(cacheNames = "serverIdCache", key = "#username + '_' + #servername")
+    @Cacheable(cacheNames = CacheName.SERVER_ID_CACHE, key = "#username + ':' + #servername")
     public String resolveServerId(String username, String servername) {
         return serverUtils
                 .getServerId(resolveUserId(username), servername)

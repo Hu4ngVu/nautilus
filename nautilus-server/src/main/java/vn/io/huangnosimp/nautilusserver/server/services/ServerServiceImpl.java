@@ -3,18 +3,17 @@ package vn.io.huangnosimp.nautilusserver.server.services;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.authentication.AuthUserUtils;
+import vn.io.huangnosimp.nautilusserver.constraints.CacheName;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateServer;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
@@ -41,10 +40,6 @@ public class ServerServiceImpl implements ServerService {
     private final GalleryService galleryService;
     private final StorageUtils storageUtils;
     private final StarUtils starUtils;
-    private final CacheManager cacheManager;
-    private final AuthUserUtils authUserUtils;
-
-    private static final String SERVER_INFO_CACHE = "serverInfoCache";
 
     @Override
     @Logging(logArguments = true)
@@ -73,7 +68,7 @@ public class ServerServiceImpl implements ServerService {
 
     @Override
     @Logging(logArguments = true)
-    @Cacheable(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    @Cacheable(cacheNames = CacheName.SERVER_INFO_CACHE, key = "#serverId")
     public ServerInfoDetailResponse getServerInfo(String serverId) throws ServerNotFound {
         Server server =
                 serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
@@ -126,7 +121,7 @@ public class ServerServiceImpl implements ServerService {
 
     @Override
     @Logging(logArguments = true)
-    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    @CacheEvict(cacheNames = CacheName.SERVER_INFO_CACHE, key = "#serverId")
     @Transactional(rollbackFor = Exception.class)
     public void deleteServer(String serverId) {
         Server server =
@@ -137,11 +132,6 @@ public class ServerServiceImpl implements ServerService {
         storageUtils.setResourceDeleted(
                 server.getId(), StorageType.SERVER_AVATAR, server.getUserId());
         serverRepository.delete(server);
-        Objects.requireNonNull(cacheManager.getCache("serverIdCache"))
-                .evict(
-                        authUserUtils.getUsernameByAuthUserId(server.getUserId())
-                                + "_"
-                                + server.getServername());
         eventPublisher.publishEvent(
                 ServerDeletedEvent.builder()
                         .userId(server.getUserId())
@@ -152,7 +142,7 @@ public class ServerServiceImpl implements ServerService {
 
     @Override
     @Logging(logArguments = true)
-    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    @CacheEvict(cacheNames = CacheName.SERVER_INFO_CACHE, key = "#serverId")
     @Transactional(rollbackFor = Exception.class)
     public void updateServerInfo(String serverId, UpdateServerInfoRequest body) {
         if (allFieldIsNull(body)) {
@@ -201,7 +191,7 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    @CacheEvict(cacheNames = CacheName.SERVER_INFO_CACHE, key = "#serverId")
     public void deleteServerAvatar(String serverId) {
         Server server =
                 serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
@@ -212,7 +202,7 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    @CacheEvict(cacheNames = CacheName.SERVER_INFO_CACHE, key = "#serverId")
     public void deleteServerBanner(String serverId) {
         Server server =
                 serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
@@ -223,7 +213,7 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    @CacheEvict(cacheNames = CacheName.SERVER_INFO_CACHE, key = "#serverId")
     public void changeServername(String serverId, String newServername) {
         Server server =
                 serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
@@ -241,7 +231,11 @@ public class ServerServiceImpl implements ServerService {
     @Override
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = SERVER_INFO_CACHE, key = "#serverId")
+    @Caching(
+            evict = {
+                @CacheEvict(cacheNames = CacheName.SERVER_INFO_CACHE, key = "#serverId"),
+                @CacheEvict(cacheNames = CacheName.PUBLIC_SERVER_CACHE, key = "#serverId")
+            })
     public void changeServerVisibility(String serverId, ChangeServerVisibility request) {
         Server server =
                 serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));

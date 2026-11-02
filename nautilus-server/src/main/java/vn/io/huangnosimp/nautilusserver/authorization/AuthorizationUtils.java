@@ -6,4 +6,6 @@ public interface AuthorizationUtils {
     boolean isViewer(String userId, String serverId);
 
     boolean isOwner(String userId, String serverId);
+
+    boolean isServerPublic(String serverId);
 }

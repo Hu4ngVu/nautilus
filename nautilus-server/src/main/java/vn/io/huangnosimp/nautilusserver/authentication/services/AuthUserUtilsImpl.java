@@ -24,10 +24,4 @@ public class AuthUserUtilsImpl implements AuthUserUtils {
     public void changeUsername(String userId, String newUsername) {
         authUserRepository.updateUsernameById(userId, newUsername);
     }
-
-    @Override
-    @Logging(level = Level.DEBUG)
-    public Optional<String> getUsernameByAuthUserId(String userId) {
-        return authUserRepository.findUsernameById(userId);
-    }
 }
