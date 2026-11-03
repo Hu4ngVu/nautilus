@@ -46,7 +46,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
-    runtimeOnly("com.mysql:mysql-connector-j")
+    runtimeOnly("com.mysql:mysql-connector-j:26.10.0")
     annotationProcessor("org.projectlombok:lombok")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
@@ -85,6 +85,17 @@ dependencyManagement {
     imports {
         mavenBom("org.springframework.modulith:spring-modulith-bom:$springModulithVersion")
         mavenBom("org.testcontainers:testcontainers-bom:$testcontainersVersion")
+    }
+    dependencies {
+        dependency("ch.qos.logback:logback-classic:1.6.6")
+        dependency("org.ow2.asm:asm:9.11.1")
+        dependency("tools.jackson.core:jackson-databind:3.2.4")
+        dependency("tools.jackson.core:jackson-core:3.2.4")
+        dependency("org.apache.tomcat.embed:tomcat-embed-core:11.0.27")
+        dependency("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.27")
+        dependency("com.fasterxml.jackson.core:jackson-core:2.22.4")
+        dependency("com.fasterxml.jackson.core:jackson-databind:2.22.4")
+        dependency("io.opentelemetry:opentelemetry-api:1.67.0")
     }
 }
 
