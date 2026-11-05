@@ -1,10 +1,11 @@
 package vn.io.huangnosimp.nautilusserver.user.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,6 +18,7 @@ public class User extends BaseEntity {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
+    @Min(0)
     @Column(name = "server_count", nullable = false, columnDefinition = "INTEGER")
     private Integer serverCount;
 

@@ -69,6 +69,7 @@ dependencies {
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
     runtimeOnly("org.springframework.modulith:spring-modulith-actuator")
     runtimeOnly("org.springframework.modulith:spring-modulith-observability")
+    runtimeOnly("com.h2database:h2")
     testCompileOnly("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testAnnotationProcessor("org.projectlombok:lombok")
@@ -76,6 +77,7 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs("-XX:+EnableDynamicAgentLoading", "-Xshare:off")
 }
 
 tasks.withType(BootJar::class) {
@@ -88,6 +90,7 @@ dependencyManagement {
     }
     dependencies {
         dependency("ch.qos.logback:logback-classic:1.6.6")
+        dependency("ch.qos.logback:logback-core:1.6.6")
         dependency("org.ow2.asm:asm:9.11.1")
         dependency("tools.jackson.core:jackson-databind:3.2.4")
         dependency("tools.jackson.core:jackson-core:3.2.4")

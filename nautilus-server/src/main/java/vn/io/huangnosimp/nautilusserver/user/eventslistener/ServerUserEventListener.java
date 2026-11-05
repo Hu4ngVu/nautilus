@@ -37,6 +37,8 @@ public class ServerUserEventListener {
                 userRepository
                         .findByAuthUserId(event.userId())
                         .orElseThrow(() -> new UserNotFound("User not found: " + event.userId()));
-        userRepository.decreaseServerCount(user.getAuthUserId(), 1);
+        if (user.getServerCount() > 0) {
+            userRepository.decreaseServerCount(user.getAuthUserId(), 1);
+        }
     }
 }
