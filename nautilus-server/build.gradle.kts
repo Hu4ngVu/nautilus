@@ -98,6 +98,7 @@ dependencyManagement {
         dependency("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.27")
         dependency("com.fasterxml.jackson.core:jackson-core:2.22.4")
         dependency("com.fasterxml.jackson.core:jackson-databind:2.22.4")
+        dependency("com.fasterxml.jackson.core:jackson-annotations:2.22")
         dependency("io.opentelemetry:opentelemetry-api:1.67.0")
     }
 }

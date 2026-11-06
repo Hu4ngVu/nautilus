@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.user.repositories;
+package vn.io.huangnosimp.nautilusserver.user.unit.repositories;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import vn.io.huangnosimp.nautilusserver.user.UserTestConfig;
 import vn.io.huangnosimp.nautilusserver.user.models.User;
+import vn.io.huangnosimp.nautilusserver.user.repositories.UserRepository;
 
 @DataJpaTest
 @ActiveProfiles("test")

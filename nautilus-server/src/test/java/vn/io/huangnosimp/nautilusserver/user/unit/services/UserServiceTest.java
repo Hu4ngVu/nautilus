@@ -1,4 +1,4 @@
-package vn.io.huangnosimp.nautilusserver.user.services;
+package vn.io.huangnosimp.nautilusserver.user.unit.services;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,6 +22,7 @@ import vn.io.huangnosimp.nautilusserver.user.dto.requests.ChangeUsernameRequest;
 import vn.io.huangnosimp.nautilusserver.user.dto.requests.UpdateUserInfoRequest;
 import vn.io.huangnosimp.nautilusserver.user.models.User;
 import vn.io.huangnosimp.nautilusserver.user.repositories.UserRepository;
+import vn.io.huangnosimp.nautilusserver.user.services.UserService;
 
 @DisplayName("UserService Test")
 @ExtendWith(MockitoExtension.class)
