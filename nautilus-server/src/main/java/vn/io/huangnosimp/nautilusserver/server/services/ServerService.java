@@ -17,6 +17,7 @@ import vn.io.huangnosimp.nautilusserver.api.ResourceStorage;
 import vn.io.huangnosimp.nautilusserver.constraints.CacheName;
 import vn.io.huangnosimp.nautilusserver.events.*;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateServer;
+import vn.io.huangnosimp.nautilusserver.exceptions.InvalidResourceId;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
@@ -133,71 +134,53 @@ public class ServerService {
     @CacheEvict(cacheNames = CacheName.SERVER_INFO_CACHE, key = "#serverId")
     @Transactional(rollbackFor = Exception.class)
     public void updateServerInfo(String serverId, UpdateServerInfoRequest body) {
-        if (allFieldIsNull(body)) {
-            return;
-        }
         Server server =
                 serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
 
-        if (body.avatarResourceId() != null) {
+        if (body.avatarResourceId().isPresent()) {
             if (server.getServerAvatarId() != null) {
                 eventPublisher.publishEvent(
                         new ServerAvatarDeletedEvent(server.getServerAvatarId()));
             }
-            eventPublisher.publishEvent(new ServerAvatarUpdatedEvent(body.avatarResourceId()));
-            server.setServerAvatarId(body.avatarResourceId());
+            if (body.avatarResourceId().isNull()) {
+                server.setServerAvatarId(null);
+            } else {
+                if (!resourceStorage.isResourceIdExist(body.avatarResourceId().get())) {
+                    throw new InvalidResourceId(
+                            "Resource ID does not exist: " + body.avatarResourceId().get());
+                }
+                eventPublisher.publishEvent(
+                        new ServerAvatarUpdatedEvent(body.avatarResourceId().get()));
+                server.setServerAvatarId(body.avatarResourceId().get());
+            }
         }
-        if (body.bannerResourceId() != null) {
+
+        if (body.bannerResourceId().isPresent()) {
             if (server.getServerBannerId() != null) {
                 eventPublisher.publishEvent(
                         new ServerBannerDeletedEvent(server.getServerBannerId()));
             }
-            eventPublisher.publishEvent(new ServerBannerUpdatedEvent(body.bannerResourceId()));
-            server.setServerBannerId(body.bannerResourceId());
+            if (body.bannerResourceId().isNull()) {
+                server.setServerBannerId(null);
+            } else {
+                if (!resourceStorage.isResourceIdExist(body.bannerResourceId().get())) {
+                    throw new InvalidResourceId(
+                            "Resource ID does not exist: " + body.bannerResourceId().get());
+                }
+                eventPublisher.publishEvent(
+                        new ServerBannerUpdatedEvent(body.bannerResourceId().get()));
+                server.setServerBannerId(body.bannerResourceId().get());
+            }
         }
-        if (body.javaAddress() != null) {
-            server.setJavaAddress(body.javaAddress());
-        }
-        if (body.bedrockAddress() != null) {
-            server.setBedrockAddress(body.bedrockAddress());
-        }
-        if (body.summary() != null) {
-            server.setSummary(body.summary());
-        }
-        if (body.bio() != null) {
-            server.setBio(body.bio());
-        }
-        if (body.requiresPremium() != null
-                && !body.requiresPremium().equals(server.getRequiresPremium())) {
+
+        body.bedrockAddress().ifPresent(server::setBedrockAddress);
+        body.javaAddress().ifPresent(server::setJavaAddress);
+        if (body.requiresPremium() != null) {
             server.setRequiresPremium(body.requiresPremium());
         }
+        body.summary().ifPresent(server::setSummary);
+        body.bio().ifPresent(server::setBio);
         serverRepository.save(server);
-    }
-
-    @Logging(logArguments = true)
-    @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = CacheName.SERVER_INFO_CACHE, key = "#serverId")
-    public void deleteServerAvatar(String serverId) {
-        Server server =
-                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
-        if (server.getServerAvatarId() != null) {
-            eventPublisher.publishEvent(new ServerAvatarDeletedEvent(server.getServerAvatarId()));
-            server.setServerAvatarId(null);
-            serverRepository.save(server);
-        }
-    }
-
-    @Logging(logArguments = true)
-    @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = CacheName.SERVER_INFO_CACHE, key = "#serverId")
-    public void deleteServerBanner(String serverId) {
-        Server server =
-                serverRepository.findById(serverId).orElseThrow(() -> new ServerNotFound(serverId));
-        if (server.getServerBannerId() != null) {
-            eventPublisher.publishEvent(new ServerBannerDeletedEvent(server.getServerBannerId()));
-            server.setServerBannerId(null);
-            serverRepository.save(server);
-        }
     }
 
     @Logging(logArguments = true)
@@ -271,14 +254,5 @@ public class ServerService {
 
             return predicates;
         };
-    }
-
-    private boolean allFieldIsNull(UpdateServerInfoRequest body) {
-        return body.avatarResourceId() == null
-                && body.bannerResourceId() == null
-                && body.javaAddress() == null
-                && body.bedrockAddress() == null
-                && body.bio() == null
-                && body.summary() == null;
     }
 }

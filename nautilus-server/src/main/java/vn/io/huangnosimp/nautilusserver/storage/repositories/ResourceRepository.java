@@ -2,6 +2,7 @@ package vn.io.huangnosimp.nautilusserver.storage.repositories;
 
 import java.time.Instant;
 import java.util.List;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -52,4 +53,9 @@ public interface ResourceRepository extends JpaRepository<Resource, String> {
     @Transactional
     @Query("DELETE FROM Resource r WHERE r.id IN :ids")
     void deleteAllById(@Param("ids") List<String> ids);
+
+    @Query(
+            "SELECT EXISTS (SELECT 1 FROM Resource r WHERE r.id = :id AND r.storageStatus ="
+                    + " StorageStatus.UPLOADED)")
+    boolean existsById(@NonNull String id);
 }

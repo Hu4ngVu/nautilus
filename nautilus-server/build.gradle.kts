@@ -43,6 +43,7 @@ dependencies {
     implementation("org.springframework.modulith:spring-modulith-starter-core")
     implementation("org.springframework.modulith:spring-modulith-starter-jpa")
     implementation("dev.openfga:openfga-spring-boot-starter:0.4.1")
+    implementation("org.openapitools:jackson-databind-nullable:0.2.13")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")

@@ -31,4 +31,10 @@ public class ResourceStorageImpl implements ResourceStorage {
                                         .toString())
                 .orElse(null);
     }
+
+    @Override
+    @Logging(level = Level.DEBUG, logArguments = true)
+    public boolean isResourceIdExist(String resourceId) {
+        return resourceRepository.existsById(resourceId);
+    }
 }

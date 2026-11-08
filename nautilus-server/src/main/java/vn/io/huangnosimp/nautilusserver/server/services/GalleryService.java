@@ -12,6 +12,7 @@ import vn.io.huangnosimp.nautilusserver.events.GalleryDeletedEvent;
 import vn.io.huangnosimp.nautilusserver.events.ImageDeletedEvent;
 import vn.io.huangnosimp.nautilusserver.events.ImageUploadedEvent;
 import vn.io.huangnosimp.nautilusserver.exceptions.ImageNotFound;
+import vn.io.huangnosimp.nautilusserver.exceptions.ResourceNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.UpdateImageInfoRequest;
@@ -75,9 +76,9 @@ public class GalleryService {
         Image image =
                 Image.builder()
                         .server(server)
-                        .title(body.title())
-                        .orderIndex(body.orderIndex())
-                        .summary(body.summary())
+                        .title(body.title().orElse(null))
+                        .orderIndex(body.orderIndex().orElse(0))
+                        .summary(body.summary().orElse(null))
                         .imageId(body.resourceId())
                         .build();
         galleryRepository.save(image);
@@ -99,9 +100,6 @@ public class GalleryService {
     @Logging(logArguments = true)
     @Transactional(rollbackFor = Exception.class)
     public void updateImageInfo(String serverId, String imageId, UpdateImageInfoRequest body) {
-        if (allFieldIsNull(body)) {
-            return;
-        }
         Server server = getServer(serverId);
         Image image =
                 galleryRepository
@@ -109,13 +107,18 @@ public class GalleryService {
                         .orElseThrow(() -> new ImageNotFound("Image not found"));
 
         if (body.resourceId() != null) {
+            if (!resourceStorage.isResourceIdExist(body.resourceId())) {
+                throw new ResourceNotFound("Resource not found");
+            }
             if (image.getImageId() != null) {
                 eventPublisher.publishEvent(new ImageDeletedEvent(image.getImageId()));
             }
             eventPublisher.publishEvent(new ImageUploadedEvent(body.resourceId()));
             image.setImageId(body.resourceId());
         }
-        setInfo(image, body.title(), body.summary(), body.orderIndex());
+        body.orderIndex().ifPresent(image::setOrderIndex);
+        body.title().ifPresent(image::setTitle);
+        body.summary().ifPresent(image::setSummary);
         galleryRepository.save(image);
     }
 
@@ -134,27 +137,5 @@ public class GalleryService {
         return serverRepository
                 .findById(serverId)
                 .orElseThrow(() -> new ServerNotFound("Server not found"));
-    }
-
-    private void setInfo(Image image, String title, String summary, Integer orderIndex) {
-        if (title != null) {
-            image.setTitle(title);
-        }
-        if (summary != null) {
-            image.setSummary(summary);
-        }
-        if (orderIndex != null) {
-            image.setOrderIndex(orderIndex);
-        }
-        if (orderIndex == null) {
-            image.setOrderIndex(0);
-        }
-    }
-
-    private boolean allFieldIsNull(@NonNull UpdateImageInfoRequest body) {
-        return body.resourceId() == null
-                && body.title() == null
-                && body.summary() == null
-                && body.orderIndex() == null;
     }
 }

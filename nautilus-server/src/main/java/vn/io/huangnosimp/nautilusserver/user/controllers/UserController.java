@@ -33,13 +33,6 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{username}/avatar")
-    @PreAuthorize("authentication.name == #username")
-    public ResponseEntity<?> deleteUserAvatar(@PathVariable String username) {
-        userService.deleteUserAvatar(getId(username));
-        return ResponseEntity.ok().build();
-    }
-
     @PutMapping("/{username}")
     @PreAuthorize("authentication.name == #username")
     @CacheEvict(cacheNames = CacheName.USER_ID_CACHE, key = "#username")

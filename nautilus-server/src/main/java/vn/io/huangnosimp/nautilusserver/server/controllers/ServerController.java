@@ -85,26 +85,6 @@ public class ServerController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @DeleteMapping("/{username}/{servername}/avatar")
-    @PreAuthorize(
-            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolver.resolveServerId(#username, #servername))")
-    public ResponseEntity<?> deleteServerAvatar(
-            @PathVariable String username, @PathVariable String servername) {
-        serverService.deleteServerAvatar(getServerId(username, servername));
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    @DeleteMapping("/{username}/{servername}/banner")
-    @PreAuthorize(
-            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolver.resolveServerId(#username, #servername))")
-    public ResponseEntity<?> deleteServerBanner(
-            @PathVariable String username, @PathVariable String servername) {
-        serverService.deleteServerBanner(getServerId(username, servername));
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
     @PutMapping("/{username}/{servername}")
     @CacheEvict(cacheNames = CacheName.SERVER_ID_CACHE, key = "#username + ':' + #servername")
     @PreAuthorize(

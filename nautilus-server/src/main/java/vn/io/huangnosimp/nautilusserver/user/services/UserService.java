@@ -12,6 +12,7 @@ import vn.io.huangnosimp.nautilusserver.events.UserAvatarDeletedEvent;
 import vn.io.huangnosimp.nautilusserver.events.UserAvatarUpdatedEvent;
 import vn.io.huangnosimp.nautilusserver.events.UsernameUpdatedEvent;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateUsername;
+import vn.io.huangnosimp.nautilusserver.exceptions.InvalidResourceId;
 import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.user.dto.requests.ChangeUsernameRequest;
@@ -50,41 +51,30 @@ public class UserService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(cacheNames = CacheName.USER_INFO_CACHE, key = "#authUserId")
     public void updateUserInfo(String authUserId, UpdateUserInfoRequest updateUserInfoRequest) {
-        if (allFieldIsNull(updateUserInfoRequest)) {
-            return;
-        }
         User user =
                 userRepository
                         .findByAuthUserId(authUserId)
                         .orElseThrow(() -> new UserNotFound(authUserId));
 
-        if (updateUserInfoRequest.resourceId() != null) {
+        if (updateUserInfoRequest.resourceId().isPresent()) {
             if (user.getAvatarId() != null) {
                 eventPublisher.publishEvent(new UserAvatarDeletedEvent(user.getAvatarId()));
             }
-            eventPublisher.publishEvent(
-                    new UserAvatarUpdatedEvent(updateUserInfoRequest.resourceId()));
-            user.setAvatarId(updateUserInfoRequest.resourceId());
+            if (updateUserInfoRequest.resourceId().isNull()) {
+                user.setAvatarId(null);
+            } else {
+                if (!resourceStorage.isResourceIdExist(updateUserInfoRequest.resourceId().get())) {
+                    throw new InvalidResourceId(
+                            "Resource ID does not exist: "
+                                    + updateUserInfoRequest.resourceId().get());
+                }
+                eventPublisher.publishEvent(
+                        new UserAvatarUpdatedEvent(updateUserInfoRequest.resourceId().get()));
+                user.setAvatarId(updateUserInfoRequest.resourceId().get());
+            }
         }
-        if (updateUserInfoRequest.bio() != null) {
-            user.setBio(updateUserInfoRequest.bio());
-        }
+        updateUserInfoRequest.bio().ifPresent(user::setBio);
         userRepository.save(user);
-    }
-
-    @Logging(logArguments = true)
-    @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(cacheNames = CacheName.USER_INFO_CACHE, key = "#authUserId")
-    public void deleteUserAvatar(String authUserId) {
-        User user =
-                userRepository
-                        .findByAuthUserId(authUserId)
-                        .orElseThrow(() -> new UserNotFound(authUserId));
-        if (user.getAvatarId() != null) {
-            eventPublisher.publishEvent(new UserAvatarDeletedEvent(user.getAvatarId()));
-            user.setAvatarId(null);
-            userRepository.save(user);
-        }
     }
 
     @Logging(logArguments = true)
@@ -101,9 +91,5 @@ public class UserService {
         user.setUsername(request.newUsername());
         userRepository.save(user);
         eventPublisher.publishEvent(new UsernameUpdatedEvent(authUserId, request.newUsername()));
-    }
-
-    private boolean allFieldIsNull(UpdateUserInfoRequest body) {
-        return body.resourceId() == null && body.bio() == null;
     }
 }
