@@ -70,7 +70,6 @@ dependencies {
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
     runtimeOnly("org.springframework.modulith:spring-modulith-actuator")
     runtimeOnly("org.springframework.modulith:spring-modulith-observability")
-    runtimeOnly("com.h2database:h2")
     testCompileOnly("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testAnnotationProcessor("org.projectlombok:lombok")

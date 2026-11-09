@@ -15,21 +15,21 @@ import vn.io.huangnosimp.nautilusserver.storage.models.Resource;
 @Repository
 public interface ResourceRepository extends JpaRepository<Resource, String> {
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query(
             "UPDATE Resource r SET r.storageStatus = StorageStatus.ACTIVE, r.storageType ="
                     + " :storageType WHERE r.id = :id AND r.storageStatus = StorageStatus.UPLOADED")
     void setActiveById(@Param("id") String id, @Param("storageType") StorageType storageType);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query(
             "UPDATE Resource r SET r.storageStatus = StorageStatus.DELETED WHERE r.id = :id AND"
                     + " r.storageStatus = StorageStatus.ACTIVE")
     void setDeletedById(@Param("id") String id);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query(
             "UPDATE Resource r SET r.storageStatus = StorageStatus.DELETED WHERE r.id IN :ids AND"
