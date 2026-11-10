@@ -11,9 +11,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
-import vn.io.huangnosimp.nautilusserver.api.ResourceStorage;
 import vn.io.huangnosimp.nautilusserver.events.ServerVisibilityChangedEvent;
+import vn.io.huangnosimp.nautilusserver.events.ServerDeletedEvent;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateServer;
+import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.ChangeServerVisibility;
@@ -26,7 +27,6 @@ class ServerServiceTest {
     @Mock ServerRepository servers;
     @Mock ApplicationEventPublisher events;
     @Mock GalleryService gallery;
-    @Mock ResourceStorage storage;
     @InjectMocks ServerService service;
 
     @Test
@@ -61,5 +61,28 @@ class ServerServiceTest {
         assertFalse(server.getVisibility());
         verify(servers).save(server);
         verify(events).publishEvent(new ServerVisibilityChangedEvent("server-id", false));
+    }
+
+    @Test
+    void deleteServerRemovesGalleryAndPublishesDeletionEvent() {
+        Server server = Server.builder().userId("user").visibility(true).build();
+        ReflectionTestUtils.setField(server, "id", "server-id");
+        when(servers.findById("server-id")).thenReturn(Optional.of(server));
+
+        service.deleteServer("server-id");
+
+        verify(gallery).deleteGallery("server-id");
+        verify(servers).delete(server);
+        verify(events).publishEvent(any(ServerDeletedEvent.class));
+    }
+
+    @Test
+    void deleteServerRejectsUnknownIdWithoutSideEffects() {
+        when(servers.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(ServerNotFound.class, () -> service.deleteServer("missing"));
+
+        verifyNoInteractions(gallery, events);
+        verify(servers, never()).delete(any(Server.class));
     }
 }
