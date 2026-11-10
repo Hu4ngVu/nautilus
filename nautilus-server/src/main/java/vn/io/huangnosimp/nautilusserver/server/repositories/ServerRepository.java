@@ -22,12 +22,12 @@ public interface ServerRepository
 
     Optional<Server> findByIdAndVisibilityIsTrue(String serverId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE Server s SET s.starCount = s.starCount + :amount WHERE s.id = :serverId")
     void increaseStarCount(@Param("serverId") String serverId, @Param("amount") Integer amount);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE Server s SET s.starCount = s.starCount - :amount WHERE s.id = :serverId")
     void decreaseStarCount(@Param("serverId") String serverId, @Param("amount") Integer amount);

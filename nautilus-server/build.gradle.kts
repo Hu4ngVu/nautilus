@@ -7,6 +7,7 @@ plugins {
     id("com.diffplug.spotless") version "8.10.4"
 }
 val springModulithVersion = "2.1.1"
+val testcontainersVersion = "1.21.4"
 
 group = "vn.io.huangnosimp"
 version = "1.0.0-SNAPSHOT"
@@ -42,10 +43,11 @@ dependencies {
     implementation("org.springframework.modulith:spring-modulith-starter-core")
     implementation("org.springframework.modulith:spring-modulith-starter-jpa")
     implementation("dev.openfga:openfga-spring-boot-starter:0.4.1")
+    implementation("org.openapitools:jackson-databind-nullable:0.2.13")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
-    runtimeOnly("com.mysql:mysql-connector-j")
+    runtimeOnly("com.mysql:mysql-connector-j:26.10.0")
     annotationProcessor("org.projectlombok:lombok")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
@@ -75,6 +77,7 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs("-XX:+EnableDynamicAgentLoading", "-Xshare:off")
 }
 
 tasks.withType(BootJar::class) {
@@ -83,6 +86,20 @@ tasks.withType(BootJar::class) {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.modulith:spring-modulith-bom:$springModulithVersion")
+        mavenBom("org.testcontainers:testcontainers-bom:$testcontainersVersion")
+    }
+    dependencies {
+        dependency("ch.qos.logback:logback-classic:1.6.6")
+        dependency("ch.qos.logback:logback-core:1.6.6")
+        dependency("org.ow2.asm:asm:9.11.1")
+        dependency("tools.jackson.core:jackson-databind:3.2.4")
+        dependency("tools.jackson.core:jackson-core:3.2.4")
+        dependency("org.apache.tomcat.embed:tomcat-embed-core:11.0.27")
+        dependency("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.27")
+        dependency("com.fasterxml.jackson.core:jackson-core:2.22.4")
+        dependency("com.fasterxml.jackson.core:jackson-databind:2.22.4")
+        dependency("com.fasterxml.jackson.core:jackson-annotations:2.22")
+        dependency("io.opentelemetry:opentelemetry-api:1.67.0")
     }
 }
 

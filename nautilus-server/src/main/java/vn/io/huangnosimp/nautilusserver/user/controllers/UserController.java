@@ -6,8 +6,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.constraints.CacheName;
+import vn.io.huangnosimp.nautilusserver.resolver.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.user.dto.requests.ChangeUsernameRequest;
 import vn.io.huangnosimp.nautilusserver.user.dto.requests.UpdateUserInfoRequest;
 import vn.io.huangnosimp.nautilusserver.user.dto.responses.UserInfoResponse;
@@ -30,13 +30,6 @@ public class UserController {
     public ResponseEntity<?> updateUserInfo(
             @PathVariable String username, @Valid @RequestBody UpdateUserInfoRequest body) {
         userService.updateUserInfo(getId(username), body);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{username}/avatar")
-    @PreAuthorize("authentication.name == #username")
-    public ResponseEntity<?> deleteUserAvatar(@PathVariable String username) {
-        userService.deleteUserAvatar(getId(username));
         return ResponseEntity.ok().build();
     }
 

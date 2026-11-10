@@ -11,7 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
+import vn.io.huangnosimp.nautilusserver.resolver.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.star.dto.ServerStaredInfo;
 import vn.io.huangnosimp.nautilusserver.star.dto.UserStaredInfo;
 import vn.io.huangnosimp.nautilusserver.star.services.StarService;
@@ -25,8 +25,8 @@ public class StarController {
 
     @GetMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<Page<UserStaredInfo>> getUserStaredInfo(
             @PathVariable String username,
             @PathVariable String servername,
@@ -51,8 +51,8 @@ public class StarController {
 
     @PutMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> addStar(
             @PathVariable String username, @PathVariable String servername) {
         String userId = globalIdResolver.resolveUserId(getAuthentication().getName());
@@ -63,8 +63,8 @@ public class StarController {
 
     @DeleteMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isViewer(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> deleteStar(
             @PathVariable String username, @PathVariable String servername) {
         String userId = globalIdResolver.resolveUserId(getAuthentication().getName());

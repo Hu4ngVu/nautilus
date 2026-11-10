@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import vn.io.huangnosimp.nautilusserver.authorization.GlobalIdResolver;
+import vn.io.huangnosimp.nautilusserver.resolver.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.AddTagRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.TagResponse;
 import vn.io.huangnosimp.nautilusserver.server.services.ServerTagService;
@@ -19,8 +19,8 @@ public class TagController {
 
     @GetMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<TagResponse> getAllTags(
             @PathVariable String username, @PathVariable String servername) {
         TagResponse response = serverTagService.getAllServerTag(getServerId(username, servername));
@@ -29,8 +29,8 @@ public class TagController {
 
     @PutMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@authorizationUtilsImpl.isEditor(@globalIdResolverImpl.resolveUserId(@authentication.getName()),"
-                + " @globalIdResolverImpl.resolveServerId(#username, #servername))")
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> addServerTag(
             @PathVariable String username,
             @PathVariable String servername,

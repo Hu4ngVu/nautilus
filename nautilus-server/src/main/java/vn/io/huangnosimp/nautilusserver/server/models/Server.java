@@ -52,4 +52,10 @@ public class Server extends BaseEntity {
 
     @Column(name = "star_count", columnDefinition = "INTEGER")
     private Integer starCount;
+
+    @Column(name = "server_avatar_id", columnDefinition = "CHAR(36)")
+    private String serverAvatarId;
+
+    @Column(name = "server_banner_id", columnDefinition = "CHAR(36)")
+    private String serverBannerId;
 }

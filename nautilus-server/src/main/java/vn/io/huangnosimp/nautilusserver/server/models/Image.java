@@ -26,4 +26,7 @@ public class Image extends BaseEntity {
 
     @Column(name = "order_index", columnDefinition = "INTEGER")
     private Integer orderIndex;
+
+    @Column(name = "image_id", columnDefinition = "CHAR(36)", unique = true, nullable = false)
+    private String imageId;
 }

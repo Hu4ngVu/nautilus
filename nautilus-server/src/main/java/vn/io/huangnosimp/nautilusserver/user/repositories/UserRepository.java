@@ -14,22 +14,17 @@ import vn.io.huangnosimp.nautilusserver.user.models.User;
 public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByAuthUserId(String authUserId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE User u SET u.serverCount = u.serverCount + :amount WHERE u.authUserId = :userId")
     void increaseServerCount(@Param("userId") String userId, @Param("amount") Integer amount);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
-    @Query("UPDATE User u SET u.serverCount = u.serverCount - :amount WHERE u.authUserId = :userId")
+    @Query(
+            "UPDATE User u SET u.serverCount = u.serverCount - :amount WHERE u.authUserId = :userId"
+                    + " AND u.serverCount >= :amount")
     void decreaseServerCount(@Param("userId") String userId, @Param("amount") Integer amount);
 
     boolean existsByUsername(@NotBlank String s);
-
-    @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.username = :newUsername WHERE u.username = :oldUsername")
-    void updateUsername(
-            @Param("oldUsername") String oldUsername,
-            @Param("newUsername") @NotBlank String newUsername);
 }
