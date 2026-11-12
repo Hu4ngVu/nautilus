@@ -7,7 +7,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(
-        name = "java_mc_version",
+        name = "java_mc_versions",
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uc_server_id_mc_version",

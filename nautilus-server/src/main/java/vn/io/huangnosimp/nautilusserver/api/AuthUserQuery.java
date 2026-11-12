@@ -4,4 +4,6 @@ import java.util.Optional;
 
 public interface AuthUserQuery {
     Optional<String> getAuthUserIdByUsername(String username);
+
+    Optional<String> getUsernameByAuthUserId(String authUserId);
 }

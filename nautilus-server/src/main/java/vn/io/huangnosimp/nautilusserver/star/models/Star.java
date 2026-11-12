@@ -5,7 +5,7 @@ import lombok.*;
 
 @Entity
 @Table(
-        name = "star",
+        name = "stars",
         uniqueConstraints =
                 @UniqueConstraint(
                         name = "uc_user_id_server_id",

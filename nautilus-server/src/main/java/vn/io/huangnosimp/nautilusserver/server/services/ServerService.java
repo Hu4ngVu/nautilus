@@ -13,12 +13,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.io.huangnosimp.nautilusserver.api.AuthUserQuery;
 import vn.io.huangnosimp.nautilusserver.api.ResourceStorage;
 import vn.io.huangnosimp.nautilusserver.constraints.CacheName;
 import vn.io.huangnosimp.nautilusserver.events.*;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateServer;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidResourceId;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
+import vn.io.huangnosimp.nautilusserver.exceptions.UserNotFound;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
@@ -38,6 +40,7 @@ public class ServerService {
     private final ApplicationEventPublisher eventPublisher;
     private final GalleryService galleryService;
     private final ResourceStorage resourceStorage;
+    private final AuthUserQuery authUserQuery;
 
     @Logging(logArguments = true)
     public Page<ServerInfoResponse> getAllServer(
@@ -47,7 +50,26 @@ public class ServerService {
             List<String> tags,
             Pageable pageable) {
         Specification<Server> specification =
-                getServerSpecification(requiresPremium, serverType, serverPlatform, tags);
+                getServerSpecification(null, requiresPremium, serverType, serverPlatform, tags);
+        return findServers(specification, pageable);
+    }
+
+    @Logging(logArguments = true)
+    public Page<ServerInfoResponse> searchServer(
+            String searchQuery,
+            Boolean requiresPremium,
+            ServerType serverType,
+            ServerPlatform serverPlatform,
+            List<String> tags,
+            Pageable pageable) {
+        Specification<Server> specification =
+                getServerSpecification(
+                        searchQuery, requiresPremium, serverType, serverPlatform, tags);
+        return findServers(specification, pageable);
+    }
+
+    private Page<ServerInfoResponse> findServers(
+            Specification<Server> specification, Pageable pageable) {
         return serverRepository
                 .findAllByVisibilityIsTrue(specification, pageable)
                 .map(
@@ -60,6 +82,16 @@ public class ServerService {
                                         .servername(server.getServername())
                                         .summary(server.getSummary())
                                         .starCount(server.getStarCount())
+                                        .username(
+                                                authUserQuery
+                                                        .getUsernameByAuthUserId(server.getUserId())
+                                                        .orElseThrow(
+                                                                () ->
+                                                                        new UserNotFound(
+                                                                                "User not found for"
+                                                                                    + " server: "
+                                                                                        + server
+                                                                                                .getId())))
                                         .build());
     }
 
@@ -223,12 +255,22 @@ public class ServerService {
     }
 
     private Specification<Server> getServerSpecification(
+            String searchQuery,
             Boolean requiresPremium,
             ServerType serverType,
             ServerPlatform serverPlatform,
             List<String> tags) {
         return (root, query, criteriaBuilder) -> {
             var predicates = criteriaBuilder.conjunction();
+            if (searchQuery != null && !searchQuery.isBlank()) {
+                String searchPattern = "%" + searchQuery.trim().toLowerCase() + "%";
+                predicates
+                        .getExpressions()
+                        .add(
+                                criteriaBuilder.like(
+                                        criteriaBuilder.lower(root.get("servername")),
+                                        searchPattern));
+            }
             if (requiresPremium != null) {
                 predicates
                         .getExpressions()

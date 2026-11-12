@@ -7,7 +7,7 @@ import vn.io.huangnosimp.nautilusserver.server.constants.ServerType;
 
 @Entity
 @Table(
-        name = "server",
+        name = "servers",
         uniqueConstraints =
                 @UniqueConstraint(
                         name = "unique_server_name_per_user",

@@ -6,7 +6,7 @@ import vn.io.huangnosimp.nautilusserver.storage.constants.StorageStatus;
 import vn.io.huangnosimp.nautilusserver.storage.constants.StorageType;
 
 @Entity
-@Table(name = "resource")
+@Table(name = "resources")
 @Getter
 @Setter
 @NoArgsConstructor

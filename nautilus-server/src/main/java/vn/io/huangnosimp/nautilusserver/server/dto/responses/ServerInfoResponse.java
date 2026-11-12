@@ -4,6 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record ServerInfoResponse(
+        String username,
         String servername,
         Boolean requiresPremium,
         String avatarUrl,

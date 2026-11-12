@@ -14,8 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidMcVersion;
 import vn.io.huangnosimp.nautilusserver.exceptions.ServerNotFound;
-import vn.io.huangnosimp.nautilusserver.server.dto.requests.AddJavaVersionRequest;
 import vn.io.huangnosimp.nautilusserver.server.dto.requests.AddBedrockVersionRequest;
+import vn.io.huangnosimp.nautilusserver.server.dto.requests.AddJavaVersionRequest;
 import vn.io.huangnosimp.nautilusserver.server.models.JavaMcVersion;
 import vn.io.huangnosimp.nautilusserver.server.models.Server;
 import vn.io.huangnosimp.nautilusserver.server.repositories.BedrockMcVersionRepository;
@@ -95,12 +95,17 @@ class ServerMcVersionServiceTest {
 
         verify(bedrockVersions).deleteAll(List.of());
         verify(bedrockVersions)
-                .saveAll(argThat(rows -> {
-                    var saved = java.util.stream.StreamSupport.stream(rows.spliterator(), false).toList();
-                    return saved.size() == 1
-                            && saved.getFirst().getMcVersion().equals("1.20.1")
-                            && saved.getFirst().getIsPrimaryMcVersion();
-                }));
+                .saveAll(
+                        argThat(
+                                rows -> {
+                                    var saved =
+                                            java.util.stream.StreamSupport.stream(
+                                                            rows.spliterator(), false)
+                                                    .toList();
+                                    return saved.size() == 1
+                                            && saved.getFirst().getMcVersion().equals("1.20.1")
+                                            && saved.getFirst().getIsPrimaryMcVersion();
+                                }));
         verifyNoInteractions(javaVersions);
     }
 
@@ -112,8 +117,11 @@ class ServerMcVersionServiceTest {
         assertThrows(InvalidMcVersion.class, () -> service.addBedrockVersion("server", null));
         assertThrows(
                 InvalidMcVersion.class,
-                () -> service.addBedrockVersion(
-                        "server", new AddBedrockVersionRequest(Map.of("1.20", Set.of("1.99")), "1.99")));
+                () ->
+                        service.addBedrockVersion(
+                                "server",
+                                new AddBedrockVersionRequest(
+                                        Map.of("1.20", Set.of("1.99")), "1.99")));
 
         verifyNoInteractions(bedrockVersions);
     }
