@@ -44,6 +44,9 @@ const dirty = computed(() => {
     || bannerResourceId.value !== undefined
 })
 
+// Uploaders keep their own preview of a just-picked file; remounting them drops it
+const uploaderKey = ref(0)
+
 function discard() {
   const s = props.server
   Object.assign(form, {
@@ -55,6 +58,7 @@ function discard() {
   })
   avatarResourceId.value = undefined
   bannerResourceId.value = undefined
+  uploaderKey.value++
 }
 
 function orNull(value: string) {
@@ -95,6 +99,7 @@ async function save() {
     @submit.prevent="save"
   >
     <ImageUploader
+      :key="`banner-${uploaderKey}`"
       :label="t('manage.banner')"
       :current-url="bannerResourceId === null ? null : server.bannerUrl"
       aspect="banner"
@@ -103,6 +108,7 @@ async function save() {
       @removed="bannerResourceId = null"
     />
     <ImageUploader
+      :key="`avatar-${uploaderKey}`"
       :label="t('manage.avatar')"
       :current-url="avatarResourceId === null ? null : server.avatarUrl"
       removable
