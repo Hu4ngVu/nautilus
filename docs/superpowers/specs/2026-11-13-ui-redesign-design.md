@@ -181,7 +181,7 @@ Kết quả: mỗi trang khoảng 1 (page) + 1 (count) + 4 query, không phụ t
 - `getUserStaredInfo(serverId)`: lấy theo lô qua `UserQuery.getUserDataByAuthUserIds(Collection<String>) → Map<String, UserData>`.
 - `getServerStaredInfo(userId)`:
   - **Lỗi 1, sai `username`**: response hiện trả username của người gắn sao. Sửa: thêm `ownerUserId` vào `ServerData`, rồi lấy username của **chủ server** theo lô qua `AuthUserQuery.getUsernamesByAuthUserIds`.
-  - **Lỗi 2, server riêng tư làm hỏng cả trang**: lọc ngay trong query. Thêm `StarRepository.findAllByUserIdAndPublicServer(userId, pageable)`, dùng JPQL join `Server` với điều kiện `s.visibility = true`, để phân trang và `totalElements` đúng.
+  - **Lỗi 2, server riêng tư làm hỏng cả trang**: lọc trước khi phân trang, theo 3 bước để giữ ranh giới Spring Modulith (module `star` không được JPQL join sang entity `Server`): `StarRepository.findServerIdsByUserId(userId)` → `ServerQuery.filterPublicServerIds(ids)` → `StarRepository.findAllByUserIdAndServerIdIn(userId, publicIds, pageable)`. Nhờ vậy phân trang và `totalElements` đúng mà không đổi schema. Nếu một server bị chuyển sang riêng tư giữa các bước thì bỏ qua phần tử đó.
   - Dữ liệu server được lấy theo lô qua `ServerQuery.getPublicServerDataByServerIds(Collection<String>) → Map<String, ServerData>`.
   - Bỏ lời gọi `getUserData(userId)` đang nằm trong vòng lặp.
 
