@@ -1,26 +1,40 @@
 <script setup lang="ts">
 import type { ServerSummary } from '~/types/api'
 
-defineProps<{
+withDefaults(defineProps<{
   servers: ServerSummary[]
   loading?: boolean
-}>()
+  view?: 'list' | 'grid'
+}>(), {
+  loading: false,
+  view: 'list'
+})
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
+  <div :class="view === 'grid' ? 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3' : 'flex flex-col gap-3'">
     <template v-if="loading && !servers.length">
       <USkeleton
         v-for="i in 6"
         :key="i"
-        class="h-32 rounded-lg"
+        :class="view === 'grid' ? 'h-64' : 'h-32'"
       />
     </template>
-    <ServerCard
-      v-for="s in servers"
-      v-else
-      :key="`${s.username}/${s.servername}`"
-      v-bind="s"
-    />
+    <template v-else-if="view === 'grid'">
+      <ServerTile
+        v-for="(s, i) in servers"
+        :key="`${s.username}/${s.servername}`"
+        :server="s"
+        :index="i"
+      />
+    </template>
+    <template v-else>
+      <ServerRow
+        v-for="(s, i) in servers"
+        :key="`${s.username}/${s.servername}`"
+        :server="s"
+        :index="i"
+      />
+    </template>
   </div>
 </template>

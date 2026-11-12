@@ -64,7 +64,8 @@
     "versions": "Versions",
     "tags": "Tags",
     "stargazers": "Stargazers",
-    "notFound": "Server not found"
+    "notFound": "Server not found",
+    "public": "Public"
   },
   "tags": {
     "category": {

@@ -15,21 +15,19 @@ async function copy() {
 </script>
 
 <template>
-  <div class="flex items-center gap-3 rounded-md bg-elevated/60 px-3 py-2">
+  <div class="flex items-center gap-3 rounded-md border-2 border-(--block-border) bg-(--ui-bg) px-3 py-2">
     <div class="min-w-0 flex-1">
       <p class="text-xs text-muted">
         {{ label }}
       </p>
-      <p class="truncate font-mono text-sm text-highlighted">
+      <p class="truncate font-pixel text-pixel-base text-highlighted">
         {{ address }}
       </p>
     </div>
     <UButton
       :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
-      :aria-label="t('common.copy')"
-      color="neutral"
-      variant="ghost"
-      size="sm"
+      :label="copied ? t('common.copied') : t('common.copy')"
+      size="xs"
       @click="copy"
     />
     <span

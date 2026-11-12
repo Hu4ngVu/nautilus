@@ -39,11 +39,14 @@ async function toggle() {
 <template>
   <UButton
     :icon="starred ? 'i-lucide-star-off' : 'i-lucide-star'"
-    :label="`${starred ? t('server.unstar') : t('server.star')} · ${n(count)}`"
-    :color="starred ? 'neutral' : 'primary'"
-    :variant="starred ? 'soft' : 'solid'"
+    color="warning"
+    :variant="starred ? 'outline' : 'solid'"
     :loading="pending"
     :aria-pressed="starred"
+    :aria-label="`${starred ? t('server.unstar') : t('server.star')}, ${t('server.stars', { n: n(count) }, count)}`"
     @click="toggle"
-  />
+  >
+    <span>{{ starred ? t('server.unstar') : t('server.star') }}</span>
+    <span class="rounded-sm bg-current/15 px-1.5">{{ n(count) }}</span>
+  </UButton>
 </template>

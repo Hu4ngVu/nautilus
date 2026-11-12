@@ -97,8 +97,10 @@
 @utility block-lift {
   transition: transform 0.15s cubic-bezier(0.3, 1.6, 0.6, 1), box-shadow 0.15s;
 
+  /* :has() lifts a card whose stretched link has keyboard focus */
   &:hover,
-  &:focus-visible {
+  &:focus-visible,
+  &:has(:focus-visible) {
     transform: translate(-4px, -4px);
     box-shadow: var(--block-offset) var(--block-offset) 0 var(--lift-color, var(--lift-ink));
   }
@@ -111,7 +113,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     &:hover,
-    &:focus-visible {
+    &:focus-visible,
+    &:has(:focus-visible) {
       transform: none;
     }
   }

@@ -64,7 +64,8 @@
     "versions": "Phiên bản",
     "tags": "Thẻ",
     "stargazers": "Người đã gắn sao",
-    "notFound": "Không tìm thấy server"
+    "notFound": "Không tìm thấy server",
+    "public": "Công khai"
   },
   "tags": {
     "category": {
