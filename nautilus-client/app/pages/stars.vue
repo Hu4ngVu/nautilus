@@ -52,7 +52,11 @@ async function unstar(server: StarredServer) {
     icon: 'i-lucide-star-off',
     actions: [{ label: t('stars.undo'), color: 'neutral', variant: 'soft', onClick: () => undo(index, server) }]
   })
-  if (!items.value.length && page.value > 1) page.value--
+  // An emptied page may still have stars after it (or before it): fetch the right page again
+  if (!items.value.length) {
+    if (page.value > 1) page.value--
+    else await refresh()
+  }
 }
 
 async function undo(index: number, server: StarredServer) {
