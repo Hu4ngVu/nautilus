@@ -37,4 +37,8 @@ public interface ServerRepository
     @Query("SELECT s.id FROM Server s WHERE s.userId = :userId AND s.servername = :servername")
     Optional<String> findServerId(
             @Param("userId") String userId, @Param("servername") String servername);
+
+    Page<Server> findAllByUserId(String userId, Pageable pageable);
+
+    Page<Server> findAllByUserIdAndVisibilityIsTrue(String userId, Pageable pageable);
 }

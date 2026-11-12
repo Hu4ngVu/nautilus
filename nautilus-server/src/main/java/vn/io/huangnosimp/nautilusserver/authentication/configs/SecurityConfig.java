@@ -19,6 +19,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import vn.io.huangnosimp.nautilusserver.authentication.handlers.OAuth2LoginFailureHandler;
+import vn.io.huangnosimp.nautilusserver.authentication.handlers.OAuth2LoginSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +30,8 @@ public class SecurityConfig {
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -64,7 +68,9 @@ public class SecurityConfig {
                                         .userInfoEndpoint(
                                                 userInfo ->
                                                         userInfo.userService(
-                                                                customOAuth2UserService)));
+                                                                customOAuth2UserService))
+                                        .successHandler(oAuth2LoginSuccessHandler)
+                                        .failureHandler(oAuth2LoginFailureHandler));
 
         return http.build();
     }

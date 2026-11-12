@@ -47,7 +47,7 @@ public class EmailCuckooFilterLoader implements ApplicationRunner {
                 var emails =
                         jdbcClient
                                 .sql(
-                                        "SELECT email FROM auth_user WHERE email > :last ORDER BY"
+                                        "SELECT email FROM auth_users WHERE email > :last ORDER BY"
                                                 + " email LIMIT :batchSize")
                                 .param("last", last)
                                 .param("batchSize", BATCH_SIZE)

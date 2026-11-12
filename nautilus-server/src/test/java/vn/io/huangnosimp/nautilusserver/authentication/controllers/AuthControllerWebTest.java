@@ -26,7 +26,7 @@ class AuthControllerWebTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                         """
-                        {"username":"alice","email":"alice@example.test","password":"secret"}
+                        {"username":"alice","email":"alice@example.test","password":"secret123"}
                         """)
                 .assertThat()
                 .hasStatusOk();
@@ -65,5 +65,35 @@ class AuthControllerWebTest {
                         response ->
                                 org.junit.jupiter.api.Assertions.assertEquals(
                                         "access", response.accessToken()));
+    }
+
+    @Test
+    void changePasswordReturnsNewAccessTokenAndRefreshCookie() {
+        when(authService.changePassword(any(), any()))
+                .thenReturn(new TokenResult("access", "refresh"));
+        mvc.put()
+                .uri("/auth/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                        """
+                        {"currentPassword":"old-secret","newPassword":"new-secret"}
+                        """)
+                .assertThat()
+                .hasStatusOk()
+                .containsHeader("Set-Cookie");
+    }
+
+    @Test
+    void changePasswordRejectsShortNewPassword() {
+        mvc.put()
+                .uri("/auth/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                        """
+                        {"currentPassword":"old-secret","newPassword":"short"}
+                        """)
+                .assertThat()
+                .hasStatus4xxClientError();
+        verifyNoInteractions(authService);
     }
 }

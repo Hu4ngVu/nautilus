@@ -11,6 +11,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vn.io.huangnosimp.nautilusserver.constraints.CacheName;
 import vn.io.huangnosimp.nautilusserver.resolver.GlobalIdResolver;
@@ -58,11 +59,22 @@ public class ServerController {
                         query, requiresPremium, serverType, serverPlatform, tags, pageable));
     }
 
+    @GetMapping("{username}")
+    public ResponseEntity<Page<ServerInfoResponse>> getServerByUsername(
+            @PathVariable String username,
+            Authentication authentication,
+            @PageableDefault(sort = "starCount", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
+        return ResponseEntity.ok(
+                serverService.getServerByUser(
+                        getUserId(username), getAuthenticatedUserId(authentication), pageable));
+    }
+
     @GetMapping("/{username}/{servername}")
     @PreAuthorize(
             "@permissionCheckerImpl.isServerPublic(@globalIdResolver.resolveServerId(#username,"
                 + " #servername)) || "
-                + "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<ServerInfoDetailResponse> getServerInfo(
             @PathVariable String username, @PathVariable String servername) {
@@ -79,7 +91,7 @@ public class ServerController {
 
     @DeleteMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@permissionCheckerImpl.isOwner(@globalIdResolver.resolveUserId(@authentication.getName()),"
+            "@permissionCheckerImpl.isOwner(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> deleteServer(
             @PathVariable String username, @PathVariable String servername) {
@@ -89,7 +101,7 @@ public class ServerController {
 
     @PatchMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> updateServer(
             @PathVariable String username,
@@ -102,7 +114,7 @@ public class ServerController {
     @PutMapping("/{username}/{servername}")
     @CacheEvict(cacheNames = CacheName.SERVER_ID_CACHE, key = "#username + ':' + #servername")
     @PreAuthorize(
-            "@permissionCheckerImpl.isOwner(@globalIdResolver.resolveUserId(@authentication.getName()),"
+            "@permissionCheckerImpl.isOwner(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> changeServername(
             @PathVariable String username,
@@ -114,7 +126,7 @@ public class ServerController {
 
     @PutMapping("/{username}/{servername}/visibility")
     @PreAuthorize(
-            "@permissionCheckerImpl.isOwner(@globalIdResolver.resolveUserId(@authentication.getName()),"
+            "@permissionCheckerImpl.isOwner(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> changeServerVisibility(
             @PathVariable String username,
@@ -130,5 +142,14 @@ public class ServerController {
 
     private String getUserId(String username) {
         return globalIdResolver.resolveUserId(username);
+    }
+
+    private String getAuthenticatedUserId(Authentication authentication) {
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            return null;
+        }
+        return globalIdResolver.resolveUserId(authentication.getName());
     }
 }

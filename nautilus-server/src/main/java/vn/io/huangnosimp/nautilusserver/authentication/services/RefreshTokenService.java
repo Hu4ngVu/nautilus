@@ -53,7 +53,7 @@ public class RefreshTokenService {
 
     @Logging(level = Level.DEBUG)
     @Transactional(rollbackFor = Exception.class)
-    public void validateRefreshToken(String refreshToken) throws InvalidRefreshToken {
+    public void validateRefreshToken(String refreshToken) {
         RefreshToken token =
                 refreshTokenRepository
                         .findByToken(refreshToken)

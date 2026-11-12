@@ -28,6 +28,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
+    @ExceptionHandler(InvalidPassword.class)
+    public ResponseEntity<String> handleInvalidPassword(InvalidPassword e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
     // Server
     @ExceptionHandler(ImageNotFound.class)
     public ResponseEntity<String> handleImageNotFound() {

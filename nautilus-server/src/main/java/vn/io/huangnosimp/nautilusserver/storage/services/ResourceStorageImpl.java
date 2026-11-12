@@ -22,6 +22,9 @@ public class ResourceStorageImpl implements ResourceStorage {
     @Override
     @Logging(level = Level.DEBUG, logArguments = true)
     public String createSignedGetUrl(String resourceId) {
+        if (resourceId == null) {
+            return null;
+        }
         var resource = resourceRepository.findById(resourceId);
         return resource.map(
                         value ->

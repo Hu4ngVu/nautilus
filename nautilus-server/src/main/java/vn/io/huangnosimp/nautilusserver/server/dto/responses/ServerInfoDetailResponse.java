@@ -1,5 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.server.dto.responses;
 
+import java.io.Serializable;
 import java.util.List;
 import lombok.Builder;
 import vn.io.huangnosimp.nautilusserver.server.constants.ServerPlatform;
@@ -22,4 +23,5 @@ public record ServerInfoDetailResponse(
         List<String> bedrockVersions,
         ServerType serverType,
         ServerPlatform serverPlatform,
-        Integer starCount) {}
+        Integer starCount)
+        implements Serializable {}

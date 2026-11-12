@@ -38,3 +38,6 @@ bin/
 /.idea/
 
 .env
+.claude
+.superpowers
+skills-lock.json

@@ -68,6 +68,15 @@ class AuthenticationServicesTest {
     }
 
     @Test
+    void loadsAuthUserByEmailWhenNoUsernameMatches() {
+        var service = new AuthUserService(authUsers);
+        AuthUser alice = AuthUser.builder().username("alice").email("alice@example.test").build();
+        when(authUsers.findByUsername("alice@example.test")).thenReturn(Optional.empty());
+        when(authUsers.findByEmail("alice@example.test")).thenReturn(Optional.of(alice));
+        assertSame(alice, service.loadUserByUsername("alice@example.test"));
+    }
+
+    @Test
     void refreshTokenValidationAcceptsUnexpiredTokenAndDeletesExpiredToken() {
         var service = new RefreshTokenService(refreshTokens);
         AuthUser alice = AuthUser.builder().build();

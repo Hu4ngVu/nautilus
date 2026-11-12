@@ -19,8 +19,10 @@ public class AuthUserService implements UserDetailsService {
     @NullMarked
     @Logging(level = Level.DEBUG)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // Accepts either a username or an email; usernames may contain '@', so try username first
         return authUserRepository
                 .findByUsername(username)
+                .or(() -> authUserRepository.findByEmail(username))
                 .orElseThrow(
                         () ->
                                 new UsernameNotFoundException(

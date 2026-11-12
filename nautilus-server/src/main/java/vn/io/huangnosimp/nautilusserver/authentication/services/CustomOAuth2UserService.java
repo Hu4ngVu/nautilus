@@ -4,6 +4,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NullMarked;
 import org.slf4j.event.Level;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -15,6 +16,7 @@ import vn.io.huangnosimp.nautilusserver.authentication.constants.Provider;
 import vn.io.huangnosimp.nautilusserver.authentication.constants.Role;
 import vn.io.huangnosimp.nautilusserver.authentication.models.AuthUser;
 import vn.io.huangnosimp.nautilusserver.authentication.repositories.AuthUserRepository;
+import vn.io.huangnosimp.nautilusserver.events.UserRegisteredEvent;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
 
 @Service
@@ -22,6 +24,7 @@ import vn.io.huangnosimp.nautilusserver.logging.Logging;
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
     private final AuthUserRepository authUserRepository;
     private final DefaultOAuth2UserService defaultOAuth2UserService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @NullMarked
@@ -56,6 +59,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                             .role(Role.USER)
                             .build();
             authUserRepository.save(authUser);
+            eventPublisher.publishEvent(
+                    new UserRegisteredEvent(authUser.getId(), authUser.getUsername()));
         }
         return oAuth2User;
     }

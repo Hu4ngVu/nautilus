@@ -297,4 +297,32 @@ public class ServerService {
             return predicates;
         };
     }
+
+    public Page<ServerInfoResponse> getServerByUser(
+            String userId, String authenticatedUserId, Pageable pageable) {
+        Page<Server> servers =
+                userId.equals(authenticatedUserId)
+                        ? serverRepository.findAllByUserId(userId, pageable)
+                        : serverRepository.findAllByUserIdAndVisibilityIsTrue(userId, pageable);
+        return servers.map(
+                server ->
+                        ServerInfoResponse.builder()
+                                .avatarUrl(
+                                        resourceStorage.createSignedGetUrl(
+                                                server.getServerAvatarId()))
+                                .requiresPremium(server.getRequiresPremium())
+                                .servername(server.getServername())
+                                .summary(server.getSummary())
+                                .starCount(server.getStarCount())
+                                .username(
+                                        authUserQuery
+                                                .getUsernameByAuthUserId(server.getUserId())
+                                                .orElseThrow(
+                                                        () ->
+                                                                new UserNotFound(
+                                                                        "User not found for"
+                                                                                + " server: "
+                                                                                + server.getId())))
+                                .build());
+    }
 }

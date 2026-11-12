@@ -23,7 +23,7 @@ public class McVersionController {
     @PreAuthorize(
             "@permissionCheckerImpl.isServerPublic(@globalIdResolver.resolveServerId(#username,"
                 + " #servername)) || "
-                + "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<JavaVersionResponse> getJavaVersions(
             @PathVariable String username, @PathVariable String servername) {
@@ -36,7 +36,7 @@ public class McVersionController {
     @PreAuthorize(
             "@permissionCheckerImpl.isServerPublic(@globalIdResolver.resolveServerId(#username,"
                 + " #servername)) || "
-                + "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+                + "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<BedrockVersionResponse> getBedrockVersions(
             @PathVariable String username, @PathVariable String servername) {
@@ -47,7 +47,7 @@ public class McVersionController {
 
     @PutMapping("/java/{username}/{servername}")
     @PreAuthorize(
-            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> addJavaVersion(
             @PathVariable String username,
@@ -59,7 +59,7 @@ public class McVersionController {
 
     @PutMapping("/bedrock/{username}/{servername}")
     @PreAuthorize(
-            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> addBedrockVersion(
             @PathVariable String username,

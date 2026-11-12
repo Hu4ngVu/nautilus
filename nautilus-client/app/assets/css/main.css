@@ -2,17 +2,55 @@
 @import "@nuxt/ui";
 
 @theme static {
-  --font-sans: 'Public Sans', sans-serif;
+  --font-sans: Arial, Helvetica, sans-serif;
 
-  --color-green-50: #EFFDF5;
-  --color-green-100: #D9FBE8;
-  --color-green-200: #B3F5D1;
-  --color-green-300: #75EDAE;
-  --color-green-400: #00DC82;
-  --color-green-500: #00C16A;
-  --color-green-600: #00A155;
-  --color-green-700: #007F45;
-  --color-green-800: #016538;
-  --color-green-900: #0A5331;
-  --color-green-950: #052E16;
+  /* Primary: #73ff9c / #2ff96b / #04e347 */
+  --color-nautilus-50: #effff3;
+  --color-nautilus-100: #d8ffe3;
+  --color-nautilus-200: #b3ffc9;
+  --color-nautilus-300: #73ff9c;
+  --color-nautilus-400: #2ff96b;
+  --color-nautilus-500: #04e347;
+  --color-nautilus-600: #00bc39;
+  --color-nautilus-700: #029331;
+  --color-nautilus-800: #08732b;
+  --color-nautilus-900: #095e26;
+  --color-nautilus-950: #003512;
+
+  /* Secondary: #6180fa / #2f58f9 / #0736ee */
+  --color-ocean-50: #eef2ff;
+  --color-ocean-100: #dfe6ff;
+  --color-ocean-200: #c5d1fe;
+  --color-ocean-300: #9fb1fc;
+  --color-ocean-400: #6180fa;
+  --color-ocean-500: #2f58f9;
+  --color-ocean-600: #0736ee;
+  --color-ocean-700: #062bc1;
+  --color-ocean-800: #0b279b;
+  --color-ocean-900: #10267a;
+  --color-ocean-950: #0b1647;
 }
+
+/* Rendered markdown (user/server bio) */
+.markdown {
+  @apply text-default leading-relaxed break-words;
+}
+
+.markdown > * + * {
+  @apply mt-3;
+}
+
+.markdown h1 { @apply text-2xl font-bold; }
+.markdown h2 { @apply text-xl font-bold; }
+.markdown h3 { @apply text-lg font-semibold; }
+.markdown a { @apply text-secondary underline underline-offset-2; }
+.markdown ul { @apply list-disc ps-6; }
+.markdown ol { @apply list-decimal ps-6; }
+.markdown blockquote { @apply ps-4 text-muted border-s-4 border-accented; }
+.markdown code { @apply px-1 py-0.5 rounded bg-elevated text-sm; }
+.markdown pre { @apply p-3 rounded-md bg-elevated overflow-x-auto; }
+.markdown pre code { @apply p-0 bg-transparent; }
+.markdown img { @apply max-w-full rounded-md; }
+.markdown table { @apply w-full text-sm; }
+.markdown th, .markdown td { @apply px-2 py-1 text-start; }
+.markdown hr { @apply border-default; }
