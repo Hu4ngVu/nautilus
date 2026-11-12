@@ -1,5 +1,7 @@
 package vn.io.huangnosimp.nautilusserver.authentication.repositories;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -30,4 +32,13 @@ public interface AuthUserRepository extends JpaRepository<AuthUser, String> {
 
     @Query("SELECT a.username FROM AuthUser a WHERE a.id = :authUserId")
     Optional<String> findUsernameById(String authUserId);
+
+    @Query("SELECT a.id AS id, a.username AS username FROM AuthUser a WHERE a.id IN :ids")
+    List<IdUsername> findIdAndUsernameByIdIn(@Param("ids") Collection<String> ids);
+
+    interface IdUsername {
+        String getId();
+
+        String getUsername();
+    }
 }

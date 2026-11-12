@@ -4,4 +4,8 @@ import lombok.Builder;
 
 @Builder
 public record ServerData(
-        String serverId, String servername, Integer serverTotalStar, String serverAvatarUrl) {}
+        String serverId,
+        String ownerUserId,
+        String servername,
+        Integer serverTotalStar,
+        String serverAvatarUrl) {}

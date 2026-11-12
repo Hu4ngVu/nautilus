@@ -1,5 +1,7 @@
 package vn.io.huangnosimp.nautilusserver.server.repositories;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,11 @@ import vn.io.huangnosimp.nautilusserver.server.models.Server;
 public interface ServerRepository
         extends JpaRepository<Server, String>, JpaSpecificationExecutor<Server> {
     boolean existsByIdAndVisibilityIsTrue(String serverId);
+
+    List<Server> findAllByIdInAndVisibilityIsTrue(Collection<String> ids);
+
+    @Query("SELECT s.id FROM Server s WHERE s.id IN :ids AND s.visibility = true")
+    List<String> findPublicIdsByIdIn(@Param("ids") Collection<String> ids);
 
     Page<Server> findAllByVisibilityIsTrue(Specification<Server> specification, Pageable pageable);
 

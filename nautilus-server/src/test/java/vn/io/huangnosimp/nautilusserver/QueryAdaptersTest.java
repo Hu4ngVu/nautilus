@@ -7,7 +7,10 @@ import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.ClientCheckRequest;
 import io.awspring.cloud.s3.S3Template;
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -63,17 +66,116 @@ class QueryAdaptersTest {
         var storage = mock(vn.io.huangnosimp.nautilusserver.api.ResourceStorage.class);
         var query = new ServerQueryImpl(repository, storage);
         Server server =
-                Server.builder().servername("server").serverAvatarId("avatar").starCount(3).build();
+                Server.builder()
+                        .userId("owner-id")
+                        .servername("server")
+                        .serverAvatarId("avatar")
+                        .starCount(3)
+                        .build();
         ReflectionTestUtils.setField(server, "id", "server-id");
         when(repository.findByIdAndVisibilityIsTrue("server-id")).thenReturn(Optional.of(server));
         when(storage.createSignedGetUrl("avatar")).thenReturn("signed-avatar");
         var result = query.getPublicServerDataByServerId("server-id").orElseThrow();
         assertEquals("server-id", result.serverId());
+        assertEquals("owner-id", result.ownerUserId());
         assertEquals("server", result.servername());
         assertEquals("signed-avatar", result.serverAvatarUrl());
         assertEquals(3, result.serverTotalStar());
         when(repository.existsByIdAndVisibilityIsTrue("server-id")).thenReturn(true);
         assertTrue(query.isServerPublic("server-id"));
+    }
+
+    @Test
+    void authQueryResolvesUsernamesInOneBatch() {
+        AuthUserRepository repository = mock(AuthUserRepository.class);
+        when(repository.findIdAndUsernameByIdIn(Set.of("u1", "u2")))
+                .thenReturn(List.of(idUsername("u1", "alice"), idUsername("u2", "bob")));
+        var result =
+                new AuthUserQueryImpl(repository)
+                        .getUsernamesByAuthUserIds(List.of("u1", "u2", "u1"));
+        assertEquals(Map.of("u1", "alice", "u2", "bob"), result);
+        verify(repository, times(1)).findIdAndUsernameByIdIn(any());
+    }
+
+    @Test
+    void batchQueriesShortCircuitOnEmptyInput() {
+        AuthUserRepository authUsers = mock(AuthUserRepository.class);
+        UserRepository users = mock(UserRepository.class);
+        ServerRepository servers = mock(ServerRepository.class);
+        ResourceStorage storage = mock(ResourceStorage.class);
+        assertTrue(new AuthUserQueryImpl(authUsers).getUsernamesByAuthUserIds(List.of()).isEmpty());
+        assertTrue(new UserQueryImpl(users, storage).getUserDataByAuthUserIds(List.of()).isEmpty());
+        var serverQuery = new ServerQueryImpl(servers, storage);
+        assertTrue(serverQuery.getPublicServerDataByServerIds(List.of()).isEmpty());
+        assertTrue(serverQuery.filterPublicServerIds(List.of()).isEmpty());
+        verifyNoInteractions(authUsers, users, servers);
+    }
+
+    @Test
+    void serverQueryBatchReturnsOnlyPublicServersWithOwner() {
+        ServerRepository repository = mock(ServerRepository.class);
+        ResourceStorage storage = mock(ResourceStorage.class);
+        Server server =
+                Server.builder()
+                        .userId("owner-1")
+                        .servername("Atlantis")
+                        .serverAvatarId("avatar")
+                        .starCount(3)
+                        .build();
+        ReflectionTestUtils.setField(server, "id", "s1");
+        when(repository.findAllByIdInAndVisibilityIsTrue(Set.of("s1", "s2")))
+                .thenReturn(List.of(server));
+        when(storage.createSignedGetUrl("avatar")).thenReturn("signed-avatar");
+        var query = new ServerQueryImpl(repository, storage);
+
+        var result = query.getPublicServerDataByServerIds(List.of("s1", "s2"));
+        assertEquals("owner-1", result.get("s1").ownerUserId());
+        assertEquals("Atlantis", result.get("s1").servername());
+        assertEquals("signed-avatar", result.get("s1").serverAvatarUrl());
+        assertFalse(result.containsKey("s2"));
+
+        when(repository.findPublicIdsByIdIn(Set.of("s1", "s2"))).thenReturn(List.of("s1"));
+        assertEquals(List.of("s1"), query.filterPublicServerIds(List.of("s1", "s2")));
+    }
+
+    @Test
+    void userQueryBatchSignsAvatarPerUser() {
+        UserRepository repository = mock(UserRepository.class);
+        ResourceStorage storage = mock(ResourceStorage.class);
+        when(repository.findAllByAuthUserIdIn(Set.of("a", "b")))
+                .thenReturn(
+                        List.of(
+                                User.builder()
+                                        .authUserId("a")
+                                        .username("alice")
+                                        .avatarId("a1")
+                                        .build(),
+                                User.builder()
+                                        .authUserId("b")
+                                        .username("bob")
+                                        .avatarId(null)
+                                        .build()));
+        when(storage.createSignedGetUrl("a1")).thenReturn("url1");
+        var result =
+                new UserQueryImpl(repository, storage).getUserDataByAuthUserIds(List.of("a", "b"));
+        assertEquals("alice", result.get("a").username());
+        assertEquals("url1", result.get("a").avatarUrl());
+        assertEquals("bob", result.get("b").username());
+        verify(repository, times(1)).findAllByAuthUserIdIn(any());
+    }
+
+    private static AuthUserRepository.IdUsername idUsername(String id, String username) {
+        return new AuthUserRepository.IdUsername() {
+            @Override
+            public String getId() {
+                return id;
+            }
+
+            @Override
+            public String getUsername() {
+                return username;
+            }
+        };
     }
 
     @Test
