@@ -17,6 +17,22 @@ const { notify, success } = useApiError()
 
 useSeoMeta({ title: () => t('auth.register.title') })
 
+const form = useTemplateRef('authForm')
+const typedUsername = computed(() => String(form.value?.state.username ?? ''))
+const typedEmail = computed(() => String(form.value?.state.email ?? ''))
+const typedPassword = computed(() => String(form.value?.state.password ?? ''))
+
+const usernameStatus = useAvailability('username', typedUsername, v => USERNAME_PATTERN.test(v))
+const emailStatus = useAvailability('email', typedEmail, v => EMAIL_PATTERN.test(v))
+const strength = computed(() => passwordStrength(typedPassword.value))
+
+const STATUS_STYLE = {
+  checking: { icon: 'i-lucide-loader-circle', class: 'text-muted [&>svg]:animate-spin', key: 'auth.checking' },
+  available: { icon: 'i-lucide-check', class: 'text-primary', key: 'auth.available' },
+  taken: { icon: 'i-lucide-x', class: 'text-error', key: 'auth.taken' },
+  error: { icon: 'i-lucide-circle-help', class: 'text-muted', key: 'auth.checkFailed' }
+} as const
+
 const loading = ref(false)
 const errorMessage = ref<string | null>(null)
 
@@ -40,7 +56,7 @@ function validate(state: Partial<RegisterState>): FormError[] {
   if (!state.username || !USERNAME_PATTERN.test(state.username)) {
     errors.push({ name: 'username', message: t('validation.username') })
   }
-  if (!state.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email)) {
+  if (!state.email || !EMAIL_PATTERN.test(state.email)) {
     errors.push({ name: 'email', message: t('validation.email') })
   }
   if (!state.password || state.password.length < 8 || state.password.length > LIMITS.password) {
@@ -75,46 +91,83 @@ async function onSubmit(event: FormSubmitEvent<RegisterState>) {
 </script>
 
 <template>
-  <UContainer class="flex justify-center py-12">
-    <div class="w-full max-w-sm rounded-lg bg-elevated/60 p-6 sm:p-8">
-      <UAuthForm
-        :title="t('auth.register.title')"
-        :description="t('auth.register.description')"
-        icon="i-lucide-user-plus"
-        :fields="fields"
-        :providers="providers"
-        :separator="t('auth.or')"
-        :submit="{ label: t('auth.register.submit'), block: true }"
-        :validate="validate"
-        :loading="loading"
-        @submit="onSubmit"
+  <AuthShell>
+    <UAuthForm
+      ref="authForm"
+      :title="t('auth.register.title')"
+      :description="t('auth.register.description')"
+      icon="i-lucide-user-plus"
+      :fields="fields"
+      :providers="providers"
+      :separator="t('auth.or')"
+      :submit="{ label: t('auth.register.submit'), block: true }"
+      :validate="validate"
+      :loading="loading"
+      @submit="onSubmit"
+    >
+      <template
+        v-for="[field, status] in [['username', usernameStatus], ['email', emailStatus]] as const"
+        :key="field"
+        #[`${field}-hint`]
       >
-        <template #validation>
-          <UAlert
-            v-if="errorMessage"
-            color="error"
-            variant="soft"
-            icon="i-lucide-circle-alert"
-            :title="errorMessage"
-          />
-        </template>
-        <template #footer>
-          <i18n-t
-            keypath="auth.register.hasAccount"
-            tag="p"
-            class="text-center text-sm text-muted"
+        <span
+          class="inline-flex items-center gap-1 text-xs"
+          :class="status !== 'idle' ? STATUS_STYLE[status].class : ''"
+          aria-live="polite"
+        >
+          <template v-if="status !== 'idle'">
+            <UIcon
+              :name="STATUS_STYLE[status].icon"
+              class="size-3.5"
+            />
+            {{ t(STATUS_STYLE[status].key) }}
+          </template>
+        </span>
+      </template>
+      <template #password-help>
+        <div
+          v-if="strength"
+          class="flex items-center gap-2"
+        >
+          <div
+            class="flex gap-1"
+            aria-hidden="true"
           >
-            <template #link>
-              <ULink
-                to="/login"
-                class="font-medium text-secondary"
-              >
-                {{ t('auth.login.link') }}
-              </ULink>
-            </template>
-          </i18n-t>
-        </template>
-      </UAuthForm>
-    </div>
-  </UContainer>
+            <span
+              v-for="i in 4"
+              :key="i"
+              class="size-3 border-2 border-(--block-border)"
+              :class="i <= strength ? ['bg-error', 'bg-warning', 'bg-nautilus-500', 'bg-nautilus-500'][strength - 1] : ''"
+            />
+          </div>
+          <span class="text-xs text-muted">{{ t('auth.strengthLabel', { level: t(`auth.strength.${strength}`) }) }}</span>
+        </div>
+      </template>
+      <template #validation>
+        <UAlert
+          v-if="errorMessage"
+          color="error"
+          variant="soft"
+          icon="i-lucide-circle-alert"
+          :title="errorMessage"
+        />
+      </template>
+      <template #footer>
+        <i18n-t
+          keypath="auth.register.hasAccount"
+          tag="p"
+          class="text-center text-sm text-muted"
+        >
+          <template #link>
+            <ULink
+              to="/login"
+              class="font-medium text-secondary"
+            >
+              {{ t('auth.login.link') }}
+            </ULink>
+          </template>
+        </i18n-t>
+      </template>
+    </UAuthForm>
+  </AuthShell>
 </template>

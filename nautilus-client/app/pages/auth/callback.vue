@@ -37,11 +37,18 @@ onMounted(async () => {
       class="flex items-center gap-3 text-muted"
       role="status"
     >
-      <UIcon
-        name="i-lucide-loader-circle"
-        class="size-5 animate-spin"
-      />
-      {{ t('auth.callback.loading') }}
+      <span
+        class="flex gap-1.5"
+        aria-hidden="true"
+      >
+        <span
+          v-for="i in 3"
+          :key="i"
+          class="size-3 animate-pulse bg-nautilus-500 motion-reduce:animate-none"
+          :style="{ animationDelay: `${(i - 1) * 150}ms` }"
+        />
+      </span>
+      <span class="font-pixel text-pixel-lg">{{ t('auth.callback.loading') }}</span>
     </div>
   </UContainer>
 </template>

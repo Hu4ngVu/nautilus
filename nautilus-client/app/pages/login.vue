@@ -54,46 +54,44 @@ async function onSubmit(event: FormSubmitEvent<{ username: string, password: str
 </script>
 
 <template>
-  <UContainer class="flex justify-center py-12">
-    <div class="w-full max-w-sm rounded-lg bg-elevated/60 p-6 sm:p-8">
-      <UAuthForm
-        :title="t('auth.login.title')"
-        :description="t('auth.login.description')"
-        icon="i-lucide-shell"
-        :fields="fields"
-        :providers="providers"
-        :separator="t('auth.or')"
-        :submit="{ label: t('auth.login.submit'), block: true }"
-        :validate="validate"
-        :loading="loading"
-        @submit="onSubmit"
-      >
-        <template #validation>
-          <UAlert
-            v-if="errorMessage"
-            color="error"
-            variant="soft"
-            icon="i-lucide-circle-alert"
-            :title="errorMessage"
-          />
-        </template>
-        <template #footer>
-          <i18n-t
-            keypath="auth.login.noAccount"
-            tag="p"
-            class="text-center text-sm text-muted"
-          >
-            <template #link>
-              <ULink
-                to="/register"
-                class="font-medium text-secondary"
-              >
-                {{ t('auth.register.link') }}
-              </ULink>
-            </template>
-          </i18n-t>
-        </template>
-      </UAuthForm>
-    </div>
-  </UContainer>
+  <AuthShell>
+    <UAuthForm
+      :title="t('auth.login.title')"
+      :description="t('auth.login.description')"
+
+      :fields="fields"
+      :providers="providers"
+      :separator="t('auth.or')"
+      :submit="{ label: t('auth.login.submit'), block: true }"
+      :validate="validate"
+      :loading="loading"
+      @submit="onSubmit"
+    >
+      <template #validation>
+        <UAlert
+          v-if="errorMessage"
+          color="error"
+          variant="soft"
+          icon="i-lucide-circle-alert"
+          :title="errorMessage"
+        />
+      </template>
+      <template #footer>
+        <i18n-t
+          keypath="auth.login.noAccount"
+          tag="p"
+          class="text-center text-sm text-muted"
+        >
+          <template #link>
+            <ULink
+              to="/register"
+              class="font-medium text-secondary"
+            >
+              {{ t('auth.register.link') }}
+            </ULink>
+          </template>
+        </i18n-t>
+      </template>
+    </UAuthForm>
+  </AuthShell>
 </template>

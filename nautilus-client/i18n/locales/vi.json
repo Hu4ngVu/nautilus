@@ -140,7 +140,19 @@
       "failedHint": "Vui lòng thử lại hoặc dùng email và mật khẩu."
     },
     "identifier": "Tên đăng nhập hoặc email",
-    "identifierPlaceholder": "Nhập tên đăng nhập hoặc email"
+    "identifierPlaceholder": "Nhập tên đăng nhập hoặc email",
+    "panelTagline": "Tham gia cộng đồng, gắn sao server bạn thích và giới thiệu server của riêng bạn.",
+    "checking": "Đang kiểm tra…",
+    "available": "Có thể dùng",
+    "taken": "Đã có người dùng",
+    "checkFailed": "Không kiểm tra được",
+    "strengthLabel": "Độ mạnh mật khẩu: {level}",
+    "strength": {
+      "1": "Yếu",
+      "2": "Trung bình",
+      "3": "Khá",
+      "4": "Mạnh"
+    }
   },
   "profile": {
     "servers": "Server",

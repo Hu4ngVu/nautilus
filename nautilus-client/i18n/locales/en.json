@@ -140,7 +140,19 @@
       "failedHint": "Please try again or use your email and password."
     },
     "identifier": "Username or email",
-    "identifierPlaceholder": "Enter your username or email"
+    "identifierPlaceholder": "Enter your username or email",
+    "panelTagline": "Join the community, star the servers you love and showcase your own.",
+    "checking": "Checking…",
+    "available": "Available",
+    "taken": "Already taken",
+    "checkFailed": "Couldn't check",
+    "strengthLabel": "Password strength: {level}",
+    "strength": {
+      "1": "Weak",
+      "2": "Fair",
+      "3": "Good",
+      "4": "Strong"
+    }
   },
   "profile": {
     "servers": "Servers",

@@ -202,6 +202,11 @@ export default defineAppConfig({
         title: 'font-pixel text-pixel-base leading-none'
       }
     },
+    authForm: {
+      slots: {
+        title: 'font-pixel text-pixel-2xl font-normal'
+      }
+    },
     alert: {
       slots: {
         root: 'border-2 border-(--block-border) rounded-lg',
