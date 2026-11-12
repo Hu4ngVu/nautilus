@@ -56,8 +56,10 @@
 :root {
   --ui-radius: 0.125rem;
   --ui-bg: var(--ui-color-neutral-50);
-  /* Primary as text must stay readable on light surfaces; solid fills use nautilus-400 explicitly */
-  --ui-primary: var(--color-nautilus-700);
+  /* Text colours must clear WCAG AA (4.5:1) on gray-50/white; solid fills use nautilus-400 explicitly */
+  --ui-primary: var(--color-nautilus-800);
+  --ui-error: var(--color-red-600);
+  --ui-text-dimmed: var(--ui-color-neutral-500);
   --block-surface: #fff;
   --block-border: var(--ui-color-neutral-900);
   --block-grid: rgb(17 24 39 / 0.04);
@@ -68,6 +70,7 @@
 .dark {
   --ui-bg: var(--ui-color-neutral-950);
   --ui-primary: var(--color-nautilus-400);
+  --ui-text-dimmed: var(--ui-color-neutral-400);
   --block-surface: var(--ui-color-neutral-900);
   --block-border: var(--ui-color-neutral-800);
   --block-grid: rgb(255 255 255 / 0.025);
@@ -196,7 +199,8 @@
 
 /* Staggered rise-in; --i is the item index, capped so long lists do not wait */
 @utility animate-rise {
-  animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  /* backwards, not both: a held final keyframe would pin transform and cancel the hover lift */
+  animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
   animation-delay: calc(min(var(--i, 0), 8) * 60ms);
 
   @media (prefers-reduced-motion: reduce) {

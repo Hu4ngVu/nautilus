@@ -52,7 +52,7 @@ Mockup tham chiếu nằm trong `.superpowers/brainstorm/61520-1794500662/conten
 | Bề mặt card (`--ui-bg-elevated` / block surface) | `gray-900` | `white` |
 | `--block-border` | `gray-800` | `gray-900` |
 | Lưới nền (`bg-block-grid`) | `white` @ 2.5% | `gray-900` @ 4% |
-| Màu chữ primary trên nền (link, version chính) | `nautilus-400` | `nautilus-700` (đạt AA) |
+| Màu chữ primary trên nền (link, version chính) | `nautilus-400` | `nautilus-800` (5.75:1; `nautilus-700` chỉ đạt 3.85:1) |
 | Nền nút primary | `nautilus-400`, chữ `gray-950` | như bên tối |
 | Nút sao | `amber-300`, chữ `amber-950` | như bên tối |
 

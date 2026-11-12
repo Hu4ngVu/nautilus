@@ -56,7 +56,8 @@ export default defineAppConfig({
         base: 'rounded-sm'
       },
       compoundVariants: [
-        { color: 'primary', variant: 'solid', class: 'bg-nautilus-400 text-gray-950' }
+        { color: 'primary', variant: 'solid', class: 'bg-nautilus-400 text-gray-950' },
+        { color: 'warning', variant: 'solid', class: 'bg-amber-300 text-gray-950' }
       ]
     },
     card: {
