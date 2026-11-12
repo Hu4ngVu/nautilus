@@ -2,6 +2,7 @@
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
+    '@nuxt/fonts',
     '@nuxt/ui',
     '@nuxt/image',
     '@nuxtjs/i18n',
@@ -62,6 +63,20 @@ export default defineNuxtConfig({
         braceStyle: '1tbs'
       }
     }
+  },
+
+  // Self-hosted at build time; only the subsets the UI renders (Vietnamese diacritics included)
+  fonts: {
+    defaults: {
+      subsets: ['latin', 'vietnamese'],
+      styles: ['normal'],
+      preload: false
+    },
+    families: [
+      { name: 'Be Vietnam Pro', provider: 'google', weights: [400, 500, 600], preload: true },
+      // Only referenced through --font-pixel, which the font scanner does not pick up
+      { name: 'VT323', provider: 'google', weights: [400], global: true }
+    ]
   },
 
   i18n: {

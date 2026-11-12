@@ -2,7 +2,25 @@
 @import "@nuxt/ui";
 
 @theme static {
-  --font-sans: Arial, Helvetica, sans-serif;
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  /* Pixel face for headings, server names, buttons, tabs and big numbers only */
+  --font-pixel: "VT323", ui-monospace, monospace;
+
+  /* VT323 has a small x-height, so its scale runs ~1.25x the Tailwind sizes */
+  --text-pixel-sm: 1.125rem;
+  --text-pixel-sm--line-height: 1;
+  --text-pixel-base: 1.25rem;
+  --text-pixel-base--line-height: 1;
+  --text-pixel-lg: 1.5rem;
+  --text-pixel-lg--line-height: 1;
+  --text-pixel-xl: 1.75rem;
+  --text-pixel-xl--line-height: 1;
+  --text-pixel-2xl: 2.25rem;
+  --text-pixel-2xl--line-height: 1;
+  --text-pixel-3xl: 2.75rem;
+  --text-pixel-3xl--line-height: 1;
+  --text-pixel-4xl: 3.5rem;
+  --text-pixel-4xl--line-height: 1;
 
   /* Primary: #73ff9c / #2ff96b / #04e347 */
   --color-nautilus-50: #effff3;
@@ -31,6 +49,165 @@
   --color-ocean-950: #0b1647;
 }
 
+/*
+ * Block tokens. Nuxt UI declares its own in @layer theme; these are unlayered so they win.
+ * Nuxt UI scales radii from --ui-radius (md = 1.5x, lg = 2x): 2px gives 3px buttons, 4px cards.
+ */
+:root {
+  --ui-radius: 0.125rem;
+  --ui-bg: var(--ui-color-neutral-50);
+  /* Primary as text must stay readable on light surfaces; solid fills use nautilus-400 explicitly */
+  --ui-primary: var(--color-nautilus-700);
+  --block-surface: #fff;
+  --block-border: var(--ui-color-neutral-900);
+  --block-grid: rgb(17 24 39 / 0.04);
+  --block-offset: 6px;
+  --lift-ink: var(--ui-color-neutral-900);
+}
+
+.dark {
+  --ui-bg: var(--ui-color-neutral-950);
+  --ui-primary: var(--color-nautilus-400);
+  --block-surface: var(--ui-color-neutral-900);
+  --block-border: var(--ui-color-neutral-800);
+  --block-grid: rgb(255 255 255 / 0.025);
+  --lift-ink: #000;
+}
+
+@layer base {
+  body {
+    background-color: var(--ui-bg);
+    @apply bg-block-grid;
+  }
+
+  :where(a, button, [tabindex], summary):focus-visible {
+    outline: 2px solid var(--color-ocean-400);
+    outline-offset: 2px;
+  }
+}
+
+/* Card surface: 2px block border on the elevated surface colour */
+@utility block-surface {
+  background-color: var(--block-surface);
+  border: 2px solid var(--block-border);
+  border-radius: var(--radius-lg);
+}
+
+/* Lifts the block up-left on hover/focus and reveals a solid offset shadow; sinks on press */
+@utility block-lift {
+  transition: transform 0.15s cubic-bezier(0.3, 1.6, 0.6, 1), box-shadow 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    transform: translate(-4px, -4px);
+    box-shadow: var(--block-offset) var(--block-offset) 0 var(--lift-color, var(--lift-ink));
+  }
+
+  &:active {
+    transform: none;
+    box-shadow: none;
+    transition-duration: 0.05s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:hover,
+    &:focus-visible {
+      transform: none;
+    }
+  }
+}
+
+/*
+ * Button variant of the lift: a resting 3px shadow that grows to 5px and collapses when pressed.
+ * No transition here: Nuxt UI buttons carry their own transition class, set in app.config.
+ */
+@utility block-press {
+  box-shadow: 3px 3px 0 var(--lift-color, var(--lift-ink));
+
+  &:not(:disabled, [aria-disabled="true"]):hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 var(--lift-color, var(--lift-ink));
+  }
+
+  &:not(:disabled, [aria-disabled="true"]):active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 transparent;
+    transition-duration: 0.05s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:not(:disabled, [aria-disabled="true"]):hover,
+    &:not(:disabled, [aria-disabled="true"]):active {
+      transform: none;
+    }
+  }
+}
+
+/* A static offset shadow for panels that should read as raised but are not interactive */
+@utility block-raised {
+  box-shadow: var(--block-offset) var(--block-offset) 0 var(--lift-color, var(--lift-ink));
+}
+
+@utility lift-primary {
+  --lift-color: var(--color-nautilus-500);
+}
+
+@utility lift-secondary {
+  --lift-color: var(--color-ocean-500);
+}
+
+@utility lift-ink {
+  --lift-color: var(--lift-ink);
+}
+
+@utility lift-warning {
+  --lift-color: var(--color-amber-300);
+}
+
+@utility lift-error {
+  --lift-color: var(--color-red-500);
+}
+
+@utility bg-block-grid {
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 15px, var(--block-grid) 15px 16px),
+    repeating-linear-gradient(90deg, transparent 0 15px, var(--block-grid) 15px 16px);
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+
+  70% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* Staggered rise-in; --i is the item index, capped so long lists do not wait */
+@utility animate-rise {
+  animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(min(var(--i, 0), 8) * 60ms);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Set by v-rise until the element scrolls into view */
+@media (prefers-reduced-motion: no-preference) {
+  .rise-pending {
+    opacity: 0;
+  }
+}
+
 /* Rendered markdown (user/server bio) */
 .markdown {
   @apply text-default leading-relaxed break-words;
@@ -40,17 +217,17 @@
   @apply mt-3;
 }
 
-.markdown h1 { @apply text-2xl font-bold; }
-.markdown h2 { @apply text-xl font-bold; }
-.markdown h3 { @apply text-lg font-semibold; }
+.markdown h1 { @apply font-pixel text-pixel-2xl text-highlighted; }
+.markdown h2 { @apply font-pixel text-pixel-xl text-highlighted; }
+.markdown h3 { @apply font-pixel text-pixel-lg text-highlighted; }
 .markdown a { @apply text-secondary underline underline-offset-2; }
 .markdown ul { @apply list-disc ps-6; }
 .markdown ol { @apply list-decimal ps-6; }
-.markdown blockquote { @apply ps-4 text-muted border-s-4 border-accented; }
-.markdown code { @apply px-1 py-0.5 rounded bg-elevated text-sm; }
-.markdown pre { @apply p-3 rounded-md bg-elevated overflow-x-auto; }
+.markdown blockquote { @apply ps-4 text-muted border-s-4 border-(--block-border); }
+.markdown code { @apply px-1 py-0.5 rounded-sm bg-elevated text-sm; }
+.markdown pre { @apply p-3 block-surface overflow-x-auto; }
 .markdown pre code { @apply p-0 bg-transparent; }
-.markdown img { @apply max-w-full rounded-md; }
+.markdown img { @apply max-w-full rounded-lg border-2 border-(--block-border); }
 .markdown table { @apply w-full text-sm; }
 .markdown th, .markdown td { @apply px-2 py-1 text-start; }
-.markdown hr { @apply border-default; }
+.markdown hr { @apply border-(--block-border); }
