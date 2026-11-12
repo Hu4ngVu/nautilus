@@ -65,7 +65,13 @@
     "tags": "Tags",
     "stargazers": "Stargazers",
     "notFound": "Server not found",
-    "public": "Public"
+    "public": "Public",
+    "tabs": {
+      "about": "About",
+      "gallery": "Gallery",
+      "stargazers": "Stargazers"
+    },
+    "noStargazers": "No stars yet"
   },
   "tags": {
     "category": {
@@ -95,7 +101,8 @@
     "imageTitle": "Title",
     "imageSummary": "Description",
     "moveUp": "Move earlier",
-    "moveDown": "Move later"
+    "moveDown": "Move later",
+    "seeAll": "See all ({n})"
   },
   "auth": {
     "username": "Username",

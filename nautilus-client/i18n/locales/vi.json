@@ -65,7 +65,13 @@
     "tags": "Thẻ",
     "stargazers": "Người đã gắn sao",
     "notFound": "Không tìm thấy server",
-    "public": "Công khai"
+    "public": "Công khai",
+    "tabs": {
+      "about": "Giới thiệu",
+      "gallery": "Thư viện ảnh",
+      "stargazers": "Người gắn sao"
+    },
+    "noStargazers": "Chưa có ai gắn sao"
   },
   "tags": {
     "category": {
@@ -95,7 +101,8 @@
     "imageTitle": "Tiêu đề",
     "imageSummary": "Mô tả",
     "moveUp": "Di chuyển lên trước",
-    "moveDown": "Di chuyển ra sau"
+    "moveDown": "Di chuyển ra sau",
+    "seeAll": "Xem tất cả ({n})"
   },
   "auth": {
     "username": "Tên đăng nhập",

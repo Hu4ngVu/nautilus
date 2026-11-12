@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import type { GalleryImage } from '~/types/api'
 
-const props = defineProps<{ images: GalleryImage[] }>()
+const props = defineProps<{
+  images: GalleryImage[]
+  /** Show only the first N thumbnails; the lightbox still pages through all images */
+  limit?: number
+}>()
 
 const { t } = useI18n()
 const open = ref(false)
@@ -13,22 +17,22 @@ function show(index: number) {
 }
 
 const slides = computed(() => props.images)
+const thumbnails = computed(() => props.limit ? props.images.slice(0, props.limit) : props.images)
 </script>
 
 <template>
-  <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+  <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
     <button
-      v-for="(image, index) in images"
+      v-for="(image, index) in thumbnails"
       :key="image.imageId"
       type="button"
-      class="aspect-video overflow-hidden rounded-md focus-visible:outline-3 outline-primary/40"
+      class="aspect-video overflow-hidden rounded-lg border-2 border-(--block-border) block-lift lift-secondary"
       :aria-label="image.imageTitle ?? t('gallery.imageN', { n: index + 1 })"
       @click="show(index)"
     >
       <MediaImage
         :src="image.imageUrl"
         :alt="image.imageTitle ?? ''"
-        class="transition-transform hover:scale-105"
       />
     </button>
   </div>
@@ -53,7 +57,7 @@ const slides = computed(() => props.images)
           <NuxtImg
             :src="item.imageUrl"
             :alt="item.imageTitle ?? ''"
-            class="max-h-[75vh] w-auto rounded-md object-contain"
+            class="max-h-[75vh] w-auto rounded-lg border-2 border-(--block-border) object-contain"
           />
           <figcaption
             v-if="item.imageTitle"

@@ -122,8 +122,17 @@ export default defineAppConfig({
     },
     tabs: {
       slots: {
-        trigger: 'font-pixel text-pixel-base',
+        trigger: 'font-pixel',
         label: 'leading-none'
+      },
+      variants: {
+        size: {
+          xs: { trigger: 'text-pixel-sm' },
+          sm: { trigger: 'text-pixel-sm' },
+          md: { trigger: 'text-pixel-base' },
+          lg: { trigger: 'text-pixel-base' },
+          xl: { trigger: 'text-pixel-lg' }
+        }
       },
       compoundVariants: [
         {
