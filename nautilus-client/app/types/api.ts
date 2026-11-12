@@ -57,8 +57,15 @@ export interface ServerSummary {
   servername: string
   requiresPremium: boolean
   avatarUrl: string | null
+  bannerUrl: string | null
   summary: string
   starCount: number
+  visibility: boolean
+  serverType: ServerType
+  serverPlatform: ServerPlatform
+  /** First three tags only */
+  tags: string[]
+  primaryVersion: string | null
 }
 
 export interface ServerDetail {

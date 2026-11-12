@@ -101,7 +101,8 @@ useSeoMeta({
         <MediaImage
           :src="server.bannerUrl"
           :alt="t('server.banner')"
-          fallback-icon="i-lucide-mountain"
+          :name="server.servername"
+          banner
           eager
         />
       </div>
@@ -112,7 +113,7 @@ useSeoMeta({
             <MediaImage
               :src="server.avatarUrl"
               :alt="server.servername"
-              fallback-icon="i-lucide-server"
+              :name="server.servername"
               eager
             />
           </div>

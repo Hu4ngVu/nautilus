@@ -22,7 +22,7 @@ const to = computed(() => `/s/${encodeURIComponent(props.username)}/${encodeURIC
       <MediaImage
         :src="avatarUrl"
         :alt="servername"
-        fallback-icon="i-lucide-server"
+        :name="servername"
       />
     </div>
     <div class="flex min-w-0 flex-1 flex-col gap-1.5">

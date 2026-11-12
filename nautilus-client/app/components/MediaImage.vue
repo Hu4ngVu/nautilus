@@ -1,26 +1,43 @@
 <script setup lang="ts">
-// Thin wrapper over NuxtImg; images (including animated GIFs) are served as-is from object storage
-withDefaults(defineProps<{
+// Thin wrapper over NuxtImg; images (including animated GIFs) are served as-is from object storage.
+// Avatars and banners pass `name` and fall back to a BlockAvatar; other images fall back to an icon.
+const props = withDefaults(defineProps<{
   src?: string | null
   alt?: string
+  name?: string
+  banner?: boolean
   fallbackIcon?: string
   eager?: boolean
 }>(), {
   src: null,
   alt: '',
+  name: undefined,
+  banner: false,
   fallbackIcon: 'i-lucide-image',
   eager: false
+})
+
+// Signed URLs expire; a failed load drops to the placeholder instead of a broken image
+const failed = ref(false)
+watch(() => props.src, () => {
+  failed.value = false
 })
 </script>
 
 <template>
   <NuxtImg
-    v-if="src"
+    v-if="src && !failed"
     :src="src"
     :alt="alt"
     :loading="eager ? 'eager' : 'lazy'"
     decoding="async"
     class="size-full object-cover"
+    @error="failed = true"
+  />
+  <BlockAvatar
+    v-else-if="name"
+    :name="name"
+    :shape="banner ? 'banner' : 'square'"
   />
   <div
     v-else

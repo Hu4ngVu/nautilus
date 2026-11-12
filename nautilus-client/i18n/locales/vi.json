@@ -243,7 +243,10 @@
       "title": "Tải ảnh thất bại",
       "type": "Chỉ hỗ trợ PNG, JPG, WEBP hoặc GIF.",
       "size": "Ảnh vượt quá 10MB."
-    }
+    },
+    "pageNotFound": "Không tìm thấy trang",
+    "pageNotFoundHint": "Trang bạn tìm có thể đã bị xoá, đổi tên hoặc chưa từng tồn tại.",
+    "backHome": "Về trang chủ"
   },
   "home": {
     "tagline": "Khám phá và chia sẻ những Minecraft server yêu thích của bạn",
