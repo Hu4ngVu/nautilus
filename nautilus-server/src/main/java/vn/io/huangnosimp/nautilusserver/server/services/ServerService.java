@@ -2,13 +2,18 @@ package vn.io.huangnosimp.nautilusserver.server.services;
 
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -31,7 +36,10 @@ import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoDetailRes
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoResponse;
 import vn.io.huangnosimp.nautilusserver.server.models.Server;
 import vn.io.huangnosimp.nautilusserver.server.models.ServerTag;
+import vn.io.huangnosimp.nautilusserver.server.repositories.BedrockMcVersionRepository;
+import vn.io.huangnosimp.nautilusserver.server.repositories.JavaMcVersionRepository;
 import vn.io.huangnosimp.nautilusserver.server.repositories.ServerRepository;
+import vn.io.huangnosimp.nautilusserver.server.repositories.TagRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +49,11 @@ public class ServerService {
     private final GalleryService galleryService;
     private final ResourceStorage resourceStorage;
     private final AuthUserQuery authUserQuery;
+    private final TagRepository tagRepository;
+    private final JavaMcVersionRepository javaMcVersionRepository;
+    private final BedrockMcVersionRepository bedrockMcVersionRepository;
+
+    private static final int MAX_SUMMARY_TAGS = 3;
 
     @Logging(logArguments = true)
     public Page<ServerInfoResponse> getAllServer(
@@ -70,29 +83,61 @@ public class ServerService {
 
     private Page<ServerInfoResponse> findServers(
             Specification<Server> specification, Pageable pageable) {
-        return serverRepository
-                .findAllByVisibilityIsTrue(specification, pageable)
-                .map(
-                        server ->
-                                ServerInfoResponse.builder()
-                                        .avatarUrl(
-                                                resourceStorage.createSignedGetUrl(
-                                                        server.getServerAvatarId()))
-                                        .requiresPremium(server.getRequiresPremium())
-                                        .servername(server.getServername())
-                                        .summary(server.getSummary())
-                                        .starCount(server.getStarCount())
-                                        .username(
-                                                authUserQuery
-                                                        .getUsernameByAuthUserId(server.getUserId())
-                                                        .orElseThrow(
-                                                                () ->
-                                                                        new UserNotFound(
-                                                                                "User not found for"
-                                                                                    + " server: "
-                                                                                        + server
-                                                                                                .getId())))
-                                        .build());
+        return toInfoPage(serverRepository.findAllByVisibilityIsTrue(specification, pageable));
+    }
+
+    /** Maps a page of servers with one batched lookup per related table instead of one per row. */
+    private Page<ServerInfoResponse> toInfoPage(Page<Server> page) {
+        List<Server> content = page.getContent();
+        if (content.isEmpty())
+            return new PageImpl<>(List.of(), page.getPageable(), page.getTotalElements());
+
+        List<String> ids = content.stream().map(Server::getId).toList();
+        Map<String, String> usernames =
+                authUserQuery.getUsernamesByAuthUserIds(
+                        content.stream().map(Server::getUserId).collect(Collectors.toSet()));
+
+        Map<String, List<String>> tags = new HashMap<>();
+        for (ServerTag tag : tagRepository.findAllByServerIdInOrderByCreatedAtAsc(ids)) {
+            List<String> serverTags =
+                    tags.computeIfAbsent(tag.getServer().getId(), id -> new ArrayList<>());
+            if (serverTags.size() < MAX_SUMMARY_TAGS) serverTags.add(tag.getTag());
+        }
+
+        Map<String, String> primaryVersions = new HashMap<>();
+        if (content.stream().anyMatch(server -> server.getPlatform() == ServerPlatform.JAVA)) {
+            javaMcVersionRepository
+                    .findAllByServerIdInAndIsPrimaryMcVersionTrue(ids)
+                    .forEach(v -> primaryVersions.put(v.getServer().getId(), v.getMcVersion()));
+        }
+        if (content.stream().anyMatch(server -> server.getPlatform() == ServerPlatform.BEDROCK)) {
+            bedrockMcVersionRepository
+                    .findAllByServerIdInAndIsPrimaryMcVersionTrue(ids)
+                    .forEach(v -> primaryVersions.put(v.getServer().getId(), v.getMcVersion()));
+        }
+
+        return page.map(
+                server -> {
+                    String username = usernames.get(server.getUserId());
+                    if (username == null)
+                        throw new UserNotFound("User not found for server: " + server.getId());
+                    return ServerInfoResponse.builder()
+                            .username(username)
+                            .servername(server.getServername())
+                            .requiresPremium(server.getRequiresPremium())
+                            .avatarUrl(
+                                    resourceStorage.createSignedGetUrl(server.getServerAvatarId()))
+                            .bannerUrl(
+                                    resourceStorage.createSignedGetUrl(server.getServerBannerId()))
+                            .summary(server.getSummary())
+                            .starCount(server.getStarCount())
+                            .visibility(server.getVisibility())
+                            .serverType(server.getType())
+                            .serverPlatform(server.getPlatform())
+                            .tags(List.copyOf(tags.getOrDefault(server.getId(), List.of())))
+                            .primaryVersion(primaryVersions.get(server.getId()))
+                            .build();
+                });
     }
 
     @Logging(logArguments = true)
@@ -304,25 +349,6 @@ public class ServerService {
                 userId.equals(authenticatedUserId)
                         ? serverRepository.findAllByUserId(userId, pageable)
                         : serverRepository.findAllByUserIdAndVisibilityIsTrue(userId, pageable);
-        return servers.map(
-                server ->
-                        ServerInfoResponse.builder()
-                                .avatarUrl(
-                                        resourceStorage.createSignedGetUrl(
-                                                server.getServerAvatarId()))
-                                .requiresPremium(server.getRequiresPremium())
-                                .servername(server.getServername())
-                                .summary(server.getSummary())
-                                .starCount(server.getStarCount())
-                                .username(
-                                        authUserQuery
-                                                .getUsernameByAuthUserId(server.getUserId())
-                                                .orElseThrow(
-                                                        () ->
-                                                                new UserNotFound(
-                                                                        "User not found for"
-                                                                                + " server: "
-                                                                                + server.getId())))
-                                .build());
+        return toInfoPage(servers);
     }
 }

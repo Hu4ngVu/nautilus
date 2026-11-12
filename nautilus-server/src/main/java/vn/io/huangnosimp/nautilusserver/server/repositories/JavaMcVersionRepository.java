@@ -1,5 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.server.repositories;
 
+import java.util.Collection;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import vn.io.huangnosimp.nautilusserver.server.models.JavaMcVersion;
@@ -7,4 +8,6 @@ import vn.io.huangnosimp.nautilusserver.server.models.Server;
 
 public interface JavaMcVersionRepository extends JpaRepository<JavaMcVersion, String> {
     List<JavaMcVersion> findAllByServer(Server server);
+
+    List<JavaMcVersion> findAllByServerIdInAndIsPrimaryMcVersionTrue(Collection<String> serverIds);
 }
