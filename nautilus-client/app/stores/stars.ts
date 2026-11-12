@@ -51,6 +51,11 @@ export const useStarsStore = defineStore('stars', () => {
     return true
   }
 
+  async function star(username: string, servername: string) {
+    await useServerApi().star(username, servername)
+    starred.value.add(key(username, servername))
+  }
+
   async function unstar(username: string, servername: string) {
     await useServerApi().unstar(username, servername)
     starred.value.delete(key(username, servername))
@@ -61,5 +66,5 @@ export const useStarsStore = defineStore('stars', () => {
     loadedFor = null
   }
 
-  return { load, isStarred, toggle, unstar, reset }
+  return { load, isStarred, toggle, star, unstar, reset }
 })

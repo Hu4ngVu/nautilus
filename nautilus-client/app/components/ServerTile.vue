@@ -25,7 +25,7 @@ const platform = computed(() => [
 <template>
   <article
     v-rise="index"
-    class="group relative flex h-full flex-col overflow-hidden block-surface block-lift"
+    class="group relative flex h-full min-w-0 flex-col overflow-hidden block-surface block-lift"
     :class="bedrock ? 'lift-secondary' : 'lift-primary'"
   >
     <div class="relative aspect-[16/5] border-b-2 border-(--block-border)">

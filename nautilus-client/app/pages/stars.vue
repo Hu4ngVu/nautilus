@@ -3,11 +3,12 @@ import type { StarredServer } from '~/types/api'
 
 definePageMeta({ middleware: 'auth' })
 
-const { t, n } = useI18n()
+const { t } = useI18n()
 const auth = useAuthStore()
 const servers = useServerApi()
 const stars = useStarsStore()
-const { messageFor, notify, success } = useApiError()
+const toast = useToast()
+const { messageFor, notify } = useApiError()
 
 useSeoMeta({ title: () => t('stars.title') })
 
@@ -19,37 +20,64 @@ const { data, status, error, refresh } = useAsyncData(
   () => servers.starred(auth.username!, { page: page.value - 1, size: PAGE_SIZE })
 )
 
-const serverPath = (s: StarredServer) => `/s/${encodeURIComponent(s.username)}/${encodeURIComponent(s.servername)}`
-const pending = ref(new Set<string>())
+// Local copy so unstarring removes a card immediately and undo can put it back in place
+const items = ref<StarredServer[]>([])
+watch(data, (value) => {
+  items.value = [...(value?.content ?? [])]
+}, { immediate: true })
 
-async function unstar(s: StarredServer) {
-  const key = `${s.username}/${s.servername}`
-  pending.value = new Set(pending.value).add(key)
+const keyOf = (s: StarredServer) => `${s.username}/${s.servername}`
+const restoring = new Set<string>()
+
+function insertAt(index: number, server: StarredServer) {
+  const next = [...items.value]
+  next.splice(Math.min(index, next.length), 0, server)
+  items.value = next
+}
+
+async function unstar(server: StarredServer) {
+  const index = items.value.findIndex(s => keyOf(s) === keyOf(server))
+  if (index < 0) return
+  items.value = items.value.filter((_, i) => i !== index)
   try {
-    await stars.unstar(s.username, s.servername)
-    success(t('stars.unstarred'))
-    if (data.value?.content.length === 1 && page.value > 1) page.value--
-    else await refresh()
+    await stars.unstar(server.username, server.servername)
   } catch (err) {
+    insertAt(index, server)
     notify(err)
+    return
+  }
+  toast.add({
+    title: t('stars.unstarred'),
+    description: server.servername,
+    icon: 'i-lucide-star-off',
+    actions: [{ label: t('stars.undo'), color: 'neutral', variant: 'soft', onClick: () => undo(index, server) }]
+  })
+  if (!items.value.length && page.value > 1) page.value--
+}
+
+async function undo(index: number, server: StarredServer) {
+  const key = keyOf(server)
+  // Guard double clicks and a card that is already back
+  if (restoring.has(key) || items.value.some(s => keyOf(s) === key)) return
+  restoring.add(key)
+  try {
+    await stars.star(server.username, server.servername)
+    insertAt(index, server)
+    toast.add({ title: t('stars.restored'), description: server.servername, icon: 'i-lucide-star', color: 'success' })
+  } catch {
+    toast.add({ title: t('stars.undoFailed'), icon: 'i-lucide-circle-alert', color: 'error' })
   } finally {
-    const next = new Set(pending.value)
-    next.delete(key)
-    pending.value = next
+    restoring.delete(key)
   }
 }
 </script>
 
 <template>
-  <UContainer class="max-w-4xl py-8">
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-highlighted sm:text-3xl">
-        {{ t('stars.title') }}
-      </h1>
-      <p class="mt-1 text-muted">
-        {{ t('stars.subtitle') }}
-      </p>
-    </div>
+  <UContainer class="py-8">
+    <PageHeader
+      :title="t('stars.title')"
+      :description="t('stars.subtitle')"
+    />
 
     <EmptyState
       v-if="error"
@@ -67,7 +95,7 @@ async function unstar(s: StarredServer) {
     </EmptyState>
 
     <EmptyState
-      v-else-if="status === 'success' && !data?.content.length"
+      v-else-if="status === 'success' && !items.length"
       icon="i-lucide-star"
       :title="t('stars.empty')"
       :description="t('stars.emptyHint')"
@@ -80,66 +108,40 @@ async function unstar(s: StarredServer) {
       />
     </EmptyState>
 
-    <ul
+    <div
       v-else
-      class="flex flex-col gap-3"
+      class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
     >
       <template v-if="status === 'pending' && !data">
-        <li
-          v-for="i in 5"
+        <USkeleton
+          v-for="i in 6"
           :key="i"
-        >
-          <USkeleton class="h-20 rounded-lg" />
-        </li>
-      </template>
-      <li
-        v-for="s in data?.content ?? []"
-        v-else
-        :key="`${s.username}/${s.servername}`"
-        class="flex items-center gap-4 rounded-lg bg-elevated/60 p-3 sm:p-4"
-      >
-        <NuxtLink
-          :to="serverPath(s)"
-          class="group flex min-w-0 flex-1 items-center gap-4 rounded-md focus-visible:outline-3 outline-primary/40"
-        >
-          <div class="size-12 shrink-0 overflow-hidden rounded-lg sm:size-14">
-            <MediaImage
-              :src="s.serverAvatarUrl"
-              :alt="s.servername"
-              fallback-icon="i-lucide-server"
-            />
-          </div>
-          <div class="min-w-0">
-            <p class="truncate font-semibold text-highlighted group-hover:underline">
-              {{ s.servername }}
-            </p>
-            <p class="flex flex-wrap items-center gap-x-3 text-sm text-muted">
-              <span class="truncate">{{ t('server.by', { username: s.username }) }}</span>
-              <span
-                class="flex items-center gap-1"
-                :aria-label="t('server.stars', { n: n(s.serverTotalStar) }, s.serverTotalStar)"
-              >
-                <UIcon
-                  name="i-lucide-star"
-                  class="size-3.5"
-                />
-                {{ n(s.serverTotalStar) }}
-              </span>
-            </p>
-          </div>
-        </NuxtLink>
-        <UButton
-          icon="i-lucide-star-off"
-          :label="t('server.unstar')"
-          color="neutral"
-          variant="soft"
-          :loading="pending.has(`${s.username}/${s.servername}`)"
-          :ui="{ label: 'hidden sm:inline' }"
-          :aria-label="`${t('server.unstar')} ${s.servername}`"
-          @click="unstar(s)"
+          class="h-28"
         />
-      </li>
-    </ul>
+      </template>
+      <ServerRepoCard
+        v-for="(s, i) in items"
+        v-else
+        :key="keyOf(s)"
+        :username="s.username"
+        :servername="s.servername"
+        :avatar-url="s.serverAvatarUrl"
+        :star-count="s.serverTotalStar"
+        :summary="t('server.by', { username: s.username })"
+        :index="i"
+      >
+        <template #actions>
+          <UButton
+            icon="i-lucide-star-off"
+            :aria-label="`${t('server.unstar')} ${s.servername}`"
+            color="warning"
+            variant="soft"
+            size="sm"
+            @click="unstar(s)"
+          />
+        </template>
+      </ServerRepoCard>
+    </div>
 
     <UPagination
       v-if="data && data.totalPages > 1"

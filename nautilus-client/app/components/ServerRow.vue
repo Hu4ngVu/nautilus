@@ -19,7 +19,7 @@ const tags = computed(() => props.server.tags ?? [])
 <template>
   <article
     v-rise="index"
-    class="group relative flex gap-4 p-3 block-surface block-lift sm:p-4"
+    class="group relative flex min-w-0 gap-4 p-3 block-surface block-lift sm:p-4"
     :class="bedrock ? 'lift-secondary' : 'lift-primary'"
   >
     <div class="size-16 shrink-0 overflow-hidden rounded-md border-2 border-(--block-border) sm:size-24">

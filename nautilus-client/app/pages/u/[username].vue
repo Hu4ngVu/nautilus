@@ -23,8 +23,6 @@ const { data: owned, status: ownedStatus } = useAsyncData(
   { lazy: true }
 )
 
-const serverPath = (servername: string) => `/s/${encodeURIComponent(username.value)}/${encodeURIComponent(servername)}`
-
 useSeoMeta({
   title: () => username.value,
   description: () => user.value?.bio?.slice(0, 160)
@@ -45,15 +43,15 @@ useSeoMeta({
       class="grid gap-8 md:grid-cols-[16rem_1fr] lg:grid-cols-[18rem_1fr]"
     >
       <!-- Profile card, GitHub-style left column -->
-      <aside class="flex flex-col gap-4">
-        <div class="flex items-center gap-4 md:flex-col md:items-start">
+      <aside class="flex flex-col gap-4 self-start p-4 block-surface block-raised lift-secondary">
+        <div class="flex items-center gap-4 md:flex-col md:items-stretch">
           <UAvatar
             :src="user?.avatarUrl ?? undefined"
             :alt="username"
-            class="size-20 text-3xl md:size-auto md:aspect-square md:w-full md:text-6xl"
+            class="size-20 border-2 border-(--block-border) font-pixel text-pixel-2xl md:aspect-square md:size-auto md:w-full md:text-[5rem]"
           />
           <div class="min-w-0">
-            <h1 class="truncate text-2xl font-bold text-highlighted">
+            <h1 class="truncate font-pixel text-pixel-2xl text-highlighted">
               {{ username }}
             </h1>
             <p
@@ -69,6 +67,12 @@ useSeoMeta({
           </div>
         </div>
 
+        <MarkdownRender
+          v-if="user?.bio"
+          :source="user.bio"
+          class="text-sm"
+        />
+
         <UButton
           v-if="isMe"
           to="/settings"
@@ -78,18 +82,11 @@ useSeoMeta({
           variant="soft"
           block
         />
-
-        <div
-          v-if="user?.bio"
-          class="rounded-lg bg-elevated/50 p-4"
-        >
-          <MarkdownRender :source="user.bio" />
-        </div>
       </aside>
 
       <!-- Server cards, GitHub repository-card style -->
       <section class="min-w-0">
-        <h2 class="mb-4 font-semibold text-highlighted">
+        <h2 class="mb-4 font-pixel text-pixel-xl text-highlighted">
           {{ t('profile.servers') }}
         </h2>
 
@@ -115,48 +112,21 @@ useSeoMeta({
             <USkeleton
               v-for="i in 4"
               :key="i"
-              class="h-32 rounded-lg"
+              class="h-32"
             />
           </template>
-          <NuxtLink
-            v-for="s in owned?.content ?? []"
+          <ServerRepoCard
+            v-for="(s, i) in owned?.content ?? []"
             v-else
             :key="s.servername"
-            :to="serverPath(s.servername)"
-            class="group flex flex-col gap-2 rounded-lg bg-elevated/60 p-4 transition-colors hover:bg-elevated focus-visible:outline-3 outline-primary/40"
-          >
-            <div class="flex min-w-0 items-center gap-2">
-              <div class="size-6 shrink-0 overflow-hidden rounded">
-                <MediaImage
-                  :src="s.avatarUrl"
-                  :alt="s.servername"
-                  fallback-icon="i-lucide-server"
-                />
-              </div>
-              <span class="truncate font-semibold text-secondary group-hover:underline">{{ s.servername }}</span>
-              <UBadge
-                v-if="s.requiresPremium"
-                :label="t('server.premium')"
-                color="neutral"
-                variant="soft"
-                size="sm"
-                class="ms-auto shrink-0"
-              />
-            </div>
-            <p class="line-clamp-2 flex-1 text-sm text-toned">
-              {{ s.summary }}
-            </p>
-            <p
-              class="flex items-center gap-1 text-sm text-muted"
-              :aria-label="t('server.stars', { n: n(s.starCount) }, s.starCount)"
-            >
-              <UIcon
-                name="i-lucide-star"
-                class="size-4"
-              />
-              {{ n(s.starCount) }}
-            </p>
-          </NuxtLink>
+            :username="s.username"
+            :servername="s.servername"
+            :avatar-url="s.avatarUrl"
+            :star-count="s.starCount"
+            :summary="s.summary"
+            :platform="s.serverPlatform"
+            :index="i"
+          />
         </div>
 
         <UPagination

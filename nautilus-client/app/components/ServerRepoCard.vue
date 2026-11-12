@@ -24,7 +24,7 @@ const to = computed(() => serverPath(props.username, props.servername))
 <template>
   <article
     v-rise="index"
-    class="group relative flex flex-col gap-2 p-4 block-surface block-lift lift-secondary"
+    class="group relative flex min-w-0 flex-col gap-2 p-4 block-surface block-lift lift-secondary"
   >
     <div class="flex min-w-0 items-center gap-2">
       <div class="size-7 shrink-0 overflow-hidden rounded-sm border-2 border-(--block-border)">

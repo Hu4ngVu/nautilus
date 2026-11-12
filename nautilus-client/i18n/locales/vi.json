@@ -307,6 +307,9 @@
     "subtitle": "Những server bạn đã star.",
     "empty": "Bạn chưa star server nào",
     "emptyHint": "Hãy star những server bạn thích để xem lại tại đây.",
-    "unstarred": "Đã bỏ star"
+    "unstarred": "Đã bỏ star",
+    "undo": "Hoàn tác",
+    "undoFailed": "Không thể hoàn tác, vui lòng gắn sao lại từ trang server.",
+    "restored": "Đã gắn sao lại"
   }
 }

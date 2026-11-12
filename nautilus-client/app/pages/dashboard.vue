@@ -18,8 +18,6 @@ const { data, status, error, refresh } = useAsyncData(
   () => servers.listByUser(auth.username!, { page: page.value - 1, size: PAGE_SIZE })
 )
 
-const serverPath = (s: ServerSummary) => `/s/${encodeURIComponent(s.username)}/${encodeURIComponent(s.servername)}`
-
 const deleting = ref<ServerSummary | null>(null)
 const removing = ref(false)
 
@@ -51,22 +49,30 @@ async function confirmDelete() {
 
 <template>
   <UContainer class="py-8">
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-highlighted sm:text-3xl">
-          {{ t('dashboard.title') }}
-        </h1>
-        <p class="mt-1 text-muted">
-          {{ t('dashboard.subtitle') }}
-        </p>
-      </div>
-      <UButton
-        to="/new"
-        icon="i-lucide-plus"
-        :label="t('nav.newServer')"
-        class="self-start sm:self-auto"
-      />
-    </div>
+    <PageHeader
+      :title="t('dashboard.title')"
+      :description="t('dashboard.subtitle')"
+    >
+      <template
+        v-if="data"
+        #meta
+      >
+        <UBadge
+          :label="t('profile.serverCount', { n: n(data.totalElements) }, data.totalElements)"
+          icon="i-lucide-server"
+          color="neutral"
+          variant="soft"
+          class="mt-3"
+        />
+      </template>
+      <template #actions>
+        <UButton
+          to="/new"
+          icon="i-lucide-plus"
+          :label="t('nav.newServer')"
+        />
+      </template>
+    </PageHeader>
 
     <EmptyState
       v-if="error"
@@ -99,82 +105,64 @@ async function confirmDelete() {
 
     <div
       v-else
-      class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+      class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
     >
       <template v-if="status === 'pending' && !data">
         <USkeleton
           v-for="i in 6"
           :key="i"
-          class="h-40 rounded-lg"
+          class="h-64"
         />
       </template>
-      <article
-        v-for="s in data?.content ?? []"
-        v-else
-        :key="s.servername"
-        class="flex flex-col gap-4 rounded-lg bg-elevated/60 p-4"
-      >
-        <NuxtLink
-          :to="serverPath(s)"
-          class="group flex min-w-0 gap-3 rounded-md focus-visible:outline-3 outline-primary/40"
+      <template v-else>
+        <ServerTile
+          v-for="(s, i) in data?.content ?? []"
+          :key="s.servername"
+          :server="s"
+          :index="i"
+          show-visibility
         >
-          <div class="size-14 shrink-0 overflow-hidden rounded-lg">
-            <MediaImage
-              :src="s.avatarUrl"
-              :alt="s.servername"
-              fallback-icon="i-lucide-server"
+          <template #actions>
+            <UButton
+              :to="serverPath(s.username, s.servername)"
+              icon="i-lucide-eye"
+              :label="t('dashboard.view')"
+              color="neutral"
+              variant="soft"
+              size="sm"
             />
-          </div>
-          <div class="min-w-0 flex-1">
-            <h2 class="truncate font-semibold text-highlighted group-hover:underline">
-              {{ s.servername }}
-            </h2>
-            <p
-              class="mt-0.5 flex items-center gap-1 text-sm text-muted"
-              :aria-label="t('server.stars', { n: n(s.starCount) }, s.starCount)"
-            >
-              <UIcon
-                name="i-lucide-star"
-                class="size-4"
-              />
-              {{ n(s.starCount) }}
-            </p>
-            <p
-              v-if="s.summary"
-              class="mt-1 line-clamp-2 text-sm text-toned"
-            >
-              {{ s.summary }}
-            </p>
-          </div>
+            <UButton
+              :to="`${serverPath(s.username, s.servername)}/manage`"
+              icon="i-lucide-pencil"
+              :label="t('common.edit')"
+              color="neutral"
+              variant="soft"
+              size="sm"
+            />
+            <UButton
+              icon="i-lucide-trash-2"
+              :label="t('common.delete')"
+              :aria-label="`${t('common.delete')} ${s.servername}`"
+              color="error"
+              variant="ghost"
+              size="sm"
+              class="ms-auto"
+              @click="deleting = s"
+            />
+          </template>
+        </ServerTile>
+        <NuxtLink
+          v-if="page === 1"
+          to="/new"
+          class="flex min-h-64 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-(--block-border) font-pixel text-pixel-lg text-muted transition-colors hover:border-nautilus-500 hover:text-primary"
+        >
+          <UIcon
+            name="i-lucide-plus"
+            class="size-8"
+          />
+          {{ t('nav.newServer') }}
         </NuxtLink>
-        <div class="mt-auto flex flex-wrap gap-2">
-          <UButton
-            :to="serverPath(s)"
-            icon="i-lucide-eye"
-            :label="t('dashboard.view')"
-            color="neutral"
-            variant="soft"
-            size="sm"
-          />
-          <UButton
-            :to="`${serverPath(s)}/manage`"
-            icon="i-lucide-pencil"
-            :label="t('common.edit')"
-            color="neutral"
-            variant="soft"
-            size="sm"
-          />
-          <UButton
-            icon="i-lucide-trash-2"
-            :label="t('common.delete')"
-            color="error"
-            variant="ghost"
-            size="sm"
-            class="ms-auto"
-            @click="deleting = s"
-          />
-        </div>
-      </article>
+      </template>
     </div>
 
     <UPagination

@@ -307,6 +307,9 @@
     "subtitle": "Servers you've starred.",
     "empty": "You haven't starred any servers",
     "emptyHint": "Star servers you like to find them here later.",
-    "unstarred": "Removed from stars"
+    "unstarred": "Removed from stars",
+    "undo": "Undo",
+    "undoFailed": "Couldn't undo; star it again from the server page.",
+    "restored": "Starred again"
   }
 }
