@@ -73,6 +73,14 @@
       "GAMEPLAY": "Gameplay",
       "META": "Modes",
       "COMMUNITY": "Community"
+    },
+    "label": {
+      "Survival Mode": "Survival",
+      "PvP": "PvP",
+      "SMP": "SMP",
+      "Skyblock": "Skyblock",
+      "Minigames": "Minigames",
+      "Factions": "Factions"
     }
   },
   "gallery": {
@@ -253,7 +261,18 @@
     "tagline": "Discover and share your favorite Minecraft servers",
     "searchPlaceholder": "Search servers...",
     "browse": "Browse servers",
-    "dashboard": "Go to dashboard"
+    "dashboard": "Go to dashboard",
+    "taglineRich": "Discover and share your {highlight}",
+    "taglineHighlight": "favorite Minecraft servers",
+    "seeAll": "See all",
+    "searchShortcut": "Press / to search",
+    "quickTags": "Popular tags",
+    "shelves": {
+      "popular": "Most popular",
+      "survival": "Survival",
+      "modpack": "Modpacks",
+      "bedrock": "Bedrock"
+    }
   },
   "browse": {
     "title": "Browse servers",

@@ -73,6 +73,14 @@
       "GAMEPLAY": "Lối chơi",
       "META": "Chế độ",
       "COMMUNITY": "Cộng đồng"
+    },
+    "label": {
+      "Survival Mode": "Sinh tồn",
+      "PvP": "PvP",
+      "SMP": "SMP",
+      "Skyblock": "Skyblock",
+      "Minigames": "Minigame",
+      "Factions": "Phe phái"
     }
   },
   "gallery": {
@@ -253,7 +261,18 @@
     "tagline": "Khám phá và chia sẻ những Minecraft server yêu thích của bạn",
     "searchPlaceholder": "Tìm server...",
     "browse": "Khám phá server",
-    "dashboard": "Tới bảng điều khiển"
+    "dashboard": "Tới bảng điều khiển",
+    "taglineRich": "Khám phá và chia sẻ {highlight} yêu thích của bạn",
+    "taglineHighlight": "những Minecraft server",
+    "seeAll": "Xem tất cả",
+    "searchShortcut": "Nhấn / để tìm kiếm",
+    "quickTags": "Tag phổ biến",
+    "shelves": {
+      "popular": "Phổ biến nhất",
+      "survival": "Sinh tồn",
+      "modpack": "Modpack",
+      "bedrock": "Bedrock"
+    }
   },
   "browse": {
     "title": "Khám phá server",
