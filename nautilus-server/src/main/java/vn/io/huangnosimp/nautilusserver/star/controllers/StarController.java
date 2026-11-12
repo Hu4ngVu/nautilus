@@ -25,7 +25,7 @@ public class StarController {
 
     @GetMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(authentication.getName()),"
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<Page<UserStaredInfo>> getUserStaredInfo(
             @PathVariable String username,
