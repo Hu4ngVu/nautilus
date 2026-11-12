@@ -15,9 +15,30 @@ const { data: me, refresh } = useAsyncData('me', () => auth.username ? users.get
 })
 
 const themeItems = computed(() => [
-  { label: t('settings.themeSystem'), value: 'system', icon: 'i-lucide-monitor' },
-  { label: t('settings.themeLight'), value: 'light', icon: 'i-lucide-sun' },
-  { label: t('settings.themeDark'), value: 'dark', icon: 'i-lucide-moon' }
+  { label: t('settings.themeLight'), description: t('settings.themeLightHint'), value: 'light', icon: 'i-lucide-sun' },
+  { label: t('settings.themeDark'), description: t('settings.themeDarkHint'), value: 'dark', icon: 'i-lucide-moon' },
+  { label: t('settings.themeSystem'), description: t('settings.themeSystemHint'), value: 'system', icon: 'i-lucide-monitor' }
+])
+
+type Section = 'profile' | 'account' | 'appearance'
+
+const route = useRoute()
+const router = useRouter()
+
+const section = computed<Section>({
+  get: () => {
+    const q = route.query.section
+    return q === 'account' || q === 'appearance' ? q : 'profile'
+  },
+  set: (value) => {
+    router.replace({ query: { ...route.query, section: value === 'profile' ? undefined : value } })
+  }
+})
+
+const sections = computed(() => [
+  { value: 'profile' as const, label: t('settings.profile'), icon: 'i-lucide-user' },
+  { value: 'account' as const, label: t('settings.account'), icon: 'i-lucide-key-round' },
+  { value: 'appearance' as const, label: t('settings.appearance'), icon: 'i-lucide-palette' }
 ])
 
 // Profile
@@ -122,33 +143,32 @@ async function logout() {
 </script>
 
 <template>
-  <UContainer class="max-w-3xl py-8">
-    <h1 class="mb-8 text-2xl font-bold text-highlighted">
-      {{ t('settings.title') }}
-    </h1>
+  <UContainer class="py-8">
+    <PageHeader :title="t('settings.title')" />
 
-    <div class="flex flex-col gap-8">
-      <section class="rounded-lg bg-elevated/50 p-5">
-        <h2 class="mb-4 font-semibold text-highlighted">
-          {{ t('settings.appearance') }}
-        </h2>
-        <div class="grid gap-4 sm:grid-cols-2">
-          <UFormField :label="t('settings.language')">
-            <LanguageSwitcher />
-          </UFormField>
-          <UFormField :label="t('settings.theme')">
-            <USelect
-              v-model="colorMode.preference"
-              :items="themeItems"
-              variant="soft"
-              class="w-44"
-            />
-          </UFormField>
-        </div>
-      </section>
+    <div class="grid gap-8 md:grid-cols-[14rem_1fr]">
+      <nav
+        :aria-label="t('settings.title')"
+        class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 md:mx-0 md:flex-col md:self-start md:overflow-visible md:px-0 md:sticky md:top-[calc(var(--ui-header-height)+1.5rem)]"
+      >
+        <UButton
+          v-for="item in sections"
+          :key="item.value"
+          :icon="item.icon"
+          :label="item.label"
+          :aria-current="section === item.value ? 'page' : undefined"
+          :color="section === item.value ? 'primary' : 'neutral'"
+          :variant="section === item.value ? 'solid' : 'ghost'"
+          class="shrink-0 md:w-full"
+          @click="section = item.value"
+        />
+      </nav>
 
-      <section class="rounded-lg bg-elevated/50 p-5">
-        <h2 class="mb-4 font-semibold text-highlighted">
+      <section
+        v-if="section === 'profile'"
+        class="min-w-0 p-5 block-surface sm:p-6"
+      >
+        <h2 class="mb-5 font-pixel text-pixel-2xl text-highlighted">
           {{ t('settings.profile') }}
         </h2>
         <div class="flex flex-col gap-6">
@@ -174,8 +194,11 @@ async function logout() {
         </div>
       </section>
 
-      <section class="rounded-lg bg-elevated/50 p-5">
-        <h2 class="mb-4 font-semibold text-highlighted">
+      <section
+        v-else-if="section === 'account'"
+        class="min-w-0 p-5 block-surface sm:p-6"
+      >
+        <h2 class="mb-5 font-pixel text-pixel-2xl text-highlighted">
           {{ t('settings.account') }}
         </h2>
         <form
@@ -192,7 +215,6 @@ async function logout() {
               v-model="newUsername"
               :placeholder="t('settings.newUsername')"
               autocomplete="username"
-              variant="soft"
               class="w-full"
             />
           </UFormField>
@@ -211,7 +233,7 @@ async function logout() {
           class="flex flex-col gap-3"
           @submit.prevent="changePassword"
         >
-          <h3 class="font-medium text-highlighted">
+          <h3 class="font-pixel text-pixel-lg text-highlighted">
             {{ t('settings.password') }}
           </h3>
           <!-- Hidden username lets password managers pair the new password with this account -->
@@ -228,7 +250,6 @@ async function logout() {
               v-model="passwords.current"
               type="password"
               autocomplete="current-password"
-              variant="soft"
               class="w-full sm:max-w-sm"
             />
           </UFormField>
@@ -240,7 +261,6 @@ async function logout() {
               v-model="passwords.next"
               type="password"
               autocomplete="new-password"
-              variant="soft"
               class="w-full sm:max-w-sm"
             />
           </UFormField>
@@ -252,7 +272,6 @@ async function logout() {
               v-model="passwords.confirm"
               type="password"
               autocomplete="new-password"
-              variant="soft"
               class="w-full sm:max-w-sm"
             />
           </UFormField>
@@ -267,13 +286,45 @@ async function logout() {
           />
         </form>
         <USeparator class="my-5" />
-        <UButton
-          icon="i-lucide-log-out"
-          :label="t('nav.logout')"
-          color="error"
-          variant="soft"
-          @click="logout"
-        />
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border-2 border-red-500 p-4 shadow-[4px_4px_0_var(--color-red-500)]">
+          <p class="text-sm text-toned">
+            {{ t('settings.logoutHint') }}
+          </p>
+          <UButton
+            icon="i-lucide-log-out"
+            :label="t('nav.logout')"
+            color="error"
+            variant="soft"
+            @click="logout"
+          />
+        </div>
+      </section>
+
+      <section
+        v-else
+        class="min-w-0 p-5 block-surface sm:p-6"
+      >
+        <h2 class="mb-5 font-pixel text-pixel-2xl text-highlighted">
+          {{ t('settings.appearance') }}
+        </h2>
+        <div class="grid gap-6 sm:grid-cols-2">
+          <UFormField :label="t('settings.language')">
+            <LanguageSwitcher />
+          </UFormField>
+          <UFormField
+            :label="t('settings.theme')"
+            class="sm:col-span-2"
+          >
+            <URadioGroup
+              v-model="colorMode.preference"
+              :items="themeItems"
+              variant="card"
+              orientation="horizontal"
+              indicator="hidden"
+              :ui="{ fieldset: 'grid gap-3 sm:grid-cols-3', item: 'items-start gap-3 rounded-lg border-2 border-(--block-border) ring-0 bg-(--block-surface) has-data-[state=checked]:border-nautilus-500 has-data-[state=checked]:shadow-[4px_4px_0_var(--color-nautilus-500)]', label: 'font-pixel text-pixel-lg' }"
+            />
+          </UFormField>
+        </div>
       </section>
     </div>
   </UContainer>

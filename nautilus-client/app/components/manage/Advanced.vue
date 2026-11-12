@@ -90,7 +90,6 @@ async function remove() {
           v-model="newName"
           :placeholder="server.servername"
           :maxlength="LIMITS.servername"
-          variant="soft"
           class="w-full"
         />
       </UFormField>
@@ -105,8 +104,8 @@ async function remove() {
       />
     </form>
 
-    <div class="rounded-lg bg-error/10 p-4">
-      <h3 class="font-semibold text-error">
+    <div class="rounded-lg border-2 border-red-500 p-4 shadow-[4px_4px_0_var(--color-red-500)]">
+      <h3 class="font-pixel text-pixel-xl text-error">
         {{ t('manage.dangerZone') }}
       </h3>
       <p class="mt-1 text-sm text-muted">
@@ -131,7 +130,6 @@ async function remove() {
           v-model="confirmName"
           :placeholder="server.servername"
           :aria-label="t('manage.deleteTitle')"
-          variant="soft"
           class="w-full"
         />
       </template>

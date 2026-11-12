@@ -33,6 +33,30 @@ const bedrockError = computed(() => addressError(form.bedrockAddress))
 const summaryError = computed(() => !form.summary.trim() ? t('validation.required') : undefined)
 const invalid = computed(() => !!javaError.value || !!bedrockError.value || !!summaryError.value)
 
+const dirty = computed(() => {
+  const s = props.server
+  return form.summary !== (s.summary ?? '')
+    || form.bio !== (s.bio ?? '')
+    || form.javaAddress !== (s.javaAddress ?? '')
+    || form.bedrockAddress !== (s.bedrockAddress ?? '')
+    || form.requiresPremium !== s.requiresPremium
+    || avatarResourceId.value !== undefined
+    || bannerResourceId.value !== undefined
+})
+
+function discard() {
+  const s = props.server
+  Object.assign(form, {
+    summary: s.summary ?? '',
+    bio: s.bio ?? '',
+    javaAddress: s.javaAddress ?? '',
+    bedrockAddress: s.bedrockAddress ?? '',
+    requiresPremium: s.requiresPremium
+  })
+  avatarResourceId.value = undefined
+  bannerResourceId.value = undefined
+}
+
 function orNull(value: string) {
   return value.trim() ? value.trim() : null
 }
@@ -96,7 +120,6 @@ async function save() {
         v-model="form.summary"
         :maxlength="LIMITS.summary"
         :rows="3"
-        variant="soft"
         class="w-full"
       />
     </UFormField>
@@ -110,7 +133,6 @@ async function save() {
         <UInput
           v-model="form.javaAddress"
           placeholder="play.example.com:25565"
-          variant="soft"
           class="w-full"
         />
       </UFormField>
@@ -122,7 +144,6 @@ async function save() {
         <UInput
           v-model="form.bedrockAddress"
           placeholder="play.example.com:19132"
-          variant="soft"
           class="w-full"
         />
       </UFormField>
@@ -138,12 +159,33 @@ async function save() {
       <LazyMarkdownEditor v-model="form.bio" />
     </UFormField>
 
-    <UButton
-      type="submit"
-      :label="t('common.save')"
-      :loading="saving"
-      :disabled="invalid"
-      class="self-start"
-    />
+    <!-- Sticks to the bottom of the viewport while there are unsaved changes -->
+    <div
+      class="sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 p-3 block-surface"
+      :class="dirty ? 'block-raised lift-primary border-nautilus-500!' : ''"
+    >
+      <p
+        class="text-sm"
+        :class="dirty ? 'text-highlighted' : 'text-muted'"
+        aria-live="polite"
+      >
+        {{ dirty ? t('manage.unsaved') : t('manage.noChanges') }}
+      </p>
+      <div class="flex gap-2">
+        <UButton
+          :label="t('manage.discard')"
+          color="neutral"
+          variant="ghost"
+          :disabled="!dirty || saving"
+          @click="discard"
+        />
+        <UButton
+          type="submit"
+          :label="t('common.save')"
+          :loading="saving"
+          :disabled="invalid || !dirty"
+        />
+      </div>
+    </div>
   </form>
 </template>

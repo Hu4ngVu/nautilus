@@ -186,7 +186,11 @@
     "confirmPassword": "Confirm new password",
     "changePassword": "Change password",
     "passwordSaved": "Password changed. Other sessions have been signed out.",
-    "passwordWrong": "Current password is incorrect, or this account has no password (Google sign-in)."
+    "passwordWrong": "Current password is incorrect, or this account has no password (Google sign-in).",
+    "themeLightHint": "Light background, bold outlines",
+    "themeDarkHint": "Dark background, easy on the eyes",
+    "themeSystemHint": "Follow your device setting",
+    "logoutHint": "Sign out of Nautilus in this browser."
   },
   "create": {
     "title": "New server",
@@ -202,7 +206,20 @@
     "premiumHelp": "Players need a paid Minecraft account.",
     "submit": "Create server",
     "success": "Server created",
-    "failed": "Couldn't create the server. The name may already exist."
+    "failed": "Couldn't create the server. The name may already exist.",
+    "platformHint": {
+      "JAVA": "PC: Windows, macOS, Linux",
+      "BEDROCK": "Mobile, consoles, Windows"
+    },
+    "typeHint": {
+      "VANILLA": "No mods required",
+      "MODPACK": "Players install a modpack"
+    },
+    "visibilityHint": {
+      "public": "Anyone can find it",
+      "private": "Only you and people you invite"
+    },
+    "visibilityLabel": "Visibility"
   },
   "manage": {
     "title": "Manage {name}",
@@ -227,7 +244,10 @@
     "deleteTitle": "Delete server?",
     "deleteConfirm": "This can't be undone. Type “{name}” to confirm.",
     "deleted": "Server deleted",
-    "noPermission": "You don't have permission to edit this server."
+    "noPermission": "You don't have permission to edit this server.",
+    "unsaved": "You have unsaved changes",
+    "noChanges": "No changes",
+    "discard": "Discard"
   },
   "versions": {
     "choose": "Choose versions",

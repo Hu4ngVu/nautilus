@@ -186,7 +186,11 @@
     "confirmPassword": "Nhập lại mật khẩu mới",
     "changePassword": "Đổi mật khẩu",
     "passwordSaved": "Đã đổi mật khẩu. Các phiên đăng nhập khác đã bị đăng xuất.",
-    "passwordWrong": "Mật khẩu hiện tại không đúng, hoặc tài khoản không có mật khẩu (đăng nhập bằng Google)."
+    "passwordWrong": "Mật khẩu hiện tại không đúng, hoặc tài khoản không có mật khẩu (đăng nhập bằng Google).",
+    "themeLightHint": "Nền sáng, viền đậm",
+    "themeDarkHint": "Nền tối, dịu mắt ban đêm",
+    "themeSystemHint": "Theo cài đặt thiết bị",
+    "logoutHint": "Đăng xuất khỏi Nautilus trên trình duyệt này."
   },
   "create": {
     "title": "Tạo server",
@@ -202,7 +206,20 @@
     "premiumHelp": "Người chơi cần tài khoản Minecraft bản quyền.",
     "submit": "Tạo server",
     "success": "Đã tạo server",
-    "failed": "Không thể tạo server. Tên có thể đã tồn tại."
+    "failed": "Không thể tạo server. Tên có thể đã tồn tại.",
+    "platformHint": {
+      "JAVA": "PC: Windows, macOS, Linux",
+      "BEDROCK": "Điện thoại, console, Windows"
+    },
+    "typeHint": {
+      "VANILLA": "Không cần cài mod",
+      "MODPACK": "Người chơi cần cài modpack"
+    },
+    "visibilityHint": {
+      "public": "Ai cũng có thể tìm thấy",
+      "private": "Chỉ bạn và người được mời"
+    },
+    "visibilityLabel": "Hiển thị"
   },
   "manage": {
     "title": "Quản lý {name}",
@@ -227,7 +244,10 @@
     "deleteTitle": "Xóa server?",
     "deleteConfirm": "Hành động này không thể hoàn tác. Nhập “{name}” để xác nhận.",
     "deleted": "Đã xóa server",
-    "noPermission": "Bạn không có quyền chỉnh sửa server này."
+    "noPermission": "Bạn không có quyền chỉnh sửa server này.",
+    "unsaved": "Bạn có thay đổi chưa lưu",
+    "noChanges": "Không có thay đổi",
+    "discard": "Huỷ thay đổi"
   },
   "versions": {
     "choose": "Chọn phiên bản",

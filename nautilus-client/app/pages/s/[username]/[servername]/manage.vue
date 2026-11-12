@@ -26,7 +26,10 @@ const tabs = computed(() => [
 ])
 
 const tab = computed({
-  get: () => typeof route.query.tab === 'string' ? route.query.tab : 'general',
+  get: () => {
+    const q = route.query.tab
+    return typeof q === 'string' && tabs.value.some(item => item.value === q) ? q : 'general'
+  },
   set: v => navigateTo({ query: { ...route.query, tab: v } }, { replace: true })
 })
 
@@ -38,7 +41,7 @@ useSeoMeta({ title: () => t('manage.title', { name: servername.value }) })
 </script>
 
 <template>
-  <UContainer class="max-w-4xl py-8">
+  <UContainer class="py-8">
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div class="min-w-0">
         <ULink
@@ -51,7 +54,7 @@ useSeoMeta({ title: () => t('manage.title', { name: servername.value }) })
           />
           {{ t('manage.back') }}
         </ULink>
-        <h1 class="truncate text-2xl font-bold text-highlighted">
+        <h1 class="mt-1 truncate font-pixel text-pixel-3xl text-highlighted">
           {{ t('manage.title', { name: servername }) }}
         </h1>
       </div>
@@ -64,48 +67,59 @@ useSeoMeta({ title: () => t('manage.title', { name: servername.value }) })
       :description="messageFor(error)"
     />
 
-    <UTabs
+    <div
       v-else-if="server"
-      v-model="tab"
-      :items="tabs"
-      variant="link"
-      :ui="{ list: 'overflow-x-auto', content: 'pt-6' }"
+      class="grid gap-8 md:grid-cols-[14rem_1fr]"
     >
-      <template #general>
+      <nav
+        :aria-label="t('manage.title', { name: servername })"
+        class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 md:mx-0 md:flex-col md:self-start md:overflow-visible md:px-0 md:sticky md:top-[calc(var(--ui-header-height)+1.5rem)]"
+      >
+        <UButton
+          v-for="item in tabs"
+          :key="item.value"
+          :icon="item.icon"
+          :label="item.label"
+          :aria-current="tab === item.value ? 'page' : undefined"
+          :color="tab === item.value ? (item.value === 'advanced' ? 'error' : 'primary') : 'neutral'"
+          :variant="tab === item.value ? 'solid' : 'ghost'"
+          class="shrink-0 md:w-full"
+          @click="tab = item.value"
+        />
+      </nav>
+
+      <div class="min-w-0 p-5 block-surface sm:p-6">
         <ManageGeneral
+          v-if="tab === 'general'"
           :key="`${servername}-${server.avatarUrl}-${server.bannerUrl}`"
           :username="username"
           :server="server"
           @saved="refresh()"
         />
-      </template>
-      <template #gallery>
         <ManageGallery
+          v-else-if="tab === 'gallery'"
           :username="username"
           :servername="servername"
         />
-      </template>
-      <template #tags>
         <ManageTags
+          v-else-if="tab === 'tags'"
           :username="username"
           :servername="servername"
         />
-      </template>
-      <template #versions>
         <ManageVersions
+          v-else-if="tab === 'versions'"
           :username="username"
           :servername="servername"
         />
-      </template>
-      <template #advanced>
         <ManageAdvanced
+          v-else-if="tab === 'advanced'"
           :username="username"
           :server="server"
           @saved="refresh()"
           @renamed="onRenamed"
         />
-      </template>
-    </UTabs>
+      </div>
+    </div>
 
     <UAlert
       v-if="server && !canEdit"
