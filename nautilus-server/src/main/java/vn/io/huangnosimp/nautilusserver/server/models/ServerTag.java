@@ -8,7 +8,7 @@ import vn.io.huangnosimp.nautilusserver.server.constants.TagCategory;
 
 @Entity
 @Table(
-        name = "server_tag",
+        name = "server_tags",
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uc_server_id_tag_category",

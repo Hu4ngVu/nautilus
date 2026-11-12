@@ -42,4 +42,38 @@ class ServerControllerWebTest {
         mvc.get().uri("/servers?serverType=UNKNOWN").assertThat().hasStatus4xxClientError();
         verifyNoInteractions(serverService);
     }
+
+    @Test
+    void searchEndpointParsesQueryAndFilters() {
+        when(serverService.searchServer(
+                        eq("paper"),
+                        eq(false),
+                        eq(ServerType.MODPACK),
+                        eq(ServerPlatform.JAVA),
+                        any(),
+                        any()))
+                .thenReturn(new PageImpl<>(java.util.List.of(), PageRequest.of(0, 10), 0));
+
+        mvc.get()
+                .uri(
+                        "/servers/search?query=paper&requiresPremium=false&serverType=MODPACK"
+                                + "&serverPlatform=JAVA&page=0&size=10")
+                .assertThat()
+                .hasStatusOk();
+
+        verify(serverService)
+                .searchServer(
+                        eq("paper"),
+                        eq(false),
+                        eq(ServerType.MODPACK),
+                        eq(ServerPlatform.JAVA),
+                        any(),
+                        any());
+    }
+
+    @Test
+    void searchEndpointRequiresQuery() {
+        mvc.get().uri("/servers/search").assertThat().hasStatus4xxClientError();
+        verifyNoInteractions(serverService);
+    }
 }

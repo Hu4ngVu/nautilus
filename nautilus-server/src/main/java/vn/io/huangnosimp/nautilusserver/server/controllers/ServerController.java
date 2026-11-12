@@ -44,6 +44,20 @@ public class ServerController {
                         requiresPremium, serverType, serverPlatform, tags, pageable));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<Page<ServerInfoResponse>> searchServer(
+            @RequestParam String query,
+            @RequestParam(required = false) Boolean requiresPremium,
+            @RequestParam(required = false) ServerType serverType,
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(required = false) ServerPlatform serverPlatform,
+            @PageableDefault(sort = "starCount", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
+        return ResponseEntity.ok(
+                serverService.searchServer(
+                        query, requiresPremium, serverType, serverPlatform, tags, pageable));
+    }
+
     @GetMapping("/{username}/{servername}")
     @PreAuthorize(
             "@permissionCheckerImpl.isServerPublic(@globalIdResolver.resolveServerId(#username,"

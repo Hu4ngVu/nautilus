@@ -18,4 +18,10 @@ public class AuthUserQueryImpl implements AuthUserQuery {
     public Optional<String> getAuthUserIdByUsername(String username) {
         return authUserRepository.findIdByUsername(username);
     }
+
+    @Override
+    @Logging(level = Level.DEBUG)
+    public Optional<String> getUsernameByAuthUserId(String authUserId) {
+        return authUserRepository.findUsernameById(authUserId);
+    }
 }

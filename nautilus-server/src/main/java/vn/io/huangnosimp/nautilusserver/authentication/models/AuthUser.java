@@ -15,7 +15,7 @@ import vn.io.huangnosimp.nautilusserver.authentication.constants.Provider;
 import vn.io.huangnosimp.nautilusserver.authentication.constants.Role;
 
 @Entity
-@Table(name = "auth_user")
+@Table(name = "auth_users")
 @Getter
 @Setter
 @NoArgsConstructor

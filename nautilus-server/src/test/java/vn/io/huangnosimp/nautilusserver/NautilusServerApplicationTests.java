@@ -23,7 +23,8 @@ class NautilusServerApplicationTests {
     static final GenericContainer<?> REDIS =
             new GenericContainer<>(DockerImageName.parse("redis:8.8.4")).withExposedPorts(6379);
 
-    @Container @ServiceConnection
+    @Container
+    @ServiceConnection
     @SuppressWarnings("resource")
     static final MySQLContainer<?> MYSQL =
             new MySQLContainer<>("mysql:8.4.13").withDatabaseName("nautilus_test");

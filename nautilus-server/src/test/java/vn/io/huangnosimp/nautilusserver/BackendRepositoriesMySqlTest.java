@@ -46,7 +46,8 @@ import vn.io.huangnosimp.nautilusserver.user.repositories.UserRepository;
 @ActiveProfiles("test")
 @EnableJpaAuditing
 class BackendRepositoriesMySqlTest {
-    @Container @ServiceConnection
+    @Container
+    @ServiceConnection
     @SuppressWarnings("resource")
     static final MySQLContainer<?> MYSQL =
             new MySQLContainer<>("mysql:8.4.13").withDatabaseName("nautilus_test");
@@ -144,7 +145,7 @@ class BackendRepositoriesMySqlTest {
                 1,
                 serverRepository
                         .findAllByVisibilityIsTrue(
-                                (root, query, criteriaBuilder) -> criteriaBuilder.conjunction(),
+                                (_, _, criteriaBuilder) -> criteriaBuilder.conjunction(),
                                 PageRequest.of(0, 10))
                         .getTotalElements());
         serverRepository.increaseStarCount(server.getId(), 3);
