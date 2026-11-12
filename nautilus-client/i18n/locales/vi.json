@@ -281,7 +281,11 @@
     "filters": "Bộ lọc",
     "empty": "Không tìm thấy server nào",
     "emptyHint": "Hãy bỏ bớt bộ lọc hoặc thử từ khóa khác.",
-    "results": "{n} server"
+    "results": "{n} server",
+    "viewList": "Dạng danh sách",
+    "viewGrid": "Dạng lưới",
+    "activeFilters": "Bộ lọc đang áp dụng",
+    "removeFilter": "Bỏ bộ lọc {name}"
   },
   "dashboard": {
     "title": "Bảng điều khiển",

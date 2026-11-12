@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Page, ServerSummary } from '~/types/api'
-import type { SortKey } from '~/composables/useServerQuery'
+import type { ServerQueryState, SortKey } from '~/composables/useServerQuery'
 
 const { t, n } = useI18n()
 const servers = useServerApi()
@@ -53,6 +53,27 @@ const page = computed({
   }
 })
 
+const view = useBrowseView()
+
+/** Applied filters as removable chips; search text has its own box and is not repeated here. */
+const activeFilters = computed(() => {
+  const s = state.value
+  const chips: { key: string, label: string, patch: Partial<ServerQueryState> }[] = []
+  if (s.serverPlatform) chips.push({ key: 'platform', label: PLATFORM_LABEL[s.serverPlatform], patch: { serverPlatform: undefined } })
+  if (s.serverType) chips.push({ key: 'type', label: t(`server.type.${s.serverType}`), patch: { serverType: undefined } })
+  if (s.requiresPremium !== undefined) {
+    chips.push({
+      key: 'premium',
+      label: s.requiresPremium ? t('filters.premiumOnly') : t('filters.crackedAllowed'),
+      patch: { requiresPremium: undefined }
+    })
+  }
+  for (const tag of s.tags ?? []) {
+    chips.push({ key: `tag:${tag}`, label: t(`tags.label.${tag}`, tag), patch: { tags: s.tags?.filter(x => x !== tag) } })
+  }
+  return chips
+})
+
 const filtersOpen = ref(false)
 const activeFilterCount = computed(() =>
   [state.value.serverPlatform, state.value.serverType, state.value.requiresPremium].filter(v => v !== undefined).length
@@ -101,6 +122,27 @@ const activeFilterCount = computed(() =>
               size="lg"
               class="flex-1 sm:w-44"
             />
+            <UFieldGroup
+              size="lg"
+              class="hidden sm:flex"
+            >
+              <UButton
+                icon="i-lucide-list"
+                :aria-label="t('browse.viewList')"
+                :aria-pressed="view === 'list'"
+                color="neutral"
+                :variant="view === 'list' ? 'solid' : 'soft'"
+                @click="view = 'list'"
+              />
+              <UButton
+                icon="i-lucide-layout-grid"
+                :aria-label="t('browse.viewGrid')"
+                :aria-pressed="view === 'grid'"
+                color="neutral"
+                :variant="view === 'grid' ? 'solid' : 'soft'"
+                @click="view = 'grid'"
+              />
+            </UFieldGroup>
             <UButton
               icon="i-lucide-sliders-horizontal"
               :label="activeFilterCount ? `${t('browse.filters')} (${activeFilterCount})` : t('browse.filters')"
@@ -111,6 +153,25 @@ const activeFilterCount = computed(() =>
               @click="filtersOpen = true"
             />
           </div>
+        </div>
+
+        <div
+          v-if="activeFilters.length"
+          class="flex flex-wrap items-center gap-2"
+          :aria-label="t('browse.activeFilters')"
+          role="group"
+        >
+          <UButton
+            v-for="chip in activeFilters"
+            :key="chip.key"
+            :label="chip.label"
+            :aria-label="t('browse.removeFilter', { name: chip.label })"
+            trailing-icon="i-lucide-x"
+            color="neutral"
+            variant="soft"
+            size="xs"
+            @click="update(chip.patch)"
+          />
         </div>
 
         <div
@@ -158,6 +219,7 @@ const activeFilterCount = computed(() =>
           v-else
           :servers="data?.content ?? []"
           :loading="status === 'pending'"
+          :view="view"
         />
 
         <UPagination

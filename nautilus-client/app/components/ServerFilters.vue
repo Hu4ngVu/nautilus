@@ -92,8 +92,8 @@ function reset() {
       @click="reset"
     />
 
-    <section class="rounded-lg bg-elevated/60 p-4">
-      <h3 class="mb-3 font-semibold text-highlighted">
+    <section class="p-4 block-surface">
+      <h3 class="mb-3 font-pixel text-pixel-lg text-highlighted">
         {{ t('filters.platform') }}
       </h3>
       <URadioGroup
@@ -102,8 +102,8 @@ function reset() {
       />
     </section>
 
-    <section class="rounded-lg bg-elevated/60 p-4">
-      <h3 class="mb-3 font-semibold text-highlighted">
+    <section class="p-4 block-surface">
+      <h3 class="mb-3 font-pixel text-pixel-lg text-highlighted">
         {{ t('filters.type') }}
       </h3>
       <URadioGroup
@@ -112,8 +112,8 @@ function reset() {
       />
     </section>
 
-    <section class="rounded-lg bg-elevated/60 p-4">
-      <h3 class="mb-3 font-semibold text-highlighted">
+    <section class="p-4 block-surface">
+      <h3 class="mb-3 font-pixel text-pixel-lg text-highlighted">
         {{ t('filters.account') }}
       </h3>
       <URadioGroup
@@ -125,9 +125,9 @@ function reset() {
     <section
       v-for="category in TAG_CATEGORIES"
       :key="category"
-      class="rounded-lg bg-elevated/60 p-4"
+      class="p-4 block-surface"
     >
-      <h3 class="mb-3 font-semibold text-highlighted">
+      <h3 class="mb-3 font-pixel text-pixel-lg text-highlighted">
         {{ t(`tags.category.${category}`) }}
       </h3>
       <UCheckboxGroup

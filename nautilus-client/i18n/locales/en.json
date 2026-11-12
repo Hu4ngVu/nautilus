@@ -281,7 +281,11 @@
     "filters": "Filters",
     "empty": "No servers found",
     "emptyHint": "Try removing some filters or using different keywords.",
-    "results": "{n} server | {n} servers"
+    "results": "{n} server | {n} servers",
+    "viewList": "List view",
+    "viewGrid": "Grid view",
+    "activeFilters": "Active filters",
+    "removeFilter": "Remove filter {name}"
   },
   "dashboard": {
     "title": "Dashboard",

@@ -29,6 +29,11 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  // localStorage access throws when site data is blocked and color-mode does not guard it
+  colorMode: {
+    storage: 'cookie'
+  },
+
   runtimeConfig: {
     public: {
       // Same-origin path proxied to nautilus-server; override with NUXT_PUBLIC_API_BASE
