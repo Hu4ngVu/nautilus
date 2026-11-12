@@ -17,14 +17,15 @@ const { notify, success } = useApiError()
 
 useSeoMeta({ title: () => t('auth.register.title') })
 
-const form = useTemplateRef('authForm')
-const typedUsername = computed(() => String(form.value?.state.username ?? ''))
-const typedEmail = computed(() => String(form.value?.state.email ?? ''))
-const typedPassword = computed(() => String(form.value?.state.password ?? ''))
+// Typed by hand: inferring it from the template is circular (the template reads these computeds)
+const form = useTemplateRef<{ state: Partial<RegisterState> }>('authForm')
+const typedUsername = computed<string>(() => String(form.value?.state.username ?? ''))
+const typedEmail = computed<string>(() => String(form.value?.state.email ?? ''))
+const typedPassword = computed<string>(() => String(form.value?.state.password ?? ''))
 
 const usernameStatus = useAvailability('username', typedUsername, v => USERNAME_PATTERN.test(v))
 const emailStatus = useAvailability('email', typedEmail, v => EMAIL_PATTERN.test(v))
-const strength = computed(() => passwordStrength(typedPassword.value))
+const strength = computed<PasswordStrength>(() => passwordStrength(typedPassword.value))
 
 const STATUS_STYLE = {
   checking: { icon: 'i-lucide-loader-circle', class: 'text-muted [&>svg]:animate-spin', key: 'auth.checking' },
