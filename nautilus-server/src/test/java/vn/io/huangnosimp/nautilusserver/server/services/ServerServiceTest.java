@@ -125,6 +125,48 @@ class ServerServiceTest {
     }
 
     @Test
+    void primaryVersionFollowsEachServersOwnPlatform() {
+        Server java = server("s1", ServerPlatform.JAVA, null);
+        Server bedrock = server("s2", ServerPlatform.BEDROCK, null);
+        when(authUserQuery.getUsernamesByAuthUserIds(any())).thenReturn(Map.of("o1", "alice"));
+        // The Java server also stores a Bedrock primary; it must not leak into its summary
+        when(javaVersions.findAllByServerIdInAndIsPrimaryMcVersionTrue(any()))
+                .thenReturn(
+                        List.of(
+                                JavaMcVersion.builder()
+                                        .server(java)
+                                        .mcVersion("1.21.1")
+                                        .isPrimaryMcVersion(true)
+                                        .build()));
+        when(bedrockVersions.findAllByServerIdInAndIsPrimaryMcVersionTrue(any()))
+                .thenReturn(
+                        List.of(
+                                BedrockMcVersion.builder()
+                                        .server(java)
+                                        .mcVersion("1.21.50")
+                                        .isPrimaryMcVersion(true)
+                                        .build(),
+                                BedrockMcVersion.builder()
+                                        .server(bedrock)
+                                        .mcVersion("1.21.40")
+                                        .isPrimaryMcVersion(true)
+                                        .build()));
+
+        var content = listAll(List.of(java, bedrock)).getContent();
+
+        assertEquals("1.21.1", content.get(0).primaryVersion());
+        assertEquals("1.21.40", content.get(1).primaryVersion());
+    }
+
+    @Test
+    void legacyServerWithoutPlatformStillLists() {
+        when(authUserQuery.getUsernamesByAuthUserIds(any())).thenReturn(Map.of("o1", "alice"));
+        var content = listAll(List.of(server("s1", null, null))).getContent();
+        assertNull(content.getFirst().primaryVersion());
+        assertNull(content.getFirst().serverPlatform());
+    }
+
+    @Test
     void listingSkipsBedrockLookupWhenPageHasNoBedrockServer() {
         when(authUserQuery.getUsernamesByAuthUserIds(any())).thenReturn(Map.of("o1", "alice"));
         listAll(List.of(server("s1", ServerPlatform.JAVA, null)));

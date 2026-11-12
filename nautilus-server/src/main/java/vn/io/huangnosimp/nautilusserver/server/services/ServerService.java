@@ -104,16 +104,30 @@ public class ServerService {
             if (serverTags.size() < MAX_SUMMARY_TAGS) serverTags.add(tag.getTag());
         }
 
+        // A server may store versions for both editions; only its own platform's primary counts
+        // HashMap, not Collectors.toMap: legacy rows may have no platform (null value)
+        Map<String, ServerPlatform> platforms = new HashMap<>();
+        content.forEach(server -> platforms.put(server.getId(), server.getPlatform()));
         Map<String, String> primaryVersions = new HashMap<>();
-        if (content.stream().anyMatch(server -> server.getPlatform() == ServerPlatform.JAVA)) {
+        if (platforms.containsValue(ServerPlatform.JAVA)) {
             javaMcVersionRepository
                     .findAllByServerIdInAndIsPrimaryMcVersionTrue(ids)
-                    .forEach(v -> primaryVersions.put(v.getServer().getId(), v.getMcVersion()));
+                    .forEach(
+                            v -> {
+                                String id = v.getServer().getId();
+                                if (platforms.get(id) == ServerPlatform.JAVA)
+                                    primaryVersions.put(id, v.getMcVersion());
+                            });
         }
-        if (content.stream().anyMatch(server -> server.getPlatform() == ServerPlatform.BEDROCK)) {
+        if (platforms.containsValue(ServerPlatform.BEDROCK)) {
             bedrockMcVersionRepository
                     .findAllByServerIdInAndIsPrimaryMcVersionTrue(ids)
-                    .forEach(v -> primaryVersions.put(v.getServer().getId(), v.getMcVersion()));
+                    .forEach(
+                            v -> {
+                                String id = v.getServer().getId();
+                                if (platforms.get(id) == ServerPlatform.BEDROCK)
+                                    primaryVersions.put(id, v.getMcVersion());
+                            });
         }
 
         return page.map(
