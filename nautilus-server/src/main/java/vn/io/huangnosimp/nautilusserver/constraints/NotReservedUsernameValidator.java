@@ -11,12 +11,10 @@ public class NotReservedUsernameValidator
     private static final Set<String> RESERVED =
             Set.of(
                     "api",
-                    "auth",
                     "browse",
                     "dashboard",
                     "login",
                     "new",
-                    "oauth2",
                     "register",
                     "settings",
                     "stars",

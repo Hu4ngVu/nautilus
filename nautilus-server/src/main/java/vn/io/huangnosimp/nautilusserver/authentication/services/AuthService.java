@@ -17,7 +17,6 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.authentication.constants.Provider;
 import vn.io.huangnosimp.nautilusserver.authentication.constants.Role;
 import vn.io.huangnosimp.nautilusserver.authentication.dto.requests.ChangePasswordRequest;
 import vn.io.huangnosimp.nautilusserver.authentication.dto.requests.LoginRequest;
@@ -80,7 +79,6 @@ public class AuthService {
                         .username(registerRequest.username())
                         .email(registerRequest.email())
                         .password(passwordEncoder.encode(registerRequest.password()))
-                        .provider(Provider.LOCAL)
                         .role(Role.USER)
                         .enabled(true)
                         .build();

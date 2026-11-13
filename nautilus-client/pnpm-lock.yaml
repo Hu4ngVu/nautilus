@@ -169,9 +169,6 @@ importers:
       '@iconify-json/lucide':
         specifier: ^1.2.142
         version: 1.2.142
-      '@iconify-json/simple-icons':
-        specifier: ^1.2.99
-        version: 1.2.99
       '@nuxt/fonts':
         specifier: ^1.2.0
         version: 1.2.0(@nuxt/schema@4.6.4)(cac@7.0.0)(confbox@0.2.4)(db0@0.3.4)(dotenv@17.4.2)(esbuild@0.28.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lightningcss@1.33.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.141.0)(postcss@8.5.32)(rolldown@1.2.15)(rollup@4.67.5)(srvx@1.0.5)(vite@8.3.5(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))
@@ -1025,9 +1022,6 @@ packages:
 
   '@iconify-json/lucide@1.2.142':
     resolution: {integrity: sha512-vEGX5X52/l77jRMcmxXk3PiEebldDUs8WFdM8X3Evq1S9p5F+o0VZhx8sqaQsmFEB9Ukp5ND5Q/0g2kQ/LF+rQ==}
-
-  '@iconify-json/simple-icons@1.2.99':
-    resolution: {integrity: sha512-kouZhqvUoNdxEe+lZksbJJZMCZv4b4Ob62O1GW3fcpz/I0mVPzM+9/Qf/DUuv5ns8l6c46D8M/ubhJjjbLp9HQ==}
 
   '@iconify/collections@1.0.762':
     resolution: {integrity: sha512-YKx0whVsIbWMZRjyVHxhBrobnRFSAa1Sb1u6cL0herB99ZrTQ/D9BqI7fVCb70Xkdv/oOuyi3luG6hOtKTkY5A==}
@@ -7044,10 +7038,6 @@ snapshots:
   '@humanwhocodes/retry@0.4.3': {}
 
   '@iconify-json/lucide@1.2.142':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/simple-icons@1.2.99':
     dependencies:
       '@iconify/types': 2.0.0
 

@@ -85,13 +85,6 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken.value = res.accessToken
   }
 
-  function loginWithGoogle() {
-    // Handled by Spring Security; it redirects back to /auth/callback with the refresh cookie set.
-    // Its endpoints sit at the backend root: the API host, or this origin when apiBase is the dev proxy path.
-    const backend = /^https?:\/\//.test(apiBase) ? new URL(apiBase).origin : ''
-    window.location.href = `${backend}/oauth2/authorization/google`
-  }
-
   return {
     accessToken,
     ready,
@@ -104,7 +97,6 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     logout,
     changePassword,
-    loginWithGoogle,
     clear
   }
 })

@@ -19,8 +19,8 @@
 - hỗ trợ chế độ sáng/tối, có thể chuyển đổi bằng nút bấm.
 - hỗ trợ responsive, hiển thị tốt trên các thiết bị di động và máy tính để bàn.
 - hỗ trợ chuyển đổi ngôn ngữ giữa tiếng Việt và tiếng Anh, có thể chọn ngôn ngữ trong cài đặt.
-- hỗ trợ đăng nhập bằng tài khoản Google, có thể đăng nhập bằng email và mật khẩu.
-- hỗ trợ đăng ký tài khoản mới bằng email và mật khẩu hoặc đăng ký bằng tài khoản Google.
+- hỗ trợ đăng nhập bằng tên đăng nhập hoặc email và mật khẩu.
+- hỗ trợ đăng ký tài khoản mới bằng email và mật khẩu.
 - hỗ trợ định dạng gif cho server avatar và banner.
 - hỗ trợ markdown cho user bio và server bio.
 ## Page:
@@ -33,7 +33,7 @@ khi click vào avatar sẽ hiện ra menu dropdown với các tùy chọn: profi
 - Profile page: hiển thị thông tin cá nhân của người dùng ở thẻ bên trái và danh sách server của người dùng tạo thành các thẻ ngang bên phải giống như github.
 - Star page: hiển thị danh sách server mà người dùng đã star, có thể bỏ star hoặc click vào server để xem chi tiết.
 - Setting page: cho phép người dùng thay đổi thông tin cá nhân, mật khẩu, ngôn ngữ, chế độ sáng/tối và các cài đặt khác.
-- Login page: cho phép người dùng đăng nhập bằng email và mật khẩu hoặc đăng nhập bằng tài khoản Google.
+- Login page: cho phép người dùng đăng nhập bằng tên đăng nhập hoặc email và mật khẩu.
 
 
 # Tài liệu API:
@@ -54,15 +54,13 @@ khi click vào avatar sẽ hiện ra menu dropdown với các tùy chọn: profi
 | `POST` | `/auth/register` | Công khai | JSON `{ "username": "...", "email": "...", "password": "..." }`; username 3–20 ký tự, chỉ chữ/số/`_@.`; trả `200` rỗng. |
 | `POST` | `/auth/login` | Công khai | JSON `{ "username": "...", "password": "..." }`; `username` nhận username hoặc email; trả `201`, JSON `{ "accessToken": "..." }` và đặt cookie refresh. |
 | `POST` | `/auth/refresh` | Cookie refresh | Gửi cookie `refreshToken`; trả `201`, access token mới và refresh cookie mới. |
-| `PUT` | `/auth/password` | Đăng nhập | JSON `{ "currentPassword": "...", "newPassword": "..." }` (8–50 ký tự); sai mật khẩu hiện tại hoặc tài khoản chỉ có Google trả `400`. Thu hồi mọi phiên cũ, trả `200` kèm access token mới và refresh cookie mới. |
+| `PUT` | `/auth/password` | Đăng nhập | JSON `{ "currentPassword": "...", "newPassword": "..." }` (8–50 ký tự); sai mật khẩu hiện tại trả `400`. Thu hồi mọi phiên cũ, trả `200` kèm access token mới và refresh cookie mới. |
 | `POST` | `/auth/logout` | Đăng nhập | Gửi Bearer token; thu hồi phiên/token và xóa refresh cookie; trả `200` rỗng. |
 | `POST` | `/auth/check-username?username=...` | Công khai | Trả boolean JSON: `true` nếu username đã tồn tại. |
 | `POST` | `/auth/check-email?email=...` | Công khai | Trả boolean JSON: `true` nếu email đã tồn tại. |
 | `GET` | `/users/{username}` | Công khai | Trả `{ username, serverCount, bio, avatarUrl }`. |
 | `PATCH` | `/users/{username}` | Chính chủ | JSON tùy chọn `{ "resourceId": "...", "bio": "..." }`; trường bỏ qua thì không đổi, `null` xóa giá trị nullable. Trả `200` rỗng. |
 | `PUT` | `/users/{username}` | Chính chủ | JSON `{ "newUsername": "..." }`; đổi username; trả `200` rỗng. |
-
-Đăng nhập OAuth Google do Spring Security xử lý tại `/oauth2/authorization/google`; URL callback phụ thuộc cấu hình môi trường backend.
 
 ### Server
 

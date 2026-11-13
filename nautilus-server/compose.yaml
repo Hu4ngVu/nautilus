@@ -98,13 +98,8 @@ services:
       - OPENFGA_API_URL=http://openfga:8080
       - OPENFGA_STORE_ID=${OPENFGA_STORE_ID}
       - OPENFGA_AUTHORIZATION_MODEL_ID=${OPENFGA_AUTHORIZATION_MODEL_ID}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       # The client's domain: CORS origin https://${APP_DOMAIN}
       - APP_DOMAIN=${APP_DOMAIN:?set APP_DOMAIN to the client's domain, e.g. example.com}
-      - CLIENT_OAUTH_REDIRECT_URL=${CLIENT_OAUTH_REDIRECT_URL:-https://${APP_DOMAIN}/auth/callback}
-      # Behind a reverse proxy: build OAuth redirect URIs from X-Forwarded-* headers
-      - SERVER_FORWARD_HEADERS_STRATEGY=framework
     ports:
       # Set NAUTILUS_BIND to a private address if the client host renders pages over a private network
       - "${NAUTILUS_BIND:-127.0.0.1}:8083:8083"

@@ -11,7 +11,6 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import vn.io.huangnosimp.nautilusserver.authentication.constants.Provider;
 import vn.io.huangnosimp.nautilusserver.authentication.constants.Role;
 
 @Entity
@@ -30,9 +29,6 @@ public class AuthUser extends BaseEntity implements UserDetails {
 
     @Column(name = "password", nullable = false)
     private String password;
-
-    @Column(name = "provider", nullable = false)
-    private Provider provider;
 
     @Column(name = "role", nullable = false)
     private Role role;

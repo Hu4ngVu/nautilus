@@ -10,7 +10,7 @@ import org.springframework.web.cors.CorsConfiguration;
 
 class SecurityConfigCorsTest {
     private CorsConfiguration corsFor(String domain) {
-        var config = new SecurityConfig(null, null, null, null, null);
+        var config = new SecurityConfig(null, null);
         ReflectionTestUtils.setField(config, "domain", domain);
         return config.corsConfigurationSource()
                 .getCorsConfiguration(new MockHttpServletRequest("OPTIONS", "/users/alice"));

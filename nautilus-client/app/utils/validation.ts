@@ -6,7 +6,7 @@ export const ADDRESS_PATTERN = /^[a-z0-9][a-z0-9.]*[a-z0-9](:\d{1,5})?$/i
 
 // Top-level paths a profile URL (/:username) would collide with; such a profile would be unreachable
 const RESERVED_USERNAMES = new Set([
-  'api', 'auth', 'browse', 'dashboard', 'login', 'new', 'oauth2', 'register', 'settings', 'stars',
+  'api', 'browse', 'dashboard', 'login', 'new', 'register', 'settings', 'stars',
   '_nuxt', '__nuxt', 'favicon.ico', 'robots.txt', 'sitemap.xml'
 ])
 

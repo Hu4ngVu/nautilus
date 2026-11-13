@@ -55,7 +55,6 @@ export default defineNuxtConfig({
   routeRules: {
     '/login': { ssr: false },
     '/register': { ssr: false },
-    '/auth/**': { ssr: false },
     '/dashboard': { ssr: false },
     '/stars': { ssr: false },
     '/settings': { ssr: false },
@@ -76,15 +75,6 @@ export default defineNuxtConfig({
       '/api': {
         target: 'http://localhost:8083',
         changeOrigin: true
-      },
-      // Spring Security OAuth2 endpoints live outside /api
-      '/oauth2': {
-        target: 'http://localhost:8083/oauth2',
-        changeOrigin: false
-      },
-      '/login/oauth2': {
-        target: 'http://localhost:8083/login/oauth2',
-        changeOrigin: false
       }
     }
   },

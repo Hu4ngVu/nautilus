@@ -118,9 +118,6 @@
     "password": "Password",
     "passwordPlaceholder": "Enter your password",
     "confirmPassword": "Confirm password",
-    "or": "or",
-    "google": "Continue with Google",
-    "googleRegister": "Sign up with Google",
     "login": {
       "title": "Log in",
       "description": "Welcome back to Nautilus.",
@@ -138,12 +135,6 @@
       "usernameTaken": "That username is already taken.",
       "emailTaken": "That email is already in use.",
       "success": "Account created!"
-    },
-    "callback": {
-      "title": "Signing in",
-      "loading": "Finishing sign-in...",
-      "failed": "Google sign-in failed",
-      "failedHint": "Please try again or use your email and password."
     },
     "identifier": "Username or email",
     "identifierPlaceholder": "Enter your username or email",
@@ -192,7 +183,7 @@
     "confirmPassword": "Confirm new password",
     "changePassword": "Change password",
     "passwordSaved": "Password changed. Other sessions have been signed out.",
-    "passwordWrong": "Current password is incorrect, or this account has no password (Google sign-in).",
+    "passwordWrong": "Current password is incorrect.",
     "themeLightHint": "Light background, bold outlines",
     "themeDarkHint": "Dark background, easy on the eyes",
     "themeSystemHint": "Follow your device setting",

@@ -18,14 +18,6 @@ const fields = computed<AuthFormField[]>(() => [
   { name: 'password', type: 'password', label: t('auth.password'), placeholder: t('auth.passwordPlaceholder'), required: true, autocomplete: 'current-password' }
 ])
 
-const providers = computed(() => [{
-  label: t('auth.google'),
-  icon: 'i-simple-icons-google',
-  color: 'neutral' as const,
-  variant: 'soft' as const,
-  onClick: () => auth.loginWithGoogle()
-}])
-
 function validate(state: Partial<{ username: string, password: string }>): FormError[] {
   const errors: FormError[] = []
   if (!state.username) errors.push({ name: 'username', message: t('validation.required') })
@@ -60,8 +52,6 @@ async function onSubmit(event: FormSubmitEvent<{ username: string, password: str
       :description="t('auth.login.description')"
 
       :fields="fields"
-      :providers="providers"
-      :separator="t('auth.or')"
       :submit="{ label: t('auth.login.submit'), block: true }"
       :validate="validate"
       :loading="loading"

@@ -15,17 +15,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import vn.io.huangnosimp.nautilusserver.authentication.handlers.OAuth2LoginFailureHandler;
-import vn.io.huangnosimp.nautilusserver.authentication.handlers.OAuth2LoginSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -34,9 +29,6 @@ import vn.io.huangnosimp.nautilusserver.authentication.handlers.OAuth2LoginSucce
 public class SecurityConfig {
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
-    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService;
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
 
     @Value("${app.domain}")
     private String domain;
@@ -69,16 +61,6 @@ public class SecurityConfig {
                                                 jwt.decoder(jwtDecoder)
                                                         .jwtAuthenticationConverter(
                                                                 jwtAuthenticationConverter)))
-                .oauth2Login(
-                        oauth2Login ->
-                                oauth2Login
-                                        .loginPage("/auth/login")
-                                        .userInfoEndpoint(
-                                                userInfo ->
-                                                        userInfo.userService(
-                                                                customOAuth2UserService))
-                                        .successHandler(oAuth2LoginSuccessHandler)
-                                        .failureHandler(oAuth2LoginFailureHandler))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         return http.build();

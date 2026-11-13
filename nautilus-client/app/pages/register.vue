@@ -37,14 +37,6 @@ const fields = computed<AuthFormField[]>(() => [
   { name: 'confirmPassword', type: 'password', label: t('auth.confirmPassword'), required: true, autocomplete: 'new-password' }
 ])
 
-const providers = computed(() => [{
-  label: t('auth.googleRegister'),
-  icon: 'i-simple-icons-google',
-  color: 'neutral' as const,
-  variant: 'soft' as const,
-  onClick: () => auth.loginWithGoogle()
-}])
-
 function validate(state: Partial<RegisterState>): FormError[] {
   const errors: FormError[] = []
   if (!state.username || !USERNAME_PATTERN.test(state.username)) {
@@ -94,8 +86,6 @@ async function onSubmit(event: FormSubmitEvent<RegisterState>) {
       :description="t('auth.register.description')"
       icon="i-lucide-user-plus"
       :fields="fields"
-      :providers="providers"
-      :separator="t('auth.or')"
       :submit="{ label: t('auth.register.submit'), block: true }"
       :validate="validate"
       :loading="loading"

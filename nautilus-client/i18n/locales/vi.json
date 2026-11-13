@@ -118,9 +118,6 @@
     "password": "Mật khẩu",
     "passwordPlaceholder": "Nhập mật khẩu",
     "confirmPassword": "Xác nhận mật khẩu",
-    "or": "hoặc",
-    "google": "Tiếp tục với Google",
-    "googleRegister": "Đăng ký với Google",
     "login": {
       "title": "Đăng nhập",
       "description": "Chào mừng bạn quay lại Nautilus.",
@@ -138,12 +135,6 @@
       "usernameTaken": "Tên đăng nhập đã được sử dụng.",
       "emailTaken": "Email đã được sử dụng.",
       "success": "Đăng ký thành công!"
-    },
-    "callback": {
-      "title": "Đang đăng nhập",
-      "loading": "Đang hoàn tất đăng nhập...",
-      "failed": "Đăng nhập Google thất bại",
-      "failedHint": "Vui lòng thử lại hoặc dùng email và mật khẩu."
     },
     "identifier": "Tên đăng nhập hoặc email",
     "identifierPlaceholder": "Nhập tên đăng nhập hoặc email",
@@ -192,7 +183,7 @@
     "confirmPassword": "Nhập lại mật khẩu mới",
     "changePassword": "Đổi mật khẩu",
     "passwordSaved": "Đã đổi mật khẩu. Các phiên đăng nhập khác đã bị đăng xuất.",
-    "passwordWrong": "Mật khẩu hiện tại không đúng, hoặc tài khoản không có mật khẩu (đăng nhập bằng Google).",
+    "passwordWrong": "Mật khẩu hiện tại không đúng.",
     "themeLightHint": "Nền sáng, viền đậm",
     "themeDarkHint": "Nền tối, dịu mắt ban đêm",
     "themeSystemHint": "Theo cài đặt thiết bị",
