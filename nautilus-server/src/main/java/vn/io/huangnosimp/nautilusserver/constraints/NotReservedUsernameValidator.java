@@ -26,9 +26,13 @@ public class NotReservedUsernameValidator
                     "robots.txt",
                     "sitemap.xml");
 
+    public static boolean isReserved(String username) {
+        return RESERVED.contains(username.toLowerCase(Locale.ROOT));
+    }
+
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         // Null is left to @NotBlank
-        return value == null || !RESERVED.contains(value.toLowerCase(Locale.ROOT));
+        return value == null || !isReserved(value);
     }
 }
