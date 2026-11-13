@@ -25,12 +25,6 @@ public class AuthUserQueryImpl implements AuthUserQuery {
 
     @Override
     @Logging(level = Level.DEBUG)
-    public Optional<String> getUsernameByAuthUserId(String authUserId) {
-        return authUserRepository.findUsernameById(authUserId);
-    }
-
-    @Override
-    @Logging(level = Level.DEBUG)
     public Map<String, String> getUsernamesByAuthUserIds(Collection<String> authUserIds) {
         if (authUserIds.isEmpty()) return Map.of();
         return authUserRepository.findIdAndUsernameByIdIn(Set.copyOf(authUserIds)).stream()

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,8 +23,6 @@ public interface ServerRepository
 
     @Query("SELECT s.id FROM Server s WHERE s.id IN :ids AND s.visibility = true")
     List<String> findPublicIdsByIdIn(@Param("ids") Collection<String> ids);
-
-    Page<Server> findAllByVisibilityIsTrue(Specification<Server> specification, Pageable pageable);
 
     Optional<Server> findByIdAndVisibilityIsTrue(String serverId);
 

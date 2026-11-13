@@ -33,15 +33,21 @@
     "anyAccount": "Mọi tài khoản",
     "premiumOnly": "Cần tài khoản premium",
     "crackedAllowed": "Không cần premium",
+    "premiumShort": "Premium",
+    "crackedShort": "Không premium",
     "tags": "Thẻ",
     "searchTags": "Tìm thẻ...",
     "sort": "Sắp xếp",
     "mostStars": "Nhiều sao nhất",
     "fewestStars": "Ít sao nhất",
     "reset": "Xóa bộ lọc",
+    "apply": "Áp dụng",
+    "unapplied": "Có thay đổi chưa áp dụng",
     "any": "Bất kỳ",
     "showMore": "Xem thêm",
-    "showLess": "Thu gọn"
+    "showLess": "Thu gọn",
+    "showMoreCount": "+{n} thẻ khác",
+    "noTags": "Không có thẻ phù hợp"
   },
   "server": {
     "by": "bởi {username}",

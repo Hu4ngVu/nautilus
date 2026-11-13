@@ -1,6 +1,16 @@
-FROM eclipse-temurin:25-jre-noble
-LABEL authors="huangnosimp"
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /app
-COPY build/libs/nautilus-server.jar /opt/app/
+COPY gradle gradle
+COPY gradlew .
+COPY build.gradle.kts settings.gradle.kts gradle.properties ./
+RUN chmod +x ./gradlew
+RUN ./gradlew dependencies --no-daemon
 
-ENTRYPOINT ["java", "-jar", "/opt/app/nautilus-server.jar"]
+COPY src src
+RUN ./gradlew bootJar --no-daemon
+
+FROM eclipse-temurin:25-jre-alpine
+WORKDIR /app
+COPY --from=build /app/build/libs/nautilus-server.jar .
+
+ENTRYPOINT ["java", "-jar", "nautilus-server.jar"]

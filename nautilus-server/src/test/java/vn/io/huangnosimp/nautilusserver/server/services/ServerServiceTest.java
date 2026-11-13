@@ -15,6 +15,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
 import vn.io.huangnosimp.nautilusserver.api.AuthUserQuery;
 import vn.io.huangnosimp.nautilusserver.api.ResourceStorage;
@@ -74,7 +76,8 @@ class ServerServiceTest {
     }
 
     private Page<ServerInfoResponse> listAll(List<Server> content) {
-        when(servers.findAllByVisibilityIsTrue(any(), any())).thenReturn(new PageImpl<>(content));
+        when(servers.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(content));
         return service.getAllServer(null, null, null, null, PAGE);
     }
 
@@ -121,7 +124,6 @@ class ServerServiceTest {
         verify(tagRepository, times(1)).findAllByServerIdInOrderByCreatedAtAsc(any());
         verify(javaVersions, times(1)).findAllByServerIdInAndIsPrimaryMcVersionTrue(any());
         verify(bedrockVersions, times(1)).findAllByServerIdInAndIsPrimaryMcVersionTrue(any());
-        verify(authUserQuery, never()).getUsernameByAuthUserId(any());
     }
 
     @Test
@@ -182,7 +184,7 @@ class ServerServiceTest {
     @Test
     void listingFailsClearlyWhenOwnerMissing() {
         when(authUserQuery.getUsernamesByAuthUserIds(any())).thenReturn(Map.of());
-        when(servers.findAllByVisibilityIsTrue(any(), any()))
+        when(servers.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(server("s1", ServerPlatform.JAVA, null))));
         assertThrows(UserNotFound.class, () -> service.getAllServer(null, null, null, null, PAGE));
     }

@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.redisson.api.RCuckooFilter;
 import org.springframework.test.util.ReflectionTestUtils;
 import software.amazon.awssdk.services.s3.S3Client;
 import vn.io.huangnosimp.nautilusserver.authentication.eventlisteners.UserAuthenticationEventListener;
@@ -41,9 +42,15 @@ class EventListenersTest {
                                                 && user.getServerCount() == 0));
 
         AuthUserRepository authRepository = mock(AuthUserRepository.class);
-        new UserAuthenticationEventListener(authRepository)
-                .on(new UsernameUpdatedEvent("auth-id", "renamed"));
+        RCuckooFilter<String> usernameCuckooFilter = mock(RCuckooFilter.class);
+        UserAuthenticationEventListener listener =
+                new UserAuthenticationEventListener(authRepository, usernameCuckooFilter);
+        UsernameUpdatedEvent event = new UsernameUpdatedEvent("auth-id", "alice", "renamed");
+        listener.on(event);
+        listener.updateCuckooFilter(event);
         verify(authRepository).updateUsernameById("auth-id", "renamed");
+        verify(usernameCuckooFilter).remove("alice");
+        verify(usernameCuckooFilter).add("renamed");
     }
 
     @Test

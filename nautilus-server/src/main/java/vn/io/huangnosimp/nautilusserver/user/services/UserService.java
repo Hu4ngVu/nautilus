@@ -88,8 +88,10 @@ public class UserService {
         if (userRepository.existsByUsername(request.newUsername())) {
             throw new DuplicateUsername("Username already exists: " + request.newUsername());
         }
+        String oldUsername = user.getUsername();
         user.setUsername(request.newUsername());
         userRepository.save(user);
-        eventPublisher.publishEvent(new UsernameUpdatedEvent(authUserId, request.newUsername()));
+        eventPublisher.publishEvent(
+                new UsernameUpdatedEvent(authUserId, oldUsername, request.newUsername()));
     }
 }

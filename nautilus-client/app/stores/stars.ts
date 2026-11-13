@@ -23,7 +23,7 @@ export const useStarsStore = defineStore('stars', () => {
       while (!last) {
         const res = await api.starred(me, { page, size: 100 })
         res.content.forEach(s => next.add(key(s.username, s.servername)))
-        last = res.last || res.content.length === 0
+        last = res.page.number + 1 >= res.page.totalPages || res.content.length === 0
         page++
       }
       starred.value = next

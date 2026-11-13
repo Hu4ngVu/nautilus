@@ -148,9 +148,9 @@ async function undo(index: number, server: StarredServer) {
     </div>
 
     <UPagination
-      v-if="data && data.totalPages > 1"
+      v-if="data && data.page.totalPages > 1"
       v-model:page="page"
-      :total="data.totalElements"
+      :total="data.page.totalElements"
       :items-per-page="PAGE_SIZE"
       class="mt-6 flex justify-center"
     />

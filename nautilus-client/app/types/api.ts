@@ -2,16 +2,18 @@ export type ServerType = 'VANILLA' | 'MODPACK'
 export type ServerPlatform = 'JAVA' | 'BEDROCK'
 export type TagCategory = 'FEATURES' | 'GAMEPLAY' | 'META' | 'COMMUNITY'
 
-/** Spring Data page response */
+/** Spring Data page response (PagedModel): the paging numbers are nested under `page` */
 export interface Page<T> {
   content: T[]
+  page: PageMetadata
+}
+
+export interface PageMetadata {
+  size: number
+  /** 0-based */
+  number: number
   totalElements: number
   totalPages: number
-  number: number
-  size: number
-  first: boolean
-  last: boolean
-  empty: boolean
 }
 
 export interface PageParams {

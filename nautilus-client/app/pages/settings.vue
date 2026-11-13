@@ -80,6 +80,8 @@ const renaming = ref(false)
 const usernameError = computed(() =>
   newUsername.value && !USERNAME_PATTERN.test(newUsername.value) ? t('validation.username') : undefined
 )
+// The current name would come back as "taken", so it is not checked
+const usernameStatus = useAvailability('username', newUsername, v => USERNAME_PATTERN.test(v) && v !== auth.username)
 
 async function rename() {
   if (!auth.username || !newUsername.value || usernameError.value) return
@@ -211,6 +213,9 @@ async function logout() {
             :error="usernameError"
             class="flex-1"
           >
+            <template #hint>
+              <AvailabilityHint :status="usernameStatus" />
+            </template>
             <UInput
               v-model="newUsername"
               :placeholder="t('settings.newUsername')"
@@ -222,7 +227,7 @@ async function logout() {
             type="submit"
             :label="t('settings.changeUsername')"
             :loading="renaming"
-            :disabled="!newUsername || !!usernameError"
+            :disabled="!newUsername || !!usernameError || newUsername === auth.username || usernameStatus === 'taken'"
             color="neutral"
             variant="soft"
             class="sm:mt-11"

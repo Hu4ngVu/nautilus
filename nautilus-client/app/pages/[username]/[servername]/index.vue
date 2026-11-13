@@ -68,7 +68,7 @@ watch([tab, canEdit, resolved], ([current, allowed, known]) => {
   if (current === 'stargazers' && known && !allowed) tab.value = 'about'
 }, { immediate: true })
 
-const galleryCount = computed(() => gallery.value?.totalElements ?? 0)
+const galleryCount = computed(() => gallery.value?.page.totalElements ?? 0)
 
 // The About tab previews the first gallery page, so leaving the Gallery tab rewinds it
 watch(tab, (current) => {
@@ -286,9 +286,9 @@ useSeoMeta({
               <template v-else>
                 <GalleryGrid :images="gallery.content" />
                 <UPagination
-                  v-if="gallery.totalPages > 1"
+                  v-if="gallery.page.totalPages > 1"
                   v-model:page="galleryPage"
-                  :total="gallery.totalElements"
+                  :total="gallery.page.totalElements"
                   :items-per-page="GALLERY_PAGE_SIZE"
                   class="mt-6 flex justify-center"
                 />
@@ -320,9 +320,9 @@ useSeoMeta({
                   </li>
                 </ul>
                 <UPagination
-                  v-if="stargazers.totalPages > 1"
+                  v-if="stargazers.page.totalPages > 1"
                   v-model:page="stargazerPage"
-                  :total="stargazers.totalElements"
+                  :total="stargazers.page.totalElements"
                   :items-per-page="STARGAZER_PAGE_SIZE"
                   class="mt-6 flex justify-center"
                 />

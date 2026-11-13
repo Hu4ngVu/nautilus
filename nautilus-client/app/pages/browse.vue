@@ -88,7 +88,8 @@ const activeFilterCount = computed(() =>
     </h1>
 
     <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
-      <aside class="hidden w-72 shrink-0 lg:sticky lg:top-[calc(var(--ui-header-height)+1.5rem)] lg:block">
+      <!-- Capped to the viewport so the sticky panel scrolls inside instead of running off-screen -->
+      <aside class="hidden w-72 shrink-0 lg:sticky lg:top-[calc(var(--ui-header-height)+1.5rem)] lg:flex lg:max-h-[calc(100dvh-var(--ui-header-height)-3rem)] lg:flex-col">
         <ServerFilters
           :state="state"
           @update="update"
@@ -175,19 +176,19 @@ const activeFilterCount = computed(() =>
         </div>
 
         <div
-          v-if="data && data.totalElements"
+          v-if="data && data.page.totalElements"
           class="flex flex-wrap items-center justify-between gap-2"
         >
           <p
             class="text-sm text-muted"
             aria-live="polite"
           >
-            {{ t('browse.results', { n: n(data.totalElements) }, data.totalElements) }}
+            {{ t('browse.results', { n: n(data.page.totalElements) }, data.page.totalElements) }}
           </p>
           <UPagination
-            v-if="data.totalPages > 1"
+            v-if="data.page.totalPages > 1"
             v-model:page="page"
-            :total="data.totalElements"
+            :total="data.page.totalElements"
             :items-per-page="pageSize"
             size="sm"
           />
@@ -223,9 +224,9 @@ const activeFilterCount = computed(() =>
         />
 
         <UPagination
-          v-if="data && data.totalPages > 1"
+          v-if="data && data.page.totalPages > 1"
           v-model:page="page"
-          :total="data.totalElements"
+          :total="data.page.totalElements"
           :items-per-page="pageSize"
           class="self-center"
         />
@@ -236,11 +237,13 @@ const activeFilterCount = computed(() =>
       v-model:open="filtersOpen"
       :title="t('browse.filters')"
       side="left"
+      :ui="{ body: 'flex flex-col overflow-hidden p-0 sm:p-0' }"
     >
       <template #body>
         <ServerFilters
           :state="state"
-          @update="update"
+          :framed="false"
+          @update="update($event); filtersOpen = false"
         />
       </template>
     </USlideover>

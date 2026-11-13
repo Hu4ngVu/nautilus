@@ -124,7 +124,8 @@ class UserServiceTest {
         userService.changeUsername("auth-id", new ChangeUsernameRequest("new-alice"));
         assertEquals("new-alice", user.getUsername());
         verify(userRepository).save(user);
-        verify(eventPublisher).publishEvent(new UsernameUpdatedEvent("auth-id", "new-alice"));
+        verify(eventPublisher)
+                .publishEvent(new UsernameUpdatedEvent("auth-id", "alice", "new-alice"));
     }
 
     private static User user(String avatarId) {

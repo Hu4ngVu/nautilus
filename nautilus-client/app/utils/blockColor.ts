@@ -6,7 +6,7 @@ export interface BlockColor {
 }
 
 // Brand-friendly block palette; ink is the text colour that stays readable on the face
-const PALETTE: BlockColor[] = [
+export const BLOCK_PALETTE: BlockColor[] = [
   { face: '#73ff9c', shade: '#00bc39', light: '#b3ffc9', ink: '#03130a' },
   { face: '#9fb1fc', shade: '#2f58f9', light: '#c5d1fe', ink: '#0b1647' },
   { face: '#fcd34d', shade: '#d97706', light: '#fef3c7', ink: '#451a03' },
@@ -22,5 +22,5 @@ export function blockColor(name: string): BlockColor {
     hash ^= name.charCodeAt(i)
     hash = Math.imul(hash, 0x01000193)
   }
-  return PALETTE[(hash >>> 0) % PALETTE.length]!
+  return BLOCK_PALETTE[(hash >>> 0) % BLOCK_PALETTE.length]!
 }

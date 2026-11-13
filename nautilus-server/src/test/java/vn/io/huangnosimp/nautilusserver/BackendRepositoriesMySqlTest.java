@@ -144,7 +144,7 @@ class BackendRepositoriesMySqlTest {
         assertEquals(
                 1,
                 serverRepository
-                        .findAllByVisibilityIsTrue(
+                        .findAll(
                                 (_, _, criteriaBuilder) -> criteriaBuilder.conjunction(),
                                 PageRequest.of(0, 10))
                         .getTotalElements());

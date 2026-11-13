@@ -16,6 +16,8 @@ services:
       retries: 5
     volumes:
       - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
   migrate:
     depends_on:
       mysql:
@@ -38,6 +40,8 @@ services:
       - OPENFGA_DATASTORE_ENGINE=mysql
       - OPENFGA_DATASTORE_URI=root:${MYSQL_PASSWORD}@tcp(mysql:3306)/nautilus?parseTime=true
       - OPENFGA_LOG_FORMAT=json
+    ports:
+      - "8080:8080"
     command: run
     networks:
       - nautilus
@@ -79,7 +83,7 @@ services:
       - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
       - AWS_S3_ENDPOINT=${AWS_S3_ENDPOINT}
-      - OPENFGA_API_URL=http://openfga:8081
+      - OPENFGA_API_URL=http://openfga:8080
       - OPENFGA_STORE_ID=${OPENFGA_STORE_ID}
       - OPENFGA_AUTHORIZATION_MODEL_ID=${OPENFGA_AUTHORIZATION_MODEL_ID}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}

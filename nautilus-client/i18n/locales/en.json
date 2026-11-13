@@ -33,15 +33,21 @@
     "anyAccount": "Any account",
     "premiumOnly": "Premium required",
     "crackedAllowed": "No premium needed",
+    "premiumShort": "Premium",
+    "crackedShort": "No premium",
     "tags": "Tags",
     "searchTags": "Search tags...",
     "sort": "Sort",
     "mostStars": "Most stars",
     "fewestStars": "Fewest stars",
     "reset": "Clear filters",
+    "apply": "Apply",
+    "unapplied": "Unapplied changes",
     "any": "Any",
     "showMore": "Show more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "showMoreCount": "+{n} more",
+    "noTags": "No tags match"
   },
   "server": {
     "by": "by {username}",

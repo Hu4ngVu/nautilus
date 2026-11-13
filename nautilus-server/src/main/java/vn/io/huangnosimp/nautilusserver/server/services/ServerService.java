@@ -1,5 +1,6 @@
 package vn.io.huangnosimp.nautilusserver.server.services;
 
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import java.util.ArrayList;
@@ -83,7 +84,7 @@ public class ServerService {
 
     private Page<ServerInfoResponse> findServers(
             Specification<Server> specification, Pageable pageable) {
-        return toInfoPage(serverRepository.findAllByVisibilityIsTrue(specification, pageable));
+        return toInfoPage(serverRepository.findAll(specification, pageable));
     }
 
     /** Maps a page of servers with one batched lookup per related table instead of one per row. */
@@ -319,41 +320,35 @@ public class ServerService {
             ServerType serverType,
             ServerPlatform serverPlatform,
             List<String> tags) {
+        // Collect predicates here and and() them: Hibernate's getExpressions() returns a copy,
+        // so anything added to conjunction().getExpressions() is silently lost
         return (root, query, criteriaBuilder) -> {
-            var predicates = criteriaBuilder.conjunction();
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(criteriaBuilder.isTrue(root.get("visibility")));
             if (searchQuery != null && !searchQuery.isBlank()) {
                 String searchPattern = "%" + searchQuery.trim().toLowerCase() + "%";
-                predicates
-                        .getExpressions()
-                        .add(
-                                criteriaBuilder.like(
-                                        criteriaBuilder.lower(root.get("servername")),
-                                        searchPattern));
+                predicates.add(
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(root.get("servername")), searchPattern));
             }
             if (requiresPremium != null) {
-                predicates
-                        .getExpressions()
-                        .add(criteriaBuilder.equal(root.get("requiresPremium"), requiresPremium));
+                predicates.add(criteriaBuilder.equal(root.get("requiresPremium"), requiresPremium));
             }
             if (serverType != null) {
-                predicates
-                        .getExpressions()
-                        .add(criteriaBuilder.equal(root.get("type"), serverType));
+                predicates.add(criteriaBuilder.equal(root.get("type"), serverType));
             }
             if (serverPlatform != null) {
-                predicates
-                        .getExpressions()
-                        .add(criteriaBuilder.equal(root.get("platform"), serverPlatform));
+                predicates.add(criteriaBuilder.equal(root.get("platform"), serverPlatform));
             }
             if (tags != null && !tags.isEmpty()) {
                 Subquery<Server> subquery = query.subquery(Server.class);
                 Root<ServerTag> subRoot = subquery.from(ServerTag.class);
                 subquery.select(subRoot.get("server"));
                 subquery.where(subRoot.get("tag").in(tags));
-                predicates.getExpressions().add(criteriaBuilder.in(root).value(subquery));
+                predicates.add(criteriaBuilder.in(root).value(subquery));
             }
 
-            return predicates;
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
     }
 

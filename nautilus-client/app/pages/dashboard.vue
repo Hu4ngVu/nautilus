@@ -58,7 +58,7 @@ async function confirmDelete() {
         #meta
       >
         <UBadge
-          :label="t('profile.serverCount', { n: n(data.totalElements) }, data.totalElements)"
+          :label="t('profile.serverCount', { n: n(data.page.totalElements) }, data.page.totalElements)"
           icon="i-lucide-server"
           color="neutral"
           variant="soft"
@@ -166,9 +166,9 @@ async function confirmDelete() {
     </div>
 
     <UPagination
-      v-if="data && data.totalPages > 1"
+      v-if="data && data.page.totalPages > 1"
       v-model:page="page"
-      :total="data.totalElements"
+      :total="data.page.totalElements"
       :items-per-page="PAGE_SIZE"
       class="mt-6 flex justify-center"
     />

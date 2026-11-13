@@ -130,9 +130,9 @@ useSeoMeta({
         </div>
 
         <UPagination
-          v-if="owned && owned.totalPages > 1"
+          v-if="owned && owned.page.totalPages > 1"
           v-model:page="serverPage"
-          :total="owned.totalElements"
+          :total="owned.page.totalElements"
           :items-per-page="PAGE_SIZE"
           class="mt-6 flex justify-center"
         />
