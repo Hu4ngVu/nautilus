@@ -48,6 +48,20 @@ class AuthControllerWebTest {
     }
 
     @Test
+    void registrationRejectsUsernameTakenByClientRoute() {
+        mvc.post()
+                .uri("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                        """
+                        {"username":"Browse","email":"alice@example.test","password":"secret123"}
+                        """)
+                .assertThat()
+                .hasStatus4xxClientError();
+        verifyNoInteractions(authService);
+    }
+
+    @Test
     void loginReturnsAccessToken() {
         when(authService.loginUser(any())).thenReturn(new TokenResult("access", "refresh"));
         mvc.post()

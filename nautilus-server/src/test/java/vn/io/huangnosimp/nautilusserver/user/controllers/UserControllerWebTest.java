@@ -51,4 +51,26 @@ class UserControllerWebTest {
                 .hasStatus4xxClientError();
         verifyNoInteractions(userService);
     }
+
+    @Test
+    void renameValidatesNewUsernameBeforeCallingService() {
+        mvc.put()
+                .uri("/users/alice")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"newUsername\":\"a b\"}")
+                .assertThat()
+                .hasStatus4xxClientError();
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    void renameRejectsUsernameTakenByClientRoute() {
+        mvc.put()
+                .uri("/users/alice")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"newUsername\":\"settings\"}")
+                .assertThat()
+                .hasStatus4xxClientError();
+        verifyNoInteractions(userService);
+    }
 }
