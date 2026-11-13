@@ -277,6 +277,7 @@
   "validation": {
     "required": "This field is required",
     "username": "3–20 characters: letters, numbers, _ {'@'} . only",
+    "usernameReserved": "This name is used by a Nautilus page, please pick another",
     "servername": "Up to {max} characters: letters, numbers, _ {'@'} . only",
     "email": "Invalid email",
     "password": "Password must be {min}–{max} characters",

@@ -15,7 +15,7 @@ const { data: server, error, refresh } = useAsyncData(
   () => servers.get(username.value, servername.value)
 )
 
-const serverPath = computed(() => `/s/${encodeURIComponent(username.value)}/${encodeURIComponent(servername.value)}`)
+const serverPath = computed(() => `/${encodeURIComponent(username.value)}/${encodeURIComponent(servername.value)}`)
 
 const tabs = computed(() => [
   { label: t('manage.tabs.general'), value: 'general', icon: 'i-lucide-info', slot: 'general' as const },
@@ -34,7 +34,7 @@ const tab = computed({
 })
 
 async function onRenamed(newName: string) {
-  await navigateTo(`/s/${encodeURIComponent(username.value)}/${encodeURIComponent(newName)}/manage?tab=advanced`, { replace: true })
+  await navigateTo(`/${encodeURIComponent(username.value)}/${encodeURIComponent(newName)}/manage?tab=advanced`, { replace: true })
 }
 
 useSeoMeta({ title: () => t('manage.title', { name: servername.value }) })

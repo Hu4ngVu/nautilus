@@ -6,5 +6,5 @@ export const PLATFORM_LABEL: Record<ServerPlatform, string> = {
 }
 
 export function serverPath(username: string, servername: string) {
-  return `/s/${encodeURIComponent(username)}/${encodeURIComponent(servername)}`
+  return `/${encodeURIComponent(username)}/${encodeURIComponent(servername)}`
 }

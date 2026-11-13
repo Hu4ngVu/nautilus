@@ -12,5 +12,6 @@ RUN ./gradlew bootJar --no-daemon
 FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 COPY --from=build /app/build/libs/nautilus-server.jar .
+EXPOSE 8083
 
 ENTRYPOINT ["java", "-jar", "nautilus-server.jar"]

@@ -5,6 +5,12 @@ export type ApiOptions = FetchOptions & {
   anonymous?: boolean
 }
 
+/** nautilus-server base URL; server-side rendering may use a private address instead of the public one. */
+export function useApiBase() {
+  const config = useRuntimeConfig()
+  return import.meta.server && config.apiBaseServer ? config.apiBaseServer : config.public.apiBase
+}
+
 export function statusOf(error: unknown): number | undefined {
   return (error as { statusCode?: number } | null)?.statusCode
 }
@@ -15,7 +21,7 @@ export function statusOf(error: unknown): number | undefined {
  */
 export function useApi() {
   const auth = useAuthStore()
-  const apiBase = useRuntimeConfig().public.apiBase
+  const apiBase = useApiBase()
 
   async function request<T>(url: string, options: ApiOptions = {}): Promise<T> {
     const { anonymous, ...fetchOptions } = options

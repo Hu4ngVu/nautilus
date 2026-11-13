@@ -277,6 +277,7 @@
   "validation": {
     "required": "Trường này là bắt buộc",
     "username": "3–20 ký tự, chỉ gồm chữ, số, _ {'@'} .",
+    "usernameReserved": "Tên này trùng với một trang của Nautilus, hãy chọn tên khác",
     "servername": "Tối đa {max} ký tự, chỉ gồm chữ, số, _ {'@'} .",
     "email": "Email không hợp lệ",
     "password": "Mật khẩu từ {min} đến {max} ký tự",

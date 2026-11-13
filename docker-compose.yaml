@@ -88,7 +88,7 @@ services:
       - OPENFGA_AUTHORIZATION_MODEL_ID=${OPENFGA_AUTHORIZATION_MODEL_ID}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      # Behind the client proxy: build OAuth redirect URIs from X-Forwarded-* headers
+      # Behind a reverse proxy: build OAuth redirect URIs from X-Forwarded-* headers
       - SERVER_FORWARD_HEADERS_STRATEGY=framework
     ports:
       - "3279:3279"
@@ -100,7 +100,12 @@ services:
     container_name: nautilus-client
     networks:
       - nautilus
+    environment:
+      # URL the browser uses to reach nautilus-server, e.g. https://api.example.com
+      - NUXT_PUBLIC_API_BASE=${NUXT_PUBLIC_API_BASE}
+      # Server-side rendering calls the backend directly on the compose network
+      - NUXT_API_BASE_SERVER=http://nautilus:3279
     ports:
-      - "80:80"
+      - "8082:8082"
 volumes:
     mysql_data:

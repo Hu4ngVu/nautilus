@@ -9,7 +9,12 @@ export default defineNuxtConfig({
     '@pinia/nuxt'
   ],
 
-  ssr: false,
+  $development: {
+    runtimeConfig: {
+      // Server-side fetches skip the dev proxy and call the backend directly
+      apiBaseServer: 'http://localhost:3279'
+    }
+  },
 
   devtools: {
     enabled: true
@@ -35,10 +40,33 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Used while server-rendering, e.g. a private address of nautilus-server; override with NUXT_API_BASE_SERVER.
+    // Empty falls back to apiBase.
+    apiBaseServer: '',
     public: {
-      // Same-origin path proxied to nautilus-server; override with NUXT_PUBLIC_API_BASE
+      // Browser-facing nautilus-server URL, e.g. https://api.example.com; override with NUXT_PUBLIC_API_BASE.
+      // The default is the dev proxy below.
       apiBase: '/api'
     }
+  },
+
+  // Public pages are server-rendered for SEO and link previews. Pages behind login render in the
+  // browser only: the session lives in a cookie on the API host, so the server always renders as a guest.
+  routeRules: {
+    '/login': { ssr: false },
+    '/register': { ssr: false },
+    '/auth/**': { ssr: false },
+    '/dashboard': { ssr: false },
+    '/stars': { ssr: false },
+    '/settings': { ssr: false },
+    '/new': { ssr: false },
+    '/*/*/manage': { ssr: false },
+    '/': { isr: { expiration: 5 * 60 } },
+    '/browse': { isr: { expiration: 5 * 60 } }
+  },
+
+  devServer: {
+    port: 8082
   },
 
   compatibilityDate: '2026-06-30',
@@ -99,7 +127,7 @@ export default defineNuxtConfig({
   },
 
   image: {
-    // Static SPA has no IPX runtime; images come straight from object storage
+    // Images come straight from object storage; no IPX resizing
     provider: 'none'
   }
 })

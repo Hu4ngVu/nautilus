@@ -19,7 +19,7 @@ async function logout() {
 const items = computed<DropdownMenuItem[][]>(() => [
   [{ label: auth.username ?? '', type: 'label' }],
   [
-    { label: t('nav.profile'), icon: 'i-lucide-user', to: `/u/${encodeURIComponent(auth.username ?? '')}` },
+    { label: t('nav.profile'), icon: 'i-lucide-user', to: `/${encodeURIComponent(auth.username ?? '')}` },
     { label: t('nav.stars'), icon: 'i-lucide-star', to: '/stars' },
     { label: t('nav.settings'), icon: 'i-lucide-settings', to: '/settings' }
   ],

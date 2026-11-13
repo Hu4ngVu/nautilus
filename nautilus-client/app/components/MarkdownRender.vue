@@ -3,7 +3,9 @@ const props = defineProps<{ source?: string | null }>()
 
 const html = ref('')
 
+// Rendered in the browser only: DOMPurify needs a DOM
 watch(() => props.source, async (source) => {
+  if (import.meta.server) return
   html.value = source ? await renderMarkdown(source) : ''
 }, { immediate: true })
 </script>

@@ -4,6 +4,7 @@ import type { TabsItem } from '@nuxt/ui'
 const { t, n } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 const servers = useServerApi()
 const { messageFor } = useApiError()
 
@@ -11,9 +12,13 @@ const username = computed(() => String(route.params.username))
 const servername = computed(() => String(route.params.servername))
 const key = computed(() => `${username.value}/${servername.value}`)
 
+// The server renders as a guest, so a private server only loads once the session is restored
+const refetchOnLogin = [() => auth.username]
+
 const { data: server, error, status } = useAsyncData(
   () => `server:${key.value}`,
-  () => servers.get(username.value, servername.value)
+  () => servers.get(username.value, servername.value),
+  { watch: refetchOnLogin }
 )
 
 const { canEdit, resolved } = useServerPermission(username, servername)
@@ -24,19 +29,19 @@ const galleryPage = ref(1)
 const { data: gallery } = useAsyncData(
   () => `gallery:${key.value}:${galleryPage.value}`,
   () => servers.gallery(username.value, servername.value, { page: galleryPage.value - 1, size: GALLERY_PAGE_SIZE }).catch(() => null),
-  { lazy: true }
+  { lazy: true, watch: refetchOnLogin }
 )
 
 const { data: java } = useAsyncData(
   () => `java:${key.value}`,
   () => servers.javaVersions(username.value, servername.value).catch(() => null),
-  { lazy: true }
+  { lazy: true, watch: refetchOnLogin }
 )
 
 const { data: bedrock } = useAsyncData(
   () => `bedrock:${key.value}`,
   () => servers.bedrockVersions(username.value, servername.value).catch(() => null),
-  { lazy: true }
+  { lazy: true, watch: refetchOnLogin }
 )
 
 // Only owners and editors may list stargazers, so never request it for anyone else
@@ -174,7 +179,7 @@ useSeoMeta({
               <i18n-t keypath="server.byLink">
                 <template #username>
                   <ULink
-                    :to="`/u/${encodeURIComponent(username)}`"
+                    :to="`/${encodeURIComponent(username)}`"
                     class="font-medium text-secondary"
                   >
                     {{ username }}
@@ -308,7 +313,7 @@ useSeoMeta({
                     :key="u.username"
                   >
                     <ULink
-                      :to="`/u/${encodeURIComponent(u.username)}`"
+                      :to="`/${encodeURIComponent(u.username)}`"
                       class="flex items-center gap-3 p-3 block-surface block-lift lift-secondary"
                     >
                       <UAvatar

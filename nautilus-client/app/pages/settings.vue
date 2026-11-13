@@ -77,11 +77,13 @@ async function saveBio() {
 // Username
 const newUsername = ref('')
 const renaming = ref(false)
-const usernameError = computed(() =>
-  newUsername.value && !USERNAME_PATTERN.test(newUsername.value) ? t('validation.username') : undefined
-)
+const usernameError = computed(() => {
+  if (!newUsername.value) return undefined
+  if (!USERNAME_PATTERN.test(newUsername.value)) return t('validation.username')
+  return isReservedUsername(newUsername.value) ? t('validation.usernameReserved') : undefined
+})
 // The current name would come back as "taken", so it is not checked
-const usernameStatus = useAvailability('username', newUsername, v => USERNAME_PATTERN.test(v) && v !== auth.username)
+const usernameStatus = useAvailability('username', newUsername, v => USERNAME_PATTERN.test(v) && !isReservedUsername(v) && v !== auth.username)
 
 async function rename() {
   if (!auth.username || !newUsername.value || usernameError.value) return

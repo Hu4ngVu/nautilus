@@ -20,7 +20,8 @@ const PAGE_SIZE = 12
 const { data: owned, status: ownedStatus } = useAsyncData(
   () => `user-servers:${username.value}:${serverPage.value}`,
   () => servers.listByUser(username.value, { page: serverPage.value - 1, size: PAGE_SIZE }),
-  { lazy: true }
+  // The server renders as a guest; the owner also sees private servers once the session is restored
+  { lazy: true, watch: [() => auth.username] }
 )
 
 useSeoMeta({

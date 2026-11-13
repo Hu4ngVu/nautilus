@@ -44,8 +44,9 @@ const navItems = computed<NavigationMenuItem[]>(() => [
       <template #right>
         <UColorModeButton />
         <UserMenu v-if="auth.loggedIn" />
+        <!-- Hidden until the session is known so logged-in users don't see it flash on server-rendered pages -->
         <UButton
-          v-else
+          v-else-if="auth.ready"
           to="/login"
           :label="t('nav.login')"
           color="neutral"

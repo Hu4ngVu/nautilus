@@ -15,9 +15,10 @@ const { notify } = useApiError()
 const pending = ref(false)
 const starred = computed(() => stars.isStarred(props.username, props.servername))
 
-onMounted(() => {
-  if (auth.loggedIn) stars.load().catch(() => {})
-})
+// On server-rendered pages the session is restored after mount
+watch(() => auth.loggedIn, (loggedIn) => {
+  if (loggedIn) stars.load().catch(() => {})
+}, { immediate: true })
 
 async function toggle() {
   if (!auth.loggedIn) {

@@ -23,7 +23,7 @@ const typedUsername = computed<string>(() => String(form.value?.state.username ?
 const typedEmail = computed<string>(() => String(form.value?.state.email ?? ''))
 const typedPassword = computed<string>(() => String(form.value?.state.password ?? ''))
 
-const usernameStatus = useAvailability('username', typedUsername, v => USERNAME_PATTERN.test(v))
+const usernameStatus = useAvailability('username', typedUsername, v => USERNAME_PATTERN.test(v) && !isReservedUsername(v))
 const emailStatus = useAvailability('email', typedEmail, v => EMAIL_PATTERN.test(v))
 const strength = computed<PasswordStrength>(() => passwordStrength(typedPassword.value))
 
@@ -49,6 +49,8 @@ function validate(state: Partial<RegisterState>): FormError[] {
   const errors: FormError[] = []
   if (!state.username || !USERNAME_PATTERN.test(state.username)) {
     errors.push({ name: 'username', message: t('validation.username') })
+  } else if (isReservedUsername(state.username)) {
+    errors.push({ name: 'username', message: t('validation.usernameReserved') })
   }
   if (!state.email || !EMAIL_PATTERN.test(state.email)) {
     errors.push({ name: 'email', message: t('validation.email') })
@@ -75,7 +77,7 @@ async function onSubmit(event: FormSubmitEvent<RegisterState>) {
     await auth.register({ username, email, password })
     await auth.login({ username, password })
     success(t('auth.register.success'))
-    await navigateTo(`/u/${encodeURIComponent(username)}`)
+    await navigateTo(`/${encodeURIComponent(username)}`)
   } catch (error) {
     notify(error)
   } finally {

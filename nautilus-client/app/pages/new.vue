@@ -70,7 +70,7 @@ async function onSubmit(event: FormSubmitEvent<CreateServerRequest>) {
   try {
     await servers.create(auth.username, event.data)
     success(t('create.success'))
-    await navigateTo(`/s/${encodeURIComponent(auth.username)}/${encodeURIComponent(event.data.servername)}/manage`)
+    await navigateTo(`/${encodeURIComponent(auth.username)}/${encodeURIComponent(event.data.servername)}/manage`)
   } catch (error) {
     if (statusOf(error) === 400) {
       fail(t('create.failed'))

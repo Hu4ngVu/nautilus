@@ -15,6 +15,7 @@ export const useAuthStore = defineStore('auth', () => {
   const loggedIn = computed(() => !!accessToken.value)
 
   let refreshing: Promise<boolean> | null = null
+  let restoring: Promise<void> | null = null
 
   function clear() {
     accessToken.value = null
@@ -39,6 +40,14 @@ export const useAuthStore = defineStore('auth', () => {
         refreshing = null
       })
     return refreshing
+  }
+
+  /** Restores the session from the refresh cookie once per page load; later callers wait for the same attempt. */
+  function restore(): Promise<void> {
+    restoring ??= refresh().then(() => {
+      ready.value = true
+    })
+    return restoring
   }
 
   async function login(body: LoginRequest) {
@@ -77,8 +86,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function loginWithGoogle() {
-    // Handled by Spring Security; it redirects back to /auth/callback with the refresh cookie set
-    window.location.href = '/oauth2/authorization/google'
+    // Handled by Spring Security; it redirects back to /auth/callback with the refresh cookie set.
+    // Its endpoints sit at the backend root: the API host, or this origin when apiBase is the dev proxy path.
+    const backend = /^https?:\/\//.test(apiBase) ? new URL(apiBase).origin : ''
+    window.location.href = `${backend}/oauth2/authorization/google`
   }
 
   return {
@@ -88,6 +99,7 @@ export const useAuthStore = defineStore('auth', () => {
     role,
     loggedIn,
     refresh,
+    restore,
     login,
     register,
     logout,
