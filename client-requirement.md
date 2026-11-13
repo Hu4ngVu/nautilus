@@ -40,7 +40,7 @@ khi click vào avatar sẽ hiện ra menu dropdown với các tùy chọn: profi
 ## Tài liệu API backend
 
 ### Kết nối chung
-- Backend mặc định chạy tại `http://localhost:3279`; client nên cấu hình `NUXT_PUBLIC_API_BASE` theo môi trường triển khai.
+- Backend mặc định chạy tại `http://localhost:8083`; client nên cấu hình `NUXT_PUBLIC_API_BASE` theo môi trường triển khai.
 - Các endpoint bên dưới dùng đường dẫn tương đối với API base URL. Request/response JSON dùng `Content-Type: application/json`, trừ endpoint nhận query params hoặc tải file lên URL ký sẵn.
 - Endpoint cần đăng nhập nhận `Authorization: Bearer <accessToken>`. Access token có thời hạn 15 phút.
 - Refresh token nằm trong cookie `refreshToken` (`HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, tối đa 7 ngày theo endpoint). Gửi request refresh/logout kèm cookie trình duyệt (`credentials: 'include'`). Không đọc cookie này từ JavaScript.

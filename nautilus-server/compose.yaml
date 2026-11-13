@@ -1,3 +1,9 @@
+# Backend host: nautilus-server and its datastores. Run from this directory with a .env next to it
+# (see .env.example). Published ports bind to localhost only; the reverse proxy forwards the api
+# subdomain to 127.0.0.1:8083.
+# Same project name as the old root compose file, so the existing mysql volume is reused
+name: nautilus
+
 networks:
   nautilus:
 
@@ -5,11 +11,12 @@ services:
   mysql:
     image: mysql:8.4.13
     container_name: mysql
+    restart: unless-stopped
     networks:
-        - nautilus
+      - nautilus
     environment:
-        MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
-        MYSQL_DATABASE: nautilus
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: nautilus
     healthcheck:
       test: ["CMD", 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p$$MYSQL_PASSWORD' ]
       timeout: 20s
@@ -17,7 +24,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
   migrate:
     depends_on:
       mysql:
@@ -36,12 +43,13 @@ services:
         condition: service_completed_successfully
     image: openfga/openfga:latest
     container_name: openfga
+    restart: unless-stopped
     environment:
       - OPENFGA_DATASTORE_ENGINE=mysql
       - OPENFGA_DATASTORE_URI=root:${MYSQL_PASSWORD}@tcp(mysql:3306)/nautilus?parseTime=true
       - OPENFGA_LOG_FORMAT=json
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     command: run
     networks:
       - nautilus
@@ -53,6 +61,7 @@ services:
   redis:
     image: redis:8.8.4
     container_name: redis
+    restart: unless-stopped
     networks:
       - nautilus
     healthcheck:
@@ -60,15 +69,18 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    ports:
+      - "127.0.0.1:6379:6379"
   nautilus:
     depends_on:
       redis:
         condition: service_healthy
       openfga:
         condition: service_healthy
-    build: ./nautilus-server
+    build: .
     image: nautilus/nautilus-server:latest
     container_name: nautilus
+    restart: unless-stopped
     networks:
       - nautilus
     environment:
@@ -88,24 +100,13 @@ services:
       - OPENFGA_AUTHORIZATION_MODEL_ID=${OPENFGA_AUTHORIZATION_MODEL_ID}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      # The client's domain: CORS origin https://${APP_DOMAIN}
+      - APP_DOMAIN=${APP_DOMAIN:?set APP_DOMAIN to the client's domain, e.g. example.com}
+      - CLIENT_OAUTH_REDIRECT_URL=${CLIENT_OAUTH_REDIRECT_URL:-https://${APP_DOMAIN}/auth/callback}
       # Behind a reverse proxy: build OAuth redirect URIs from X-Forwarded-* headers
       - SERVER_FORWARD_HEADERS_STRATEGY=framework
     ports:
-      - "3279:3279"
-  client:
-    depends_on:
-      - nautilus
-    build: ./nautilus-client
-    image: nautilus/nautilus-client:latest
-    container_name: nautilus-client
-    networks:
-      - nautilus
-    environment:
-      # URL the browser uses to reach nautilus-server, e.g. https://api.example.com
-      - NUXT_PUBLIC_API_BASE=${NUXT_PUBLIC_API_BASE}
-      # Server-side rendering calls the backend directly on the compose network
-      - NUXT_API_BASE_SERVER=http://nautilus:3279
-    ports:
-      - "8082:8082"
+      # Set NAUTILUS_BIND to a private address if the client host renders pages over a private network
+      - "${NAUTILUS_BIND:-127.0.0.1}:8083:8083"
 volumes:
-    mysql_data:
+  mysql_data:

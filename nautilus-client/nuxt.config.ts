@@ -12,7 +12,7 @@ export default defineNuxtConfig({
   $development: {
     runtimeConfig: {
       // Server-side fetches skip the dev proxy and call the backend directly
-      apiBaseServer: 'http://localhost:3279'
+      apiBaseServer: 'http://localhost:8083'
     }
   },
 
@@ -74,16 +74,16 @@ export default defineNuxtConfig({
   nitro: {
     devProxy: {
       '/api': {
-        target: 'http://localhost:3279',
+        target: 'http://localhost:8083',
         changeOrigin: true
       },
       // Spring Security OAuth2 endpoints live outside /api
       '/oauth2': {
-        target: 'http://localhost:3279/oauth2',
+        target: 'http://localhost:8083/oauth2',
         changeOrigin: false
       },
       '/login/oauth2': {
-        target: 'http://localhost:3279/login/oauth2',
+        target: 'http://localhost:8083/login/oauth2',
         changeOrigin: false
       }
     }
