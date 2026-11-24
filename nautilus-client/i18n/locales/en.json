@@ -288,7 +288,8 @@
     "upload": {
       "title": "Upload failed",
       "type": "Only PNG, JPG, WEBP or GIF are supported.",
-      "size": "Image exceeds 10MB."
+      "size": "Image exceeds 10MB.",
+      "timeout": "The server hasn't confirmed the image yet, please try again."
     },
     "pageNotFound": "Page not found",
     "pageNotFoundHint": "The page you're looking for may have been removed, renamed or never existed.",

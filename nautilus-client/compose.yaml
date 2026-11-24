@@ -12,4 +12,4 @@ services:
       - NUXT_PUBLIC_API_BASE=${NUXT_PUBLIC_API_BASE:?set NUXT_PUBLIC_API_BASE, e.g. https://api.example.com}
       - NUXT_API_BASE_SERVER=${NUXT_API_BASE_SERVER:-}
     ports:
-      - "127.0.0.1:8082:8082"
+      - "8082:8082"

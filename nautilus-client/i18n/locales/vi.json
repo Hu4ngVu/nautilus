@@ -288,7 +288,8 @@
     "upload": {
       "title": "Tải ảnh thất bại",
       "type": "Chỉ hỗ trợ PNG, JPG, WEBP hoặc GIF.",
-      "size": "Ảnh vượt quá 10MB."
+      "size": "Ảnh vượt quá 10MB.",
+      "timeout": "Máy chủ chưa xác nhận ảnh, vui lòng thử lại."
     },
     "pageNotFound": "Không tìm thấy trang",
     "pageNotFoundHint": "Trang bạn tìm có thể đã bị xoá, đổi tên hoặc chưa từng tồn tại.",

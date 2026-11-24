@@ -7,6 +7,7 @@ RUN chmod +x ./gradlew
 RUN ./gradlew dependencies --no-daemon
 
 COPY src src
+COPY lombok.config lombok.config
 RUN ./gradlew bootJar --no-daemon
 
 FROM eclipse-temurin:25-jre-alpine

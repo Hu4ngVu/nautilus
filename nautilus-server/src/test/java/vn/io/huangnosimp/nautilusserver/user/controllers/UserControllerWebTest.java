@@ -10,6 +10,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
+import vn.io.huangnosimp.nautilusserver.exceptions.InvalidResourceId;
 import vn.io.huangnosimp.nautilusserver.resolver.GlobalIdResolver;
 import vn.io.huangnosimp.nautilusserver.user.dto.responses.UserInfoResponse;
 import vn.io.huangnosimp.nautilusserver.user.services.UserService;
@@ -50,6 +51,20 @@ class UserControllerWebTest {
                 .assertThat()
                 .hasStatus4xxClientError();
         verifyNoInteractions(userService);
+    }
+
+    @Test
+    void attachingAResourceThatIsNotUploadedIsABadRequest() {
+        when(globalIdResolver.resolveUserId("alice")).thenReturn("auth-id");
+        doThrow(new InvalidResourceId("Resource ID does not exist: r"))
+                .when(userService)
+                .updateUserInfo(eq("auth-id"), any());
+        mvc.patch()
+                .uri("/users/alice")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"resourceId\":\"r\"}")
+                .assertThat()
+                .hasStatus(400);
     }
 
     @Test

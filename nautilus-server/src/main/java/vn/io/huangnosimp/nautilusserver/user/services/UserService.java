@@ -37,7 +37,7 @@ public class UserService {
                         .orElseThrow(() -> new UserNotFound(authUserId));
         String avatarUrl = null;
         if (user.getAvatarId() != null) {
-            avatarUrl = resourceStorage.createSignedGetUrl(user.getAvatarId());
+            avatarUrl = resourceStorage.getPublicUrl(user.getAvatarId());
         }
         return UserInfoResponse.builder()
                 .username(user.getUsername())

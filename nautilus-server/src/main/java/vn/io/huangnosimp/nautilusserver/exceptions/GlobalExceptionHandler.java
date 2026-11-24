@@ -75,6 +75,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
+    @ExceptionHandler(InvalidResourceId.class)
+    public ResponseEntity<String> handleInvalidResourceId(InvalidResourceId e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
     @ExceptionHandler(ResourceNotFound.class)
     public ResponseEntity<String> handleResourceNotFound() {
         return ResponseEntity.notFound().build();

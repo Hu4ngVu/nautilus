@@ -41,7 +41,7 @@ public class UserQueryImpl implements UserQuery {
         return UserData.builder()
                 .authUserId(user.getAuthUserId())
                 .username(user.getUsername())
-                .avatarUrl(resourceStorage.createSignedGetUrl(user.getAvatarId()))
+                .avatarUrl(resourceStorage.getPublicUrl(user.getAvatarId()))
                 .build();
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidContentType;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidWebhookSecretKey;
+import vn.io.huangnosimp.nautilusserver.exceptions.ResourceNotFound;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
 import vn.io.huangnosimp.nautilusserver.storage.constants.StorageStatus;
 import vn.io.huangnosimp.nautilusserver.storage.dto.requests.UploadCompleteRequest;
@@ -55,6 +56,14 @@ public class StorageService {
                                 bucketName, storage.getId(), Duration.ofMinutes(1), metadata, null)
                         .toString();
         return new UploadUrlResponse(uploadUrl, storage.getId());
+    }
+
+    /** Lets the client wait for the upload webhook before attaching the resource. */
+    public StorageStatus getStatus(String resourceId) {
+        return resourceRepository
+                .findById(resourceId)
+                .map(Resource::getStorageStatus)
+                .orElseThrow(() -> new ResourceNotFound("Resource not found: " + resourceId));
     }
 
     @Logging(logArguments = true)

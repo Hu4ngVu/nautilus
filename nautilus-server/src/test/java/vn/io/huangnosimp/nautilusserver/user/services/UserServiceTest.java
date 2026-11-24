@@ -35,15 +35,15 @@ class UserServiceTest {
         User user = user(null);
         user.setAvatarId("avatar-id");
         when(userRepository.findByAuthUserId("auth-id")).thenReturn(Optional.of(user));
-        when(resourceStorage.createSignedGetUrl("avatar-id")).thenReturn("signed-url");
+        when(resourceStorage.getPublicUrl("avatar-id")).thenReturn("public-url");
 
         var result = userService.getUserInfo("auth-id");
 
         assertEquals("alice", result.username());
         assertEquals(3, result.serverCount());
         assertEquals("bio", result.bio());
-        assertEquals("signed-url", result.avatarUrl());
-        verify(resourceStorage).createSignedGetUrl("avatar-id");
+        assertEquals("public-url", result.avatarUrl());
+        verify(resourceStorage).getPublicUrl("avatar-id");
     }
 
     @Test

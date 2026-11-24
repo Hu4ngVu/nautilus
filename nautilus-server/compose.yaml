@@ -1,8 +1,4 @@
-# Backend host: nautilus-server and its datastores. Run from this directory with a .env next to it
-# (see .env.example). Published ports bind to localhost only; the reverse proxy forwards the api
-# subdomain to 127.0.0.1:8083.
-# Same project name as the old root compose file, so the existing mysql volume is reused
-name: nautilus
+name: nautilus-server
 
 networks:
   nautilus:
@@ -24,7 +20,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
-      - "127.0.0.1:3306:3306"
+      - "3306:3306"
   migrate:
     depends_on:
       mysql:
@@ -49,7 +45,7 @@ services:
       - OPENFGA_DATASTORE_URI=root:${MYSQL_PASSWORD}@tcp(mysql:3306)/nautilus?parseTime=true
       - OPENFGA_LOG_FORMAT=json
     ports:
-      - "127.0.0.1:8080:8080"
+      - "8080:8080"
     command: run
     networks:
       - nautilus
@@ -70,7 +66,7 @@ services:
       timeout: 5s
       retries: 3
     ports:
-      - "127.0.0.1:6379:6379"
+      - "6379:6379"
   nautilus:
     depends_on:
       redis:
@@ -95,6 +91,7 @@ services:
       - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
       - AWS_S3_ENDPOINT=${AWS_S3_ENDPOINT}
+      - AWS_S3_PUBLIC_URL=${AWS_S3_PUBLIC_URL}
       - OPENFGA_API_URL=http://openfga:8080
       - OPENFGA_STORE_ID=${OPENFGA_STORE_ID}
       - OPENFGA_AUTHORIZATION_MODEL_ID=${OPENFGA_AUTHORIZATION_MODEL_ID}
@@ -102,6 +99,6 @@ services:
       - APP_DOMAIN=${APP_DOMAIN:?set APP_DOMAIN to the client's domain, e.g. example.com}
     ports:
       # Set NAUTILUS_BIND to a private address if the client host renders pages over a private network
-      - "${NAUTILUS_BIND:-127.0.0.1}:8083:8083"
+      - "8083:8083"
 volumes:
   mysql_data:

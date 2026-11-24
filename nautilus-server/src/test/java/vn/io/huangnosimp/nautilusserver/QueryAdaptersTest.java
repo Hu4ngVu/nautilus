@@ -5,8 +5,6 @@ import static org.mockito.Mockito.*;
 
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.ClientCheckRequest;
-import io.awspring.cloud.s3.S3Template;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +20,6 @@ import vn.io.huangnosimp.nautilusserver.authorization.services.PermissionChecker
 import vn.io.huangnosimp.nautilusserver.server.models.Server;
 import vn.io.huangnosimp.nautilusserver.server.repositories.ServerRepository;
 import vn.io.huangnosimp.nautilusserver.server.services.ServerQueryImpl;
-import vn.io.huangnosimp.nautilusserver.storage.models.Resource;
 import vn.io.huangnosimp.nautilusserver.storage.repositories.ResourceRepository;
 import vn.io.huangnosimp.nautilusserver.storage.services.ResourceStorageImpl;
 import vn.io.huangnosimp.nautilusserver.user.models.User;
@@ -43,10 +40,10 @@ class QueryAdaptersTest {
                                         .username("alice")
                                         .avatarId("avatar")
                                         .build()));
-        when(storage.createSignedGetUrl("avatar")).thenReturn("signed-avatar");
+        when(storage.getPublicUrl("avatar")).thenReturn("public-avatar");
         var userData = query.getUserDataByAuthUserId("auth-id").orElseThrow();
         assertEquals("alice", userData.username());
-        assertEquals("signed-avatar", userData.avatarUrl());
+        assertEquals("public-avatar", userData.avatarUrl());
         when(repository.findByAuthUserId("missing")).thenReturn(Optional.empty());
         assertTrue(query.getUserDataByAuthUserId("missing").isEmpty());
     }
@@ -74,12 +71,12 @@ class QueryAdaptersTest {
                         .build();
         ReflectionTestUtils.setField(server, "id", "server-id");
         when(repository.findByIdAndVisibilityIsTrue("server-id")).thenReturn(Optional.of(server));
-        when(storage.createSignedGetUrl("avatar")).thenReturn("signed-avatar");
+        when(storage.getPublicUrl("avatar")).thenReturn("public-avatar");
         var result = query.getPublicServerDataByServerId("server-id").orElseThrow();
         assertEquals("server-id", result.serverId());
         assertEquals("owner-id", result.ownerUserId());
         assertEquals("server", result.servername());
-        assertEquals("signed-avatar", result.serverAvatarUrl());
+        assertEquals("public-avatar", result.serverAvatarUrl());
         assertEquals(3, result.serverTotalStar());
         when(repository.existsByIdAndVisibilityIsTrue("server-id")).thenReturn(true);
         assertTrue(query.isServerPublic("server-id"));
@@ -125,13 +122,13 @@ class QueryAdaptersTest {
         ReflectionTestUtils.setField(server, "id", "s1");
         when(repository.findAllByIdInAndVisibilityIsTrue(Set.of("s1", "s2")))
                 .thenReturn(List.of(server));
-        when(storage.createSignedGetUrl("avatar")).thenReturn("signed-avatar");
+        when(storage.getPublicUrl("avatar")).thenReturn("public-avatar");
         var query = new ServerQueryImpl(repository, storage);
 
         var result = query.getPublicServerDataByServerIds(List.of("s1", "s2"));
         assertEquals("owner-1", result.get("s1").ownerUserId());
         assertEquals("Atlantis", result.get("s1").servername());
-        assertEquals("signed-avatar", result.get("s1").serverAvatarUrl());
+        assertEquals("public-avatar", result.get("s1").serverAvatarUrl());
         assertFalse(result.containsKey("s2"));
 
         when(repository.findPublicIdsByIdIn(Set.of("s1", "s2"))).thenReturn(List.of("s1"));
@@ -155,7 +152,7 @@ class QueryAdaptersTest {
                                         .username("bob")
                                         .avatarId(null)
                                         .build()));
-        when(storage.createSignedGetUrl("a1")).thenReturn("url1");
+        when(storage.getPublicUrl("a1")).thenReturn("url1");
         var result =
                 new UserQueryImpl(repository, storage).getUserDataByAuthUserIds(List.of("a", "b"));
         assertEquals("alice", result.get("a").username());
@@ -191,24 +188,13 @@ class QueryAdaptersTest {
     }
 
     @Test
-    void resourceStorageSignsExistingObjectsAndReturnsNullForMissingIds() throws Exception {
+    void resourceStorageBuildsPublicUrlsWithoutLookingUpObjects() {
         ResourceRepository repository = mock(ResourceRepository.class);
-        S3Template s3 = mock(S3Template.class);
-        ResourceStorageImpl storage = new ResourceStorageImpl(s3, repository);
-        ReflectionTestUtils.setField(storage, "bucketName", "bucket");
-        Resource resource =
-                Resource.builder()
-                        .storageStatus(
-                                vn.io.huangnosimp.nautilusserver.storage.constants.StorageStatus
-                                        .ACTIVE)
-                        .build();
-        ReflectionTestUtils.setField(resource, "id", "resource-id");
-        when(repository.findById("resource-id")).thenReturn(Optional.of(resource));
-        when(s3.createSignedGetURL(eq("bucket"), eq("resource-id"), any()))
-                .thenReturn(URI.create("https://example.test/signed").toURL());
-        assertEquals("https://example.test/signed", storage.createSignedGetUrl("resource-id"));
-        when(repository.findById("missing")).thenReturn(Optional.empty());
-        assertNull(storage.createSignedGetUrl("missing"));
+        ResourceStorageImpl storage = new ResourceStorageImpl(repository);
+        ReflectionTestUtils.setField(storage, "publicUrl", "https://cdn.example.test/");
+        assertEquals("https://cdn.example.test/resource-id", storage.getPublicUrl("resource-id"));
+        assertNull(storage.getPublicUrl(null));
+        verify(repository, never()).findById(any());
         when(repository.existsById("resource-id")).thenReturn(true);
         assertTrue(storage.isResourceIdExist("resource-id"));
     }

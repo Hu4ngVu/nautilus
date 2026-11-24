@@ -30,9 +30,6 @@ public interface AuthUserRepository extends JpaRepository<AuthUser, String> {
     void updateUsernameById(
             @Param("userId") String userId, @Param("newUsername") String newUsername);
 
-    @Query("SELECT a.username FROM AuthUser a WHERE a.id = :authUserId")
-    Optional<String> findUsernameById(String authUserId);
-
     @Query("SELECT a.id AS id, a.username AS username FROM AuthUser a WHERE a.id IN :ids")
     List<IdUsername> findIdAndUsernameByIdIn(@Param("ids") Collection<String> ids);
 

@@ -50,7 +50,7 @@ public class ServerQueryImpl implements ServerQuery {
                 .serverId(server.getId())
                 .ownerUserId(server.getUserId())
                 .servername(server.getServername())
-                .serverAvatarUrl(resourceStorage.createSignedGetUrl(server.getServerAvatarId()))
+                .serverAvatarUrl(resourceStorage.getPublicUrl(server.getServerAvatarId()))
                 .serverTotalStar(server.getStarCount())
                 .build();
     }

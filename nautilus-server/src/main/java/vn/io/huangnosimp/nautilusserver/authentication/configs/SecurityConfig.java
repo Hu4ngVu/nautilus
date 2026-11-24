@@ -48,7 +48,8 @@ public class SecurityConfig {
                                                 "/auth/check-email",
                                                 "/storage/webhook/upload-complete")
                                         .permitAll()
-                                        .requestMatchers("/storage/upload-url")
+                                        .requestMatchers(
+                                                "/storage/upload-url", "/storage/resources/**")
                                         .authenticated()
                                         .requestMatchers(HttpMethod.GET, "/**")
                                         .permitAll()

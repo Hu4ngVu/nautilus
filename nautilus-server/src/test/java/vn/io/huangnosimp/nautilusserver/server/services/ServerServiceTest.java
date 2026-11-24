@@ -86,7 +86,7 @@ class ServerServiceTest {
         Server s1 = server("s1", ServerPlatform.JAVA, "b1");
         Server s2 = server("s2", ServerPlatform.BEDROCK, null);
         Server s3 = server("s3", ServerPlatform.JAVA, null);
-        lenient().when(storage.createSignedGetUrl("b1")).thenReturn("signed-b1");
+        lenient().when(storage.getPublicUrl("b1")).thenReturn("public-b1");
         when(authUserQuery.getUsernamesByAuthUserIds(any())).thenReturn(Map.of("o1", "alice"));
         when(tagRepository.findAllByServerIdInOrderByCreatedAtAsc(any()))
                 .thenReturn(List.of(tag(s1, "t1"), tag(s1, "t2"), tag(s1, "t3"), tag(s1, "t4")));
@@ -111,7 +111,7 @@ class ServerServiceTest {
 
         var r1 = content.get(0);
         assertEquals("alice", r1.username());
-        assertEquals("signed-b1", r1.bannerUrl());
+        assertEquals("public-b1", r1.bannerUrl());
         assertEquals(List.of("t1", "t2", "t3"), r1.tags());
         assertEquals("1.21.1", r1.primaryVersion());
         assertEquals(ServerPlatform.JAVA, r1.serverPlatform());

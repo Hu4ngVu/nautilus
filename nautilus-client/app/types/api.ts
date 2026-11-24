@@ -169,3 +169,9 @@ export interface UploadUrlResponse {
   uploadUrl: string
   resourceId: string
 }
+
+export type StorageStatus = 'PENDING' | 'UPLOADED' | 'ACTIVE' | 'DELETED'
+
+export interface ResourceStatusResponse {
+  status: StorageStatus
+}

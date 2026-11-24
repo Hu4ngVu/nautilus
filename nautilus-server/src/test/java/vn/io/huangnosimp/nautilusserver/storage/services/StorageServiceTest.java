@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.awspring.cloud.s3.S3Template;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +13,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidContentType;
 import vn.io.huangnosimp.nautilusserver.exceptions.InvalidWebhookSecretKey;
+import vn.io.huangnosimp.nautilusserver.exceptions.ResourceNotFound;
+import vn.io.huangnosimp.nautilusserver.storage.constants.StorageStatus;
 import vn.io.huangnosimp.nautilusserver.storage.dto.requests.UploadCompleteRequest;
+import vn.io.huangnosimp.nautilusserver.storage.models.Resource;
 import vn.io.huangnosimp.nautilusserver.storage.repositories.ResourceRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,6 +56,15 @@ class StorageServiceTest {
                         storageService.completeUpload(
                                 "wrong", new UploadCompleteRequest("resource")));
         verifyNoInteractions(resourceRepository);
+    }
+
+    @Test
+    void statusComesFromTheStoredResource() {
+        var resource = Resource.builder().storageStatus(StorageStatus.PENDING).build();
+        when(resourceRepository.findById("resource")).thenReturn(Optional.of(resource));
+        assertEquals(StorageStatus.PENDING, storageService.getStatus("resource"));
+        when(resourceRepository.findById("missing")).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFound.class, () -> storageService.getStatus("missing"));
     }
 
     @Test

@@ -140,10 +140,8 @@ public class ServerService {
                             .username(username)
                             .servername(server.getServername())
                             .requiresPremium(server.getRequiresPremium())
-                            .avatarUrl(
-                                    resourceStorage.createSignedGetUrl(server.getServerAvatarId()))
-                            .bannerUrl(
-                                    resourceStorage.createSignedGetUrl(server.getServerBannerId()))
+                            .avatarUrl(resourceStorage.getPublicUrl(server.getServerAvatarId()))
+                            .bannerUrl(resourceStorage.getPublicUrl(server.getServerBannerId()))
                             .summary(server.getSummary())
                             .starCount(server.getStarCount())
                             .visibility(server.getVisibility())
@@ -166,8 +164,8 @@ public class ServerService {
                 .requiresPremium(server.getRequiresPremium())
                 .javaAddress(server.getJavaAddress())
                 .bedrockAddress(server.getBedrockAddress())
-                .avatarUrl(resourceStorage.createSignedGetUrl(server.getServerAvatarId()))
-                .bannerUrl(resourceStorage.createSignedGetUrl(server.getServerBannerId()))
+                .avatarUrl(resourceStorage.getPublicUrl(server.getServerAvatarId()))
+                .bannerUrl(resourceStorage.getPublicUrl(server.getServerBannerId()))
                 .summary(server.getSummary())
                 .bio(server.getBio())
                 .starCount(server.getStarCount())
