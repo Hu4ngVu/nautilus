@@ -75,7 +75,7 @@ services:
         condition: service_healthy
     build: .
     image: nautilus/nautilus-server:latest
-    container_name: nautilus
+    container_name: nautilus-server
     restart: unless-stopped
     networks:
       - nautilus
