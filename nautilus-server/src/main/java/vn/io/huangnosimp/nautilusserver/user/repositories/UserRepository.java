@@ -1,6 +1,8 @@
 package vn.io.huangnosimp.nautilusserver.user.repositories;
 
 import jakarta.validation.constraints.NotBlank;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -13,6 +15,8 @@ import vn.io.huangnosimp.nautilusserver.user.models.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByAuthUserId(String authUserId);
+
+    List<User> findAllByAuthUserIdIn(Collection<String> authUserIds);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional

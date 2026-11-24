@@ -1,6 +1,10 @@
 package vn.io.huangnosimp.nautilusserver.authentication.services;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.event.Level;
 import org.springframework.stereotype.Service;
@@ -21,7 +25,12 @@ public class AuthUserQueryImpl implements AuthUserQuery {
 
     @Override
     @Logging(level = Level.DEBUG)
-    public Optional<String> getUsernameByAuthUserId(String authUserId) {
-        return authUserRepository.findUsernameById(authUserId);
+    public Map<String, String> getUsernamesByAuthUserIds(Collection<String> authUserIds) {
+        if (authUserIds.isEmpty()) return Map.of();
+        return authUserRepository.findIdAndUsernameByIdIn(Set.copyOf(authUserIds)).stream()
+                .collect(
+                        Collectors.toMap(
+                                AuthUserRepository.IdUsername::getId,
+                                AuthUserRepository.IdUsername::getUsername));
     }
 }

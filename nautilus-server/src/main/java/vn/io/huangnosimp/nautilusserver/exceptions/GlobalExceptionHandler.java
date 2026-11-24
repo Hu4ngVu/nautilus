@@ -28,6 +28,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
+    @ExceptionHandler(InvalidPassword.class)
+    public ResponseEntity<String> handleInvalidPassword(InvalidPassword e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
     // Server
     @ExceptionHandler(ImageNotFound.class)
     public ResponseEntity<String> handleImageNotFound() {
@@ -67,6 +72,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidContentType.class)
     public ResponseEntity<String> handleInvalidContentType(InvalidContentType e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidResourceId.class)
+    public ResponseEntity<String> handleInvalidResourceId(InvalidResourceId e) {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 

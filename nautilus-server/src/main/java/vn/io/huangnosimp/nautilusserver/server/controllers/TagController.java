@@ -19,7 +19,7 @@ public class TagController {
 
     @GetMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<TagResponse> getAllTags(
             @PathVariable String username, @PathVariable String servername) {
@@ -29,7 +29,7 @@ public class TagController {
 
     @PutMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(@authentication.getName()),"
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> addServerTag(
             @PathVariable String username,

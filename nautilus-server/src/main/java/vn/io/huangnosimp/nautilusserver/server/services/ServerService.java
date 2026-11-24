@@ -1,14 +1,20 @@
 package vn.io.huangnosimp.nautilusserver.server.services;
 
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -31,7 +37,10 @@ import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoDetailRes
 import vn.io.huangnosimp.nautilusserver.server.dto.responses.ServerInfoResponse;
 import vn.io.huangnosimp.nautilusserver.server.models.Server;
 import vn.io.huangnosimp.nautilusserver.server.models.ServerTag;
+import vn.io.huangnosimp.nautilusserver.server.repositories.BedrockMcVersionRepository;
+import vn.io.huangnosimp.nautilusserver.server.repositories.JavaMcVersionRepository;
 import vn.io.huangnosimp.nautilusserver.server.repositories.ServerRepository;
+import vn.io.huangnosimp.nautilusserver.server.repositories.TagRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +50,11 @@ public class ServerService {
     private final GalleryService galleryService;
     private final ResourceStorage resourceStorage;
     private final AuthUserQuery authUserQuery;
+    private final TagRepository tagRepository;
+    private final JavaMcVersionRepository javaMcVersionRepository;
+    private final BedrockMcVersionRepository bedrockMcVersionRepository;
+
+    private static final int MAX_SUMMARY_TAGS = 3;
 
     @Logging(logArguments = true)
     public Page<ServerInfoResponse> getAllServer(
@@ -70,29 +84,73 @@ public class ServerService {
 
     private Page<ServerInfoResponse> findServers(
             Specification<Server> specification, Pageable pageable) {
-        return serverRepository
-                .findAllByVisibilityIsTrue(specification, pageable)
-                .map(
-                        server ->
-                                ServerInfoResponse.builder()
-                                        .avatarUrl(
-                                                resourceStorage.createSignedGetUrl(
-                                                        server.getServerAvatarId()))
-                                        .requiresPremium(server.getRequiresPremium())
-                                        .servername(server.getServername())
-                                        .summary(server.getSummary())
-                                        .starCount(server.getStarCount())
-                                        .username(
-                                                authUserQuery
-                                                        .getUsernameByAuthUserId(server.getUserId())
-                                                        .orElseThrow(
-                                                                () ->
-                                                                        new UserNotFound(
-                                                                                "User not found for"
-                                                                                    + " server: "
-                                                                                        + server
-                                                                                                .getId())))
-                                        .build());
+        return toInfoPage(serverRepository.findAll(specification, pageable));
+    }
+
+    /** Maps a page of servers with one batched lookup per related table instead of one per row. */
+    private Page<ServerInfoResponse> toInfoPage(Page<Server> page) {
+        List<Server> content = page.getContent();
+        if (content.isEmpty())
+            return new PageImpl<>(List.of(), page.getPageable(), page.getTotalElements());
+
+        List<String> ids = content.stream().map(Server::getId).toList();
+        Map<String, String> usernames =
+                authUserQuery.getUsernamesByAuthUserIds(
+                        content.stream().map(Server::getUserId).collect(Collectors.toSet()));
+
+        Map<String, List<String>> tags = new HashMap<>();
+        for (ServerTag tag : tagRepository.findAllByServerIdInOrderByCreatedAtAsc(ids)) {
+            List<String> serverTags =
+                    tags.computeIfAbsent(tag.getServer().getId(), id -> new ArrayList<>());
+            if (serverTags.size() < MAX_SUMMARY_TAGS) serverTags.add(tag.getTag());
+        }
+
+        // A server may store versions for both editions; only its own platform's primary counts
+        // HashMap, not Collectors.toMap: legacy rows may have no platform (null value)
+        Map<String, ServerPlatform> platforms = new HashMap<>();
+        content.forEach(server -> platforms.put(server.getId(), server.getPlatform()));
+        Map<String, String> primaryVersions = new HashMap<>();
+        if (platforms.containsValue(ServerPlatform.JAVA)) {
+            javaMcVersionRepository
+                    .findAllByServerIdInAndIsPrimaryMcVersionTrue(ids)
+                    .forEach(
+                            v -> {
+                                String id = v.getServer().getId();
+                                if (platforms.get(id) == ServerPlatform.JAVA)
+                                    primaryVersions.put(id, v.getMcVersion());
+                            });
+        }
+        if (platforms.containsValue(ServerPlatform.BEDROCK)) {
+            bedrockMcVersionRepository
+                    .findAllByServerIdInAndIsPrimaryMcVersionTrue(ids)
+                    .forEach(
+                            v -> {
+                                String id = v.getServer().getId();
+                                if (platforms.get(id) == ServerPlatform.BEDROCK)
+                                    primaryVersions.put(id, v.getMcVersion());
+                            });
+        }
+
+        return page.map(
+                server -> {
+                    String username = usernames.get(server.getUserId());
+                    if (username == null)
+                        throw new UserNotFound("User not found for server: " + server.getId());
+                    return ServerInfoResponse.builder()
+                            .username(username)
+                            .servername(server.getServername())
+                            .requiresPremium(server.getRequiresPremium())
+                            .avatarUrl(resourceStorage.getPublicUrl(server.getServerAvatarId()))
+                            .bannerUrl(resourceStorage.getPublicUrl(server.getServerBannerId()))
+                            .summary(server.getSummary())
+                            .starCount(server.getStarCount())
+                            .visibility(server.getVisibility())
+                            .serverType(server.getType())
+                            .serverPlatform(server.getPlatform())
+                            .tags(List.copyOf(tags.getOrDefault(server.getId(), List.of())))
+                            .primaryVersion(primaryVersions.get(server.getId()))
+                            .build();
+                });
     }
 
     @Logging(logArguments = true)
@@ -106,8 +164,8 @@ public class ServerService {
                 .requiresPremium(server.getRequiresPremium())
                 .javaAddress(server.getJavaAddress())
                 .bedrockAddress(server.getBedrockAddress())
-                .avatarUrl(resourceStorage.createSignedGetUrl(server.getServerAvatarId()))
-                .bannerUrl(resourceStorage.createSignedGetUrl(server.getServerBannerId()))
+                .avatarUrl(resourceStorage.getPublicUrl(server.getServerAvatarId()))
+                .bannerUrl(resourceStorage.getPublicUrl(server.getServerBannerId()))
                 .summary(server.getSummary())
                 .bio(server.getBio())
                 .starCount(server.getStarCount())
@@ -260,41 +318,44 @@ public class ServerService {
             ServerType serverType,
             ServerPlatform serverPlatform,
             List<String> tags) {
+        // Collect predicates here and and() them: Hibernate's getExpressions() returns a copy,
+        // so anything added to conjunction().getExpressions() is silently lost
         return (root, query, criteriaBuilder) -> {
-            var predicates = criteriaBuilder.conjunction();
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(criteriaBuilder.isTrue(root.get("visibility")));
             if (searchQuery != null && !searchQuery.isBlank()) {
                 String searchPattern = "%" + searchQuery.trim().toLowerCase() + "%";
-                predicates
-                        .getExpressions()
-                        .add(
-                                criteriaBuilder.like(
-                                        criteriaBuilder.lower(root.get("servername")),
-                                        searchPattern));
+                predicates.add(
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(root.get("servername")), searchPattern));
             }
             if (requiresPremium != null) {
-                predicates
-                        .getExpressions()
-                        .add(criteriaBuilder.equal(root.get("requiresPremium"), requiresPremium));
+                predicates.add(criteriaBuilder.equal(root.get("requiresPremium"), requiresPremium));
             }
             if (serverType != null) {
-                predicates
-                        .getExpressions()
-                        .add(criteriaBuilder.equal(root.get("type"), serverType));
+                predicates.add(criteriaBuilder.equal(root.get("type"), serverType));
             }
             if (serverPlatform != null) {
-                predicates
-                        .getExpressions()
-                        .add(criteriaBuilder.equal(root.get("platform"), serverPlatform));
+                predicates.add(criteriaBuilder.equal(root.get("platform"), serverPlatform));
             }
             if (tags != null && !tags.isEmpty()) {
                 Subquery<Server> subquery = query.subquery(Server.class);
                 Root<ServerTag> subRoot = subquery.from(ServerTag.class);
                 subquery.select(subRoot.get("server"));
                 subquery.where(subRoot.get("tag").in(tags));
-                predicates.getExpressions().add(criteriaBuilder.in(root).value(subquery));
+                predicates.add(criteriaBuilder.in(root).value(subquery));
             }
 
-            return predicates;
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
+    }
+
+    public Page<ServerInfoResponse> getServerByUser(
+            String userId, String authenticatedUserId, Pageable pageable) {
+        Page<Server> servers =
+                userId.equals(authenticatedUserId)
+                        ? serverRepository.findAllByUserId(userId, pageable)
+                        : serverRepository.findAllByUserIdAndVisibilityIsTrue(userId, pageable);
+        return toInfoPage(servers);
     }
 }

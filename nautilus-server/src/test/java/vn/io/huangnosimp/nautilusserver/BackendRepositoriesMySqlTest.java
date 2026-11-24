@@ -14,7 +14,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import vn.io.huangnosimp.nautilusserver.authentication.constants.Provider;
 import vn.io.huangnosimp.nautilusserver.authentication.constants.Role;
 import vn.io.huangnosimp.nautilusserver.authentication.models.AuthUser;
 import vn.io.huangnosimp.nautilusserver.authentication.models.RefreshToken;
@@ -96,7 +95,6 @@ class BackendRepositoriesMySqlTest {
                                 .username("alice-auth")
                                 .email("alice-auth@example.test")
                                 .password("hash")
-                                .provider(Provider.LOCAL)
                                 .role(Role.USER)
                                 .enabled(true)
                                 .build());
@@ -144,7 +142,7 @@ class BackendRepositoriesMySqlTest {
         assertEquals(
                 1,
                 serverRepository
-                        .findAllByVisibilityIsTrue(
+                        .findAll(
                                 (_, _, criteriaBuilder) -> criteriaBuilder.conjunction(),
                                 PageRequest.of(0, 10))
                         .getTotalElements());

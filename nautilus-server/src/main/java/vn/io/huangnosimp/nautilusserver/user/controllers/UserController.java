@@ -37,7 +37,7 @@ public class UserController {
     @PreAuthorize("authentication.name == #username")
     @CacheEvict(cacheNames = CacheName.USER_ID_CACHE, key = "#username")
     public ResponseEntity<?> changeUsername(
-            @PathVariable String username, @RequestBody ChangeUsernameRequest request) {
+            @PathVariable String username, @Valid @RequestBody ChangeUsernameRequest request) {
         userService.changeUsername(getId(username), request);
         return ResponseEntity.ok().build();
     }

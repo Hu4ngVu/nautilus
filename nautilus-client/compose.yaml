@@ -1,0 +1,15 @@
+# Client host: the Nuxt server. Run from this directory with a .env next to it (see .env.example).
+# The reverse proxy forwards the root domain to 127.0.0.1:8082.
+name: nautilus-client
+
+services:
+  client:
+    build: .
+    image: nautilus/nautilus-client:latest
+    container_name: nautilus-client
+    restart: unless-stopped
+    environment:
+      - NUXT_PUBLIC_API_BASE=${NUXT_PUBLIC_API_BASE:?set NUXT_PUBLIC_API_BASE, e.g. https://api.example.com}
+      - NUXT_API_BASE_SERVER=${NUXT_API_BASE_SERVER:-}
+    ports:
+      - "8082:8082"

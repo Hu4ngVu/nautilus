@@ -1,0 +1,346 @@
+{
+  "app": {
+    "description": "Discover, share and manage Minecraft servers with the community."
+  },
+  "nav": {
+    "home": "Nautilus home",
+    "newServer": "New server",
+    "login": "Log in",
+    "logout": "Log out",
+    "profile": "Profile",
+    "settings": "Settings",
+    "account": "Account",
+    "browse": "Browse",
+    "dashboard": "Dashboard",
+    "stars": "Stars",
+    "backToBrowse": "Back to browse"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "retry": "Retry",
+    "copy": "Copy",
+    "copied": "Copied"
+  },
+  "filters": {
+    "platform": "Platform",
+    "anyPlatform": "Any platform",
+    "type": "Server type",
+    "anyType": "Any type",
+    "account": "Account",
+    "anyAccount": "Any account",
+    "premiumOnly": "Premium required",
+    "crackedAllowed": "No premium needed",
+    "premiumShort": "Premium",
+    "crackedShort": "No premium",
+    "tags": "Tags",
+    "searchTags": "Search tags...",
+    "sort": "Sort",
+    "mostStars": "Most stars",
+    "fewestStars": "Fewest stars",
+    "reset": "Clear filters",
+    "apply": "Apply",
+    "unapplied": "Unapplied changes",
+    "any": "Any",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "showMoreCount": "+{n} more",
+    "noTags": "No tags match"
+  },
+  "server": {
+    "by": "by {username}",
+    "byLink": "by {username}",
+    "stars": "{n} star | {n} stars",
+    "premium": "Premium",
+    "private": "Private",
+    "type": {
+      "VANILLA": "Vanilla",
+      "MODPACK": "Modpack"
+    },
+    "star": "Star",
+    "unstar": "Unstar",
+    "manage": "Manage",
+    "banner": "Server banner",
+    "about": "About",
+    "join": "Join",
+    "javaAddress": "Java address",
+    "bedrockAddress": "Bedrock address",
+    "versions": "Versions",
+    "tags": "Tags",
+    "stargazers": "Stargazers",
+    "notFound": "Server not found",
+    "public": "Public",
+    "tabs": {
+      "about": "About",
+      "gallery": "Gallery",
+      "stargazers": "Stargazers"
+    },
+    "noStargazers": "No stars yet"
+  },
+  "tags": {
+    "category": {
+      "FEATURES": "Features",
+      "GAMEPLAY": "Gameplay",
+      "META": "Modes",
+      "COMMUNITY": "Community"
+    },
+    "label": {
+      "Survival Mode": "Survival",
+      "PvP": "PvP",
+      "SMP": "SMP",
+      "Skyblock": "Skyblock",
+      "Minigames": "Minigames",
+      "Factions": "Factions"
+    }
+  },
+  "gallery": {
+    "title": "Gallery",
+    "imageN": "Image {n}",
+    "count": "{n} image | {n} images",
+    "add": "Add image",
+    "edit": "Edit image",
+    "empty": "No images yet",
+    "untitled": "Untitled",
+    "image": "Image",
+    "imageTitle": "Title",
+    "imageSummary": "Description",
+    "moveUp": "Move earlier",
+    "moveDown": "Move later",
+    "seeAll": "See all ({n})"
+  },
+  "auth": {
+    "username": "Username",
+    "usernamePlaceholder": "Enter your username",
+    "usernameHelp": "3–20 characters: letters, numbers, _ {'@'} .",
+    "email": "Email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPassword": "Confirm password",
+    "login": {
+      "title": "Log in",
+      "description": "Welcome back to Nautilus.",
+      "submit": "Log in",
+      "link": "Log in",
+      "invalid": "Incorrect username, email or password.",
+      "noAccount": "Don't have an account? {link}"
+    },
+    "register": {
+      "title": "Create an account",
+      "description": "Join to star servers and list your own.",
+      "submit": "Sign up",
+      "link": "Sign up",
+      "hasAccount": "Already have an account? {link}",
+      "usernameTaken": "That username is already taken.",
+      "emailTaken": "That email is already in use.",
+      "success": "Account created!"
+    },
+    "identifier": "Username or email",
+    "identifierPlaceholder": "Enter your username or email",
+    "panelTagline": "Join the community, star the servers you love and showcase your own.",
+    "checking": "Checking…",
+    "available": "Available",
+    "taken": "Already taken",
+    "checkFailed": "Couldn't check",
+    "strengthLabel": "Password strength: {level}",
+    "strength": {
+      "1": "Weak",
+      "2": "Fair",
+      "3": "Good",
+      "4": "Strong"
+    }
+  },
+  "profile": {
+    "servers": "Servers",
+    "serverCount": "{n} server | {n} servers",
+    "edit": "Edit profile",
+    "noServers": "No servers yet",
+    "notFound": "User not found"
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance & language",
+    "language": "Language",
+    "theme": "Color mode",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "profile": "Profile",
+    "avatar": "Avatar",
+    "avatarSaved": "Avatar updated",
+    "bio": "Bio",
+    "bioSaved": "Bio saved",
+    "account": "Account",
+    "username": "Change username",
+    "currentUsername": "Current: {username}",
+    "newUsername": "New username",
+    "changeUsername": "Change",
+    "usernameSaved": "Username changed",
+    "password": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "changePassword": "Change password",
+    "passwordSaved": "Password changed. Other sessions have been signed out.",
+    "passwordWrong": "Current password is incorrect.",
+    "themeLightHint": "Light background, bold outlines",
+    "themeDarkHint": "Dark background, easy on the eyes",
+    "themeSystemHint": "Follow your device setting",
+    "logoutHint": "Sign out of Nautilus in this browser."
+  },
+  "create": {
+    "title": "New server",
+    "subtitle": "You can add images, tags and versions after creating it.",
+    "servername": "Server name",
+    "servernameHelp": "Up to 50 characters: letters, numbers, _ {'@'} .",
+    "summary": "Summary",
+    "platform": "Platform",
+    "type": "Server type",
+    "visibility": "Public",
+    "visibilityHelp": "Anyone can view and find this server.",
+    "premium": "Requires premium account",
+    "premiumHelp": "Players need a paid Minecraft account.",
+    "submit": "Create server",
+    "success": "Server created",
+    "failed": "Couldn't create the server. The name may already exist.",
+    "platformHint": {
+      "JAVA": "PC: Windows, macOS, Linux",
+      "BEDROCK": "Mobile, consoles, Windows"
+    },
+    "typeHint": {
+      "VANILLA": "No mods required",
+      "MODPACK": "Players install a modpack"
+    },
+    "visibilityHint": {
+      "public": "Anyone can find it",
+      "private": "Only you and people you invite"
+    },
+    "visibilityLabel": "Visibility"
+  },
+  "manage": {
+    "title": "Manage {name}",
+    "back": "Back to server",
+    "tabs": {
+      "general": "General",
+      "gallery": "Gallery",
+      "tags": "Tags",
+      "versions": "Versions",
+      "advanced": "Advanced"
+    },
+    "avatar": "Avatar",
+    "banner": "Banner",
+    "addressHelp": "Domain or IP, optionally with :port",
+    "saved": "Changes saved",
+    "rename": "Rename server",
+    "renameSubmit": "Rename",
+    "renamed": "Server renamed",
+    "dangerZone": "Danger zone",
+    "delete": "Delete server",
+    "deleteHelp": "Permanently delete this server with all its images, tags and stars.",
+    "deleteTitle": "Delete server?",
+    "deleteConfirm": "This can't be undone. Type “{name}” to confirm.",
+    "deleted": "Server deleted",
+    "noPermission": "You don't have permission to edit this server.",
+    "unsaved": "You have unsaved changes",
+    "noChanges": "No changes",
+    "discard": "Discard"
+  },
+  "versions": {
+    "choose": "Choose versions",
+    "search": "Search versions...",
+    "primary": "Primary version",
+    "primaryHelp": "Highlighted on the server page"
+  },
+  "markdown": {
+    "write": "Write",
+    "preview": "Preview",
+    "placeholder": "Markdown supported: **bold**, _italic_, [link](https://...), lists...",
+    "empty": "Nothing to preview",
+    "hint": "Markdown supported"
+  },
+  "upload": {
+    "choose": "Choose image",
+    "remove": "Remove",
+    "uploading": "Uploading...",
+    "hint": "PNG, JPG, WEBP or GIF, up to {size}MB"
+  },
+  "validation": {
+    "required": "This field is required",
+    "username": "3–20 characters: letters, numbers, _ {'@'} . only",
+    "usernameReserved": "This name is used by a Nautilus page, please pick another",
+    "servername": "Up to {max} characters: letters, numbers, _ {'@'} . only",
+    "email": "Invalid email",
+    "password": "Password must be {min}–{max} characters",
+    "passwordMismatch": "Passwords don't match",
+    "maxLength": "Up to {max} characters",
+    "address": "Invalid address (e.g. play.example.com:25565)"
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "loadFailed": "Couldn't load data",
+    "badRequest": "The request was invalid.",
+    "unauthorized": "Your session has expired, please log in again.",
+    "forbidden": "You don't have permission to do that.",
+    "notFound": "The requested content wasn't found.",
+    "conflict": "That already exists.",
+    "generic": "Server error, please try again later.",
+    "upload": {
+      "title": "Upload failed",
+      "type": "Only PNG, JPG, WEBP or GIF are supported.",
+      "size": "Image exceeds 10MB.",
+      "timeout": "The server hasn't confirmed the image yet, please try again."
+    },
+    "pageNotFound": "Page not found",
+    "pageNotFoundHint": "The page you're looking for may have been removed, renamed or never existed.",
+    "backHome": "Back to home"
+  },
+  "home": {
+    "tagline": "Discover and share your favorite Minecraft servers",
+    "searchPlaceholder": "Search servers...",
+    "browse": "Browse servers",
+    "dashboard": "Go to dashboard",
+    "taglineRich": "Discover and share your {highlight}",
+    "taglineHighlight": "favorite Minecraft servers",
+    "seeAll": "See all",
+    "searchShortcut": "Press / to search",
+    "quickTags": "Popular tags",
+    "shelves": {
+      "popular": "Most popular",
+      "survival": "Survival",
+      "modpack": "Modpacks",
+      "bedrock": "Bedrock"
+    }
+  },
+  "browse": {
+    "title": "Browse servers",
+    "search": "Search servers",
+    "searchPlaceholder": "Search servers...",
+    "filters": "Filters",
+    "empty": "No servers found",
+    "emptyHint": "Try removing some filters or using different keywords.",
+    "results": "{n} server | {n} servers",
+    "viewList": "List view",
+    "viewGrid": "Grid view",
+    "activeFilters": "Active filters",
+    "removeFilter": "Remove filter {name}"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Manage the servers you've listed.",
+    "empty": "You haven't listed any servers yet",
+    "emptyHint": "Create your first server to share it with the community.",
+    "view": "View",
+    "deleteConfirm": "Permanently delete “{name}” with all its images, tags and stars? This can't be undone."
+  },
+  "stars": {
+    "title": "Starred servers",
+    "subtitle": "Servers you've starred.",
+    "empty": "You haven't starred any servers",
+    "emptyHint": "Star servers you like to find them here later.",
+    "unstarred": "Removed from stars",
+    "undo": "Undo",
+    "undoFailed": "Couldn't undo; star it again from the server page.",
+    "restored": "Starred again"
+  }
+}

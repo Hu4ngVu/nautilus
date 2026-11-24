@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import vn.io.huangnosimp.nautilusserver.constraints.NotReservedUsername;
 
 public record RegisterRequest(
         @NotBlank(message = "newUsername is required")
@@ -12,8 +13,9 @@ public record RegisterRequest(
                         message =
                                 "Username can only contain letters, numbers, underscores, @ and .")
                 @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
+                @NotReservedUsername
                 String username,
         @NotBlank(message = "email is required") @Email String email,
         @NotBlank(message = "password is required")
-                @Size(max = 50, message = "Password cannot exceed 50 characters")
+                @Size(min = 8, max = 50, message = "Password cannot exceed 50 characters")
                 String password) {}

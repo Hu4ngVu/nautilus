@@ -1,0 +1,104 @@
+name: nautilus-server
+
+networks:
+  nautilus:
+
+services:
+  mysql:
+    image: mysql:8.4.13
+    container_name: mysql
+    restart: unless-stopped
+    networks:
+      - nautilus
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: nautilus
+    healthcheck:
+      test: ["CMD", 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p$$MYSQL_PASSWORD' ]
+      timeout: 20s
+      retries: 5
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+  migrate:
+    depends_on:
+      mysql:
+        condition: service_healthy
+    image: openfga/openfga:latest
+    container_name: migrate
+    command: migrate
+    environment:
+      - OPENFGA_DATASTORE_ENGINE=mysql
+      - OPENFGA_DATASTORE_URI=root:${MYSQL_PASSWORD}@tcp(mysql:3306)/nautilus?parseTime=true
+    networks:
+      - nautilus
+  openfga:
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    image: openfga/openfga:latest
+    container_name: openfga
+    restart: unless-stopped
+    environment:
+      - OPENFGA_DATASTORE_ENGINE=mysql
+      - OPENFGA_DATASTORE_URI=root:${MYSQL_PASSWORD}@tcp(mysql:3306)/nautilus?parseTime=true
+      - OPENFGA_LOG_FORMAT=json
+    ports:
+      - "8080:8080"
+    command: run
+    networks:
+      - nautilus
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/grpc_health_probe", "-addr=:8081"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  redis:
+    image: redis:8.8.4
+    container_name: redis
+    restart: unless-stopped
+    networks:
+      - nautilus
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    ports:
+      - "6379:6379"
+  nautilus:
+    depends_on:
+      redis:
+        condition: service_healthy
+      openfga:
+        condition: service_healthy
+    build: .
+    image: nautilus/nautilus-server:latest
+    container_name: nautilus-server
+    restart: unless-stopped
+    networks:
+      - nautilus
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+      - WEBHOOK_SECRET_KEY=${WEBHOOK_SECRET_KEY}
+      - MYSQL_URL=jdbc:mysql://mysql:3306/nautilus
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - AWS_S3_ENDPOINT=${AWS_S3_ENDPOINT}
+      - AWS_S3_PUBLIC_URL=${AWS_S3_PUBLIC_URL}
+      - OPENFGA_API_URL=http://openfga:8080
+      - OPENFGA_STORE_ID=${OPENFGA_STORE_ID}
+      - OPENFGA_AUTHORIZATION_MODEL_ID=${OPENFGA_AUTHORIZATION_MODEL_ID}
+      # The client's domain: CORS origin https://${APP_DOMAIN}
+      - APP_DOMAIN=${APP_DOMAIN:?set APP_DOMAIN to the client's domain, e.g. example.com}
+    ports:
+      # Set NAUTILUS_BIND to a private address if the client host renders pages over a private network
+      - "8083:8083"
+volumes:
+  mysql_data:

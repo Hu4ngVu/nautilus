@@ -45,9 +45,7 @@ public class GalleryService {
                                         .imageTitle(image.getTitle())
                                         .orderIndex(image.getOrderIndex())
                                         .createdAt(image.getCreatedAt())
-                                        .imageUrl(
-                                                resourceStorage.createSignedGetUrl(
-                                                        image.getImageId()))
+                                        .imageUrl(resourceStorage.getPublicUrl(image.getImageId()))
                                         .build());
     }
 
@@ -65,7 +63,7 @@ public class GalleryService {
                 .summary(image.getSummary())
                 .orderIndex(image.getOrderIndex())
                 .createdAt(image.getCreatedAt())
-                .imageUrl(resourceStorage.createSignedGetUrl(image.getImageId()))
+                .imageUrl(resourceStorage.getPublicUrl(image.getImageId()))
                 .build();
     }
 

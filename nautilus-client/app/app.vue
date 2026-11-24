@@ -1,53 +1,64 @@
-<script setup>
-useHead({
-  meta: [
-    { name: 'viewport', content: 'width=device-width, initial-scale=1' }
-  ],
-  link: [
-    { rel: 'icon', href: '/favicon.ico' }
-  ],
-  htmlAttrs: {
-    lang: 'en'
-  }
-})
+<script setup lang="ts">
+import type { NavigationMenuItem } from '@nuxt/ui'
+import { en, vi } from '@nuxt/ui/locale'
 
-const title = 'Nuxt Starter Template'
-const description = 'A production-ready starter template powered by Nuxt UI. Build beautiful, accessible, and performant applications in minutes, not hours.'
+const { locale, t } = useI18n()
+const auth = useAuthStore()
+
+const uiLocale = computed(() => locale.value === 'en' ? en : vi)
+
+useHead({
+  htmlAttrs: { lang: locale },
+  titleTemplate: title => title ? `${title} · Nautilus` : 'Nautilus'
+})
 
 useSeoMeta({
-  title,
-  description,
-  ogTitle: title,
-  ogDescription: description,
-  ogImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
-  twitterCard: 'summary_large_image'
+  description: () => t('app.description')
 })
+
+const navItems = computed<NavigationMenuItem[]>(() => [
+  { label: t('nav.browse'), to: '/browse', icon: 'i-lucide-compass' },
+  { label: t('nav.dashboard'), to: '/dashboard', icon: 'i-lucide-layout-dashboard' }
+])
 </script>
 
 <template>
-  <UApp>
+  <UApp :locale="uiLocale">
     <UHeader>
       <template #left>
         <NuxtLink
           to="/"
-          class="focus-visible:outline-3 outline-primary/25 rounded-md p-1 -ms-1"
+          class="rounded-md p-1 -ms-1 focus-visible:outline-3 outline-primary/40"
+          :aria-label="t('nav.home')"
         >
-          <AppLogo class="w-auto h-6 shrink-0" />
+          <AppLogo />
         </NuxtLink>
-
-        <TemplateMenu />
       </template>
+
+      <UNavigationMenu
+        :items="navItems"
+        variant="link"
+        highlight
+      />
 
       <template #right>
         <UColorModeButton />
-
+        <UserMenu v-if="auth.loggedIn" />
+        <!-- Hidden until the session is known so logged-in users don't see it flash on server-rendered pages -->
         <UButton
-          to="https://github.com/nuxt-ui-templates/starter"
-          target="_blank"
-          icon="i-simple-icons-github"
-          aria-label="GitHub"
+          v-else-if="auth.ready"
+          to="/login"
+          :label="t('nav.login')"
           color="neutral"
-          variant="ghost"
+          variant="soft"
+        />
+      </template>
+
+      <template #body>
+        <UNavigationMenu
+          :items="navItems"
+          orientation="vertical"
+          class="-mx-2.5"
         />
       </template>
     </UHeader>
@@ -56,24 +67,14 @@ useSeoMeta({
       <NuxtPage />
     </UMain>
 
-    <USeparator icon="i-simple-icons-nuxtdotjs" />
-
     <UFooter>
       <template #left>
         <p class="text-sm text-muted">
-          Built with Nuxt UI • © {{ new Date().getFullYear() }}
+          Nautilus © {{ new Date().getFullYear() }}
         </p>
       </template>
-
       <template #right>
-        <UButton
-          to="https://github.com/nuxt-ui-templates/starter"
-          target="_blank"
-          icon="i-simple-icons-github"
-          aria-label="GitHub"
-          color="neutral"
-          variant="ghost"
-        />
+        <LanguageSwitcher />
       </template>
     </UFooter>
   </UApp>

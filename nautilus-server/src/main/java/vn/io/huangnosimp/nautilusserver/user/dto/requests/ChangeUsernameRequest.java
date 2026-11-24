@@ -3,6 +3,7 @@ package vn.io.huangnosimp.nautilusserver.user.dto.requests;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import vn.io.huangnosimp.nautilusserver.constraints.NotReservedUsername;
 
 public record ChangeUsernameRequest(
         @NotBlank
@@ -12,4 +13,5 @@ public record ChangeUsernameRequest(
                         message =
                                 "Username can only contain letters, numbers, underscores, @ and .")
                 @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
+                @NotReservedUsername
                 String newUsername) {}

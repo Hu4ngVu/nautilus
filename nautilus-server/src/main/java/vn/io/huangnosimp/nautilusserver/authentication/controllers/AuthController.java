@@ -2,19 +2,19 @@ package vn.io.huangnosimp.nautilusserver.authentication.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.server.Cookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import vn.io.huangnosimp.nautilusserver.authentication.dto.requests.ChangePasswordRequest;
 import vn.io.huangnosimp.nautilusserver.authentication.dto.requests.LoginRequest;
 import vn.io.huangnosimp.nautilusserver.authentication.dto.requests.RegisterRequest;
 import vn.io.huangnosimp.nautilusserver.authentication.dto.responses.AccessTokenResponse;
 import vn.io.huangnosimp.nautilusserver.authentication.dto.results.TokenResult;
 import vn.io.huangnosimp.nautilusserver.authentication.services.AuthService;
+import vn.io.huangnosimp.nautilusserver.authentication.utils.RefreshTokenCookies;
 
 @RestController
 @RequestMapping(value = "/auth")
@@ -32,7 +32,7 @@ public class AuthController {
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
         TokenResult tokenResult = authService.loginUser(loginRequest);
 
-        var cookie = getCookie(tokenResult.refreshToken(), 7 * 24 * 60 * 60); // 7 days
+        var cookie = RefreshTokenCookies.create(tokenResult.refreshToken());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new AccessTokenResponse(tokenResult.accessToken()));
@@ -43,27 +43,29 @@ public class AuthController {
     public ResponseEntity<?> logoutUser(@AuthenticationPrincipal Jwt jwt) {
         authService.logoutUser(jwt);
 
-        var cookie = getCookie("", 0); // Set maxAge to 0 to delete the cookie
+        var cookie = RefreshTokenCookies.clear();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<?> changePassword(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+        TokenResult tokenResult = authService.changePassword(jwt, changePasswordRequest);
+
+        var cookie = RefreshTokenCookies.create(tokenResult.refreshToken());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new AccessTokenResponse(tokenResult.accessToken()));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@CookieValue(name = "refreshToken") String refreshToken) {
         TokenResult tokenResult = authService.refreshToken(refreshToken);
 
-        var cookie = getCookie(tokenResult.refreshToken(), 7 * 24 * 60 * 60); // 7 days
+        var cookie = RefreshTokenCookies.create(tokenResult.refreshToken());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new AccessTokenResponse(tokenResult.accessToken()));
-    }
-
-    private ResponseCookie getCookie(String refreshToken, long maxAge) {
-        return ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(maxAge)
-                .sameSite(Cookie.SameSite.LAX.name())
-                .build();
     }
 }

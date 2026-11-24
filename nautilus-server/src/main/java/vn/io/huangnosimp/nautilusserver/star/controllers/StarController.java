@@ -25,7 +25,7 @@ public class StarController {
 
     @GetMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+            "@permissionCheckerImpl.isEditor(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<Page<UserStaredInfo>> getUserStaredInfo(
             @PathVariable String username,
@@ -39,6 +39,7 @@ public class StarController {
     }
 
     @GetMapping("/{username}")
+    @PreAuthorize("authentication.name == #username")
     public ResponseEntity<Page<ServerStaredInfo>> getServerStaredInfo(
             @PathVariable String username,
             @PageableDefault(
@@ -51,7 +52,7 @@ public class StarController {
 
     @PutMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+            "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> addStar(
             @PathVariable String username, @PathVariable String servername) {
@@ -63,7 +64,7 @@ public class StarController {
 
     @DeleteMapping("/{username}/{servername}")
     @PreAuthorize(
-            "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(@authentication.getName()),"
+            "@permissionCheckerImpl.isViewer(@globalIdResolver.resolveUserId(authentication.getName()),"
                 + " @globalIdResolver.resolveServerId(#username, #servername))")
     public ResponseEntity<?> deleteStar(
             @PathVariable String username, @PathVariable String servername) {

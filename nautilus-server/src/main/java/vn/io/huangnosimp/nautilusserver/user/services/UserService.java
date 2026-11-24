@@ -37,7 +37,7 @@ public class UserService {
                         .orElseThrow(() -> new UserNotFound(authUserId));
         String avatarUrl = null;
         if (user.getAvatarId() != null) {
-            avatarUrl = resourceStorage.createSignedGetUrl(user.getAvatarId());
+            avatarUrl = resourceStorage.getPublicUrl(user.getAvatarId());
         }
         return UserInfoResponse.builder()
                 .username(user.getUsername())
@@ -88,8 +88,10 @@ public class UserService {
         if (userRepository.existsByUsername(request.newUsername())) {
             throw new DuplicateUsername("Username already exists: " + request.newUsername());
         }
+        String oldUsername = user.getUsername();
         user.setUsername(request.newUsername());
         userRepository.save(user);
-        eventPublisher.publishEvent(new UsernameUpdatedEvent(authUserId, request.newUsername()));
+        eventPublisher.publishEvent(
+                new UsernameUpdatedEvent(authUserId, oldUsername, request.newUsername()));
     }
 }

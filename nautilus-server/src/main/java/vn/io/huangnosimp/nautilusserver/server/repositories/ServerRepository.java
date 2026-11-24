@@ -1,9 +1,10 @@
 package vn.io.huangnosimp.nautilusserver.server.repositories;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -18,7 +19,10 @@ public interface ServerRepository
         extends JpaRepository<Server, String>, JpaSpecificationExecutor<Server> {
     boolean existsByIdAndVisibilityIsTrue(String serverId);
 
-    Page<Server> findAllByVisibilityIsTrue(Specification<Server> specification, Pageable pageable);
+    List<Server> findAllByIdInAndVisibilityIsTrue(Collection<String> ids);
+
+    @Query("SELECT s.id FROM Server s WHERE s.id IN :ids AND s.visibility = true")
+    List<String> findPublicIdsByIdIn(@Param("ids") Collection<String> ids);
 
     Optional<Server> findByIdAndVisibilityIsTrue(String serverId);
 
@@ -37,4 +41,8 @@ public interface ServerRepository
     @Query("SELECT s.id FROM Server s WHERE s.userId = :userId AND s.servername = :servername")
     Optional<String> findServerId(
             @Param("userId") String userId, @Param("servername") String servername);
+
+    Page<Server> findAllByUserId(String userId, Pageable pageable);
+
+    Page<Server> findAllByUserIdAndVisibilityIsTrue(String userId, Pageable pageable);
 }

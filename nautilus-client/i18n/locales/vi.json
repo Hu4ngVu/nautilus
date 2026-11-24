@@ -1,0 +1,346 @@
+{
+  "app": {
+    "description": "Khám phá, chia sẻ và quản lý Minecraft server cùng cộng đồng."
+  },
+  "nav": {
+    "home": "Trang chủ Nautilus",
+    "newServer": "Tạo server",
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "profile": "Hồ sơ",
+    "settings": "Cài đặt",
+    "account": "Tài khoản",
+    "browse": "Khám phá",
+    "dashboard": "Bảng điều khiển",
+    "stars": "Đã star",
+    "backToBrowse": "Về trang khám phá"
+  },
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "retry": "Thử lại",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép"
+  },
+  "filters": {
+    "platform": "Nền tảng",
+    "anyPlatform": "Mọi nền tảng",
+    "type": "Loại server",
+    "anyType": "Mọi loại",
+    "account": "Tài khoản",
+    "anyAccount": "Mọi tài khoản",
+    "premiumOnly": "Cần tài khoản premium",
+    "crackedAllowed": "Không cần premium",
+    "premiumShort": "Premium",
+    "crackedShort": "Không premium",
+    "tags": "Thẻ",
+    "searchTags": "Tìm thẻ...",
+    "sort": "Sắp xếp",
+    "mostStars": "Nhiều sao nhất",
+    "fewestStars": "Ít sao nhất",
+    "reset": "Xóa bộ lọc",
+    "apply": "Áp dụng",
+    "unapplied": "Có thay đổi chưa áp dụng",
+    "any": "Bất kỳ",
+    "showMore": "Xem thêm",
+    "showLess": "Thu gọn",
+    "showMoreCount": "+{n} thẻ khác",
+    "noTags": "Không có thẻ phù hợp"
+  },
+  "server": {
+    "by": "bởi {username}",
+    "byLink": "bởi {username}",
+    "stars": "{n} sao",
+    "premium": "Premium",
+    "private": "Riêng tư",
+    "type": {
+      "VANILLA": "Vanilla",
+      "MODPACK": "Modpack"
+    },
+    "star": "Gắn sao",
+    "unstar": "Bỏ sao",
+    "manage": "Quản lý",
+    "banner": "Ảnh bìa server",
+    "about": "Giới thiệu",
+    "join": "Tham gia",
+    "javaAddress": "Địa chỉ Java",
+    "bedrockAddress": "Địa chỉ Bedrock",
+    "versions": "Phiên bản",
+    "tags": "Thẻ",
+    "stargazers": "Người đã gắn sao",
+    "notFound": "Không tìm thấy server",
+    "public": "Công khai",
+    "tabs": {
+      "about": "Giới thiệu",
+      "gallery": "Thư viện ảnh",
+      "stargazers": "Người gắn sao"
+    },
+    "noStargazers": "Chưa có ai gắn sao"
+  },
+  "tags": {
+    "category": {
+      "FEATURES": "Tính năng",
+      "GAMEPLAY": "Lối chơi",
+      "META": "Chế độ",
+      "COMMUNITY": "Cộng đồng"
+    },
+    "label": {
+      "Survival Mode": "Sinh tồn",
+      "PvP": "PvP",
+      "SMP": "SMP",
+      "Skyblock": "Skyblock",
+      "Minigames": "Minigame",
+      "Factions": "Phe phái"
+    }
+  },
+  "gallery": {
+    "title": "Thư viện ảnh",
+    "imageN": "Ảnh {n}",
+    "count": "{n} ảnh",
+    "add": "Thêm ảnh",
+    "edit": "Sửa ảnh",
+    "empty": "Chưa có ảnh nào",
+    "untitled": "Không tiêu đề",
+    "image": "Ảnh",
+    "imageTitle": "Tiêu đề",
+    "imageSummary": "Mô tả",
+    "moveUp": "Di chuyển lên trước",
+    "moveDown": "Di chuyển ra sau",
+    "seeAll": "Xem tất cả ({n})"
+  },
+  "auth": {
+    "username": "Tên đăng nhập",
+    "usernamePlaceholder": "Nhập tên đăng nhập",
+    "usernameHelp": "3–20 ký tự: chữ, số, _ {'@'} .",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "login": {
+      "title": "Đăng nhập",
+      "description": "Chào mừng bạn quay lại Nautilus.",
+      "submit": "Đăng nhập",
+      "link": "Đăng nhập",
+      "invalid": "Tên đăng nhập, email hoặc mật khẩu không đúng.",
+      "noAccount": "Chưa có tài khoản? {link}"
+    },
+    "register": {
+      "title": "Tạo tài khoản",
+      "description": "Tham gia để gắn sao và đăng server của bạn.",
+      "submit": "Đăng ký",
+      "link": "Đăng ký",
+      "hasAccount": "Đã có tài khoản? {link}",
+      "usernameTaken": "Tên đăng nhập đã được sử dụng.",
+      "emailTaken": "Email đã được sử dụng.",
+      "success": "Đăng ký thành công!"
+    },
+    "identifier": "Tên đăng nhập hoặc email",
+    "identifierPlaceholder": "Nhập tên đăng nhập hoặc email",
+    "panelTagline": "Tham gia cộng đồng, gắn sao server bạn thích và giới thiệu server của riêng bạn.",
+    "checking": "Đang kiểm tra…",
+    "available": "Có thể dùng",
+    "taken": "Đã có người dùng",
+    "checkFailed": "Không kiểm tra được",
+    "strengthLabel": "Độ mạnh mật khẩu: {level}",
+    "strength": {
+      "1": "Yếu",
+      "2": "Trung bình",
+      "3": "Khá",
+      "4": "Mạnh"
+    }
+  },
+  "profile": {
+    "servers": "Server",
+    "serverCount": "{n} server",
+    "edit": "Sửa hồ sơ",
+    "noServers": "Chưa có server nào",
+    "notFound": "Không tìm thấy người dùng"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "appearance": "Giao diện & ngôn ngữ",
+    "language": "Ngôn ngữ",
+    "theme": "Chế độ màu",
+    "themeSystem": "Theo hệ thống",
+    "themeLight": "Sáng",
+    "themeDark": "Tối",
+    "profile": "Hồ sơ",
+    "avatar": "Ảnh đại diện",
+    "avatarSaved": "Đã cập nhật ảnh đại diện",
+    "bio": "Giới thiệu bản thân",
+    "bioSaved": "Đã lưu giới thiệu",
+    "account": "Tài khoản",
+    "username": "Đổi tên đăng nhập",
+    "currentUsername": "Hiện tại: {username}",
+    "newUsername": "Tên đăng nhập mới",
+    "changeUsername": "Đổi tên",
+    "usernameSaved": "Đã đổi tên đăng nhập",
+    "password": "Đổi mật khẩu",
+    "currentPassword": "Mật khẩu hiện tại",
+    "newPassword": "Mật khẩu mới",
+    "confirmPassword": "Nhập lại mật khẩu mới",
+    "changePassword": "Đổi mật khẩu",
+    "passwordSaved": "Đã đổi mật khẩu. Các phiên đăng nhập khác đã bị đăng xuất.",
+    "passwordWrong": "Mật khẩu hiện tại không đúng.",
+    "themeLightHint": "Nền sáng, viền đậm",
+    "themeDarkHint": "Nền tối, dịu mắt ban đêm",
+    "themeSystemHint": "Theo cài đặt thiết bị",
+    "logoutHint": "Đăng xuất khỏi Nautilus trên trình duyệt này."
+  },
+  "create": {
+    "title": "Tạo server",
+    "subtitle": "Bạn có thể thêm ảnh, thẻ và phiên bản sau khi tạo.",
+    "servername": "Tên server",
+    "servernameHelp": "Tối đa 50 ký tự: chữ, số, _ {'@'} .",
+    "summary": "Tóm tắt",
+    "platform": "Nền tảng",
+    "type": "Loại server",
+    "visibility": "Công khai",
+    "visibilityHelp": "Mọi người đều có thể xem và tìm thấy server.",
+    "premium": "Yêu cầu tài khoản premium",
+    "premiumHelp": "Người chơi cần tài khoản Minecraft bản quyền.",
+    "submit": "Tạo server",
+    "success": "Đã tạo server",
+    "failed": "Không thể tạo server. Tên có thể đã tồn tại.",
+    "platformHint": {
+      "JAVA": "PC: Windows, macOS, Linux",
+      "BEDROCK": "Điện thoại, console, Windows"
+    },
+    "typeHint": {
+      "VANILLA": "Không cần cài mod",
+      "MODPACK": "Người chơi cần cài modpack"
+    },
+    "visibilityHint": {
+      "public": "Ai cũng có thể tìm thấy",
+      "private": "Chỉ bạn và người được mời"
+    },
+    "visibilityLabel": "Hiển thị"
+  },
+  "manage": {
+    "title": "Quản lý {name}",
+    "back": "Về trang server",
+    "tabs": {
+      "general": "Thông tin",
+      "gallery": "Thư viện ảnh",
+      "tags": "Thẻ",
+      "versions": "Phiên bản",
+      "advanced": "Nâng cao"
+    },
+    "avatar": "Ảnh đại diện",
+    "banner": "Ảnh bìa",
+    "addressHelp": "Tên miền hoặc IP, có thể kèm :cổng",
+    "saved": "Đã lưu thay đổi",
+    "rename": "Đổi tên server",
+    "renameSubmit": "Đổi tên",
+    "renamed": "Đã đổi tên server",
+    "dangerZone": "Vùng nguy hiểm",
+    "delete": "Xóa server",
+    "deleteHelp": "Xóa vĩnh viễn server cùng toàn bộ ảnh, thẻ và lượt sao.",
+    "deleteTitle": "Xóa server?",
+    "deleteConfirm": "Hành động này không thể hoàn tác. Nhập “{name}” để xác nhận.",
+    "deleted": "Đã xóa server",
+    "noPermission": "Bạn không có quyền chỉnh sửa server này.",
+    "unsaved": "Bạn có thay đổi chưa lưu",
+    "noChanges": "Không có thay đổi",
+    "discard": "Huỷ thay đổi"
+  },
+  "versions": {
+    "choose": "Chọn phiên bản",
+    "search": "Tìm phiên bản...",
+    "primary": "Phiên bản chính",
+    "primaryHelp": "Hiển thị nổi bật trên trang server"
+  },
+  "markdown": {
+    "write": "Viết",
+    "preview": "Xem trước",
+    "placeholder": "Hỗ trợ Markdown: **đậm**, _nghiêng_, [liên kết](https://...), danh sách...",
+    "empty": "Chưa có nội dung",
+    "hint": "Hỗ trợ Markdown"
+  },
+  "upload": {
+    "choose": "Chọn ảnh",
+    "remove": "Gỡ ảnh",
+    "uploading": "Đang tải lên...",
+    "hint": "PNG, JPG, WEBP hoặc GIF, tối đa {size}MB"
+  },
+  "validation": {
+    "required": "Trường này là bắt buộc",
+    "username": "3–20 ký tự, chỉ gồm chữ, số, _ {'@'} .",
+    "usernameReserved": "Tên này trùng với một trang của Nautilus, hãy chọn tên khác",
+    "servername": "Tối đa {max} ký tự, chỉ gồm chữ, số, _ {'@'} .",
+    "email": "Email không hợp lệ",
+    "password": "Mật khẩu từ {min} đến {max} ký tự",
+    "passwordMismatch": "Mật khẩu xác nhận không khớp",
+    "maxLength": "Tối đa {max} ký tự",
+    "address": "Địa chỉ không hợp lệ (ví dụ: play.example.com:25565)"
+  },
+  "errors": {
+    "title": "Đã xảy ra lỗi",
+    "loadFailed": "Không thể tải dữ liệu",
+    "badRequest": "Dữ liệu không hợp lệ.",
+    "unauthorized": "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.",
+    "forbidden": "Bạn không có quyền thực hiện thao tác này.",
+    "notFound": "Không tìm thấy nội dung yêu cầu.",
+    "conflict": "Dữ liệu đã tồn tại.",
+    "generic": "Lỗi máy chủ, vui lòng thử lại sau.",
+    "upload": {
+      "title": "Tải ảnh thất bại",
+      "type": "Chỉ hỗ trợ PNG, JPG, WEBP hoặc GIF.",
+      "size": "Ảnh vượt quá 10MB.",
+      "timeout": "Máy chủ chưa xác nhận ảnh, vui lòng thử lại."
+    },
+    "pageNotFound": "Không tìm thấy trang",
+    "pageNotFoundHint": "Trang bạn tìm có thể đã bị xoá, đổi tên hoặc chưa từng tồn tại.",
+    "backHome": "Về trang chủ"
+  },
+  "home": {
+    "tagline": "Khám phá và chia sẻ những Minecraft server yêu thích của bạn",
+    "searchPlaceholder": "Tìm server...",
+    "browse": "Khám phá server",
+    "dashboard": "Tới bảng điều khiển",
+    "taglineRich": "Khám phá và chia sẻ {highlight} yêu thích của bạn",
+    "taglineHighlight": "những Minecraft server",
+    "seeAll": "Xem tất cả",
+    "searchShortcut": "Nhấn / để tìm kiếm",
+    "quickTags": "Tag phổ biến",
+    "shelves": {
+      "popular": "Phổ biến nhất",
+      "survival": "Sinh tồn",
+      "modpack": "Modpack",
+      "bedrock": "Bedrock"
+    }
+  },
+  "browse": {
+    "title": "Khám phá server",
+    "search": "Tìm kiếm server",
+    "searchPlaceholder": "Tìm server...",
+    "filters": "Bộ lọc",
+    "empty": "Không tìm thấy server nào",
+    "emptyHint": "Hãy bỏ bớt bộ lọc hoặc thử từ khóa khác.",
+    "results": "{n} server",
+    "viewList": "Dạng danh sách",
+    "viewGrid": "Dạng lưới",
+    "activeFilters": "Bộ lọc đang áp dụng",
+    "removeFilter": "Bỏ bộ lọc {name}"
+  },
+  "dashboard": {
+    "title": "Bảng điều khiển",
+    "subtitle": "Quản lý các server bạn đã đăng.",
+    "empty": "Bạn chưa đăng server nào",
+    "emptyHint": "Tạo server đầu tiên để chia sẻ với cộng đồng.",
+    "view": "Xem",
+    "deleteConfirm": "Xóa vĩnh viễn “{name}” cùng toàn bộ ảnh, tag và star? Không thể hoàn tác."
+  },
+  "stars": {
+    "title": "Server đã star",
+    "subtitle": "Những server bạn đã star.",
+    "empty": "Bạn chưa star server nào",
+    "emptyHint": "Hãy star những server bạn thích để xem lại tại đây.",
+    "unstarred": "Đã bỏ star",
+    "undo": "Hoàn tác",
+    "undoFailed": "Không thể hoàn tác, vui lòng gắn sao lại từ trang server.",
+    "restored": "Đã gắn sao lại"
+  }
+}

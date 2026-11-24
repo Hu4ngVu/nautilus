@@ -9,6 +9,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
+import vn.io.huangnosimp.nautilusserver.exceptions.ResourceNotFound;
+import vn.io.huangnosimp.nautilusserver.storage.constants.StorageStatus;
 import vn.io.huangnosimp.nautilusserver.storage.dto.responses.UploadUrlResponse;
 import vn.io.huangnosimp.nautilusserver.storage.services.StorageService;
 
@@ -36,6 +38,24 @@ class StorageControllerWebTest {
                                     "https://example.test/upload", response.uploadUrl());
                         });
         verify(storageService).generateUploadUrl("image/png", 128L);
+    }
+
+    @Test
+    void reportsResourceStatusSoClientsCanWaitForUpload() {
+        when(storageService.getStatus("resource-id")).thenReturn(StorageStatus.UPLOADED);
+        mvc.get()
+                .uri("/storage/resources/resource-id")
+                .assertThat()
+                .hasStatusOk()
+                .bodyJson()
+                .extractingPath("$.status")
+                .isEqualTo("UPLOADED");
+    }
+
+    @Test
+    void unknownResourceStatusIsNotFound() {
+        when(storageService.getStatus("missing")).thenThrow(new ResourceNotFound("missing"));
+        mvc.get().uri("/storage/resources/missing").assertThat().hasStatus(404);
     }
 
     @Test

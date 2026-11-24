@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.time.Instant;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
+import vn.io.huangnosimp.nautilusserver.authentication.dto.requests.ChangePasswordRequest;
 import vn.io.huangnosimp.nautilusserver.authentication.dto.requests.LoginRequest;
 import vn.io.huangnosimp.nautilusserver.authentication.dto.requests.RegisterRequest;
 import vn.io.huangnosimp.nautilusserver.authentication.models.AuthUser;
@@ -26,6 +28,7 @@ import vn.io.huangnosimp.nautilusserver.authentication.repositories.AuthUserRepo
 import vn.io.huangnosimp.nautilusserver.events.UserRegisteredEvent;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateEmail;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateUsername;
+import vn.io.huangnosimp.nautilusserver.exceptions.InvalidPassword;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -113,6 +116,73 @@ class AuthServiceTest {
         assertThrows(
                 BadCredentialsException.class,
                 () -> service.loginUser(new LoginRequest("alice", "bad")));
+    }
+
+    @Test
+    void changePasswordRejectsWrongCurrentPasswordWithoutSaving() {
+        var service = service();
+        AuthUser user = AuthUser.builder().username("alice").password("encoded").build();
+        when(users.findByUsername("alice")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrong", "encoded")).thenReturn(false);
+
+        assertThrows(
+                InvalidPassword.class,
+                () ->
+                        service.changePassword(
+                                jwt("alice"), new ChangePasswordRequest("wrong", "new-password")));
+        verify(users, never()).save(any());
+        verifyNoInteractions(refreshTokenService, tokenBlacklistService);
+    }
+
+    @Test
+    void changePasswordRejectsAccountsWithoutPassword() {
+        var service = service();
+        AuthUser user = AuthUser.builder().username("alice").build();
+        when(users.findByUsername("alice")).thenReturn(Optional.of(user));
+
+        assertThrows(
+                InvalidPassword.class,
+                () ->
+                        service.changePassword(
+                                jwt("alice"), new ChangePasswordRequest("any", "new-password")));
+        verify(users, never()).save(any());
+    }
+
+    @Test
+    void changePasswordStoresNewHashRevokesSessionsAndIssuesNewTokens() {
+        var service = service();
+        AuthUser user =
+                AuthUser.builder()
+                        .username("alice")
+                        .password("encoded")
+                        .role(vn.io.huangnosimp.nautilusserver.authentication.constants.Role.USER)
+                        .build();
+        Jwt token = jwt("alice");
+        when(users.findByUsername("alice")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("old-password", "encoded")).thenReturn(true);
+        when(passwordEncoder.encode("new-password")).thenReturn("new-encoded");
+        when(jwtEncoder.encode(any())).thenReturn(jwt("alice"));
+        when(refreshTokenService.generateRefreshToken(user)).thenReturn("refresh");
+
+        var result =
+                service.changePassword(
+                        token, new ChangePasswordRequest("old-password", "new-password"));
+
+        assertEquals("new-encoded", user.getPassword());
+        verify(users).save(user);
+        verify(tokenBlacklistService).addToken(token);
+        verify(refreshTokenService).deleteRefreshToken(user);
+        assertEquals("access", result.accessToken());
+        assertEquals("refresh", result.refreshToken());
+    }
+
+    private Jwt jwt(String subject) {
+        return Jwt.withTokenValue("access")
+                .header("alg", "HS256")
+                .subject(subject)
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(60))
+                .build();
     }
 
     private AuthService service() {

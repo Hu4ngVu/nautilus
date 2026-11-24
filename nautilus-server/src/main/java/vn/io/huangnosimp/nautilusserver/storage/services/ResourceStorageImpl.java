@@ -1,7 +1,5 @@
 package vn.io.huangnosimp.nautilusserver.storage.services;
 
-import io.awspring.cloud.s3.S3Template;
-import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,23 +11,18 @@ import vn.io.huangnosimp.nautilusserver.storage.repositories.ResourceRepository;
 @Service
 @RequiredArgsConstructor
 public class ResourceStorageImpl implements ResourceStorage {
-    private final S3Template s3Template;
     private final ResourceRepository resourceRepository;
 
-    @Value("${app.s3.bucket-name}")
-    private String bucketName;
+    // The bucket is served publicly from this base URL, so object URLs never expire
+    @Value("${app.s3.public-url}")
+    private String publicUrl;
 
     @Override
-    @Logging(level = Level.DEBUG, logArguments = true)
-    public String createSignedGetUrl(String resourceId) {
-        var resource = resourceRepository.findById(resourceId);
-        return resource.map(
-                        value ->
-                                s3Template
-                                        .createSignedGetURL(
-                                                bucketName, value.getId(), Duration.ofMinutes(5))
-                                        .toString())
-                .orElse(null);
+    public String getPublicUrl(String resourceId) {
+        if (resourceId == null) {
+            return null;
+        }
+        return publicUrl.replaceAll("/+$", "") + "/" + resourceId;
     }
 
     @Override

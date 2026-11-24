@@ -48,7 +48,7 @@ public class UsernameCuckooFilterLoader implements ApplicationRunner {
                 List<String> usernames =
                         jdbcClient
                                 .sql(
-                                        "SELECT username FROM auth_user WHERE username > :last"
+                                        "SELECT username FROM auth_users WHERE username > :last"
                                                 + " ORDER BY username LIMIT :batchSize")
                                 .param("last", last)
                                 .param("batchSize", BATCH_SIZE)

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.io.huangnosimp.nautilusserver.storage.dto.requests.UploadCompleteRequest;
+import vn.io.huangnosimp.nautilusserver.storage.dto.responses.ResourceStatusResponse;
 import vn.io.huangnosimp.nautilusserver.storage.dto.responses.UploadUrlResponse;
 import vn.io.huangnosimp.nautilusserver.storage.services.StorageService;
 
@@ -17,6 +18,12 @@ public class StorageController {
     public ResponseEntity<UploadUrlResponse> getUploadUrl(
             @RequestParam String contentType, @RequestParam Long contentLength) {
         return ResponseEntity.ok(storageService.generateUploadUrl(contentType, contentLength));
+    }
+
+    @GetMapping("/resources/{resourceId}")
+    public ResponseEntity<ResourceStatusResponse> getResourceStatus(
+            @PathVariable String resourceId) {
+        return ResponseEntity.ok(new ResourceStatusResponse(storageService.getStatus(resourceId)));
     }
 
     @PutMapping("webhook/upload-complete")

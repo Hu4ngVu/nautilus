@@ -1,76 +1,106 @@
+<script setup lang="ts">
+import type { LocationQueryRaw } from 'vue-router'
+
+const { t } = useI18n()
+
+useSeoMeta({ title: () => t('home.tagline') })
+
+const search = ref('')
+const searchInput = useTemplateRef('searchInput')
+
+function submitSearch() {
+  const query = search.value.trim()
+  navigateTo({ path: '/browse', query: query ? { query } : undefined })
+}
+
+// "/" jumps to search unless the user is already typing somewhere
+function onKeydown(event: KeyboardEvent) {
+  if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) return
+  const target = event.target as HTMLElement | null
+  if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+  event.preventDefault()
+  searchInput.value?.inputRef?.focus()
+}
+
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
+
+// Tag names must match utils/tags.ts; labels are translated
+const QUICK_TAGS = ['Survival Mode', 'PvP', 'SMP', 'Skyblock', 'Minigames', 'Factions']
+
+const browse = (query: LocationQueryRaw) => ({ path: '/browse', query })
+
+const shelves = computed(() => [
+  { key: 'popular', title: t('home.shelves.popular'), filters: {}, to: browse({}) },
+  { key: 'survival', title: t('home.shelves.survival'), filters: { tags: ['Survival Mode'] }, to: browse({ tags: 'Survival Mode' }) },
+  { key: 'modpack', title: t('home.shelves.modpack'), filters: { serverType: 'MODPACK' as const }, to: browse({ type: 'MODPACK' }) },
+  { key: 'bedrock', title: t('home.shelves.bedrock'), filters: { serverPlatform: 'BEDROCK' as const }, to: browse({ platform: 'BEDROCK' }) }
+])
+</script>
+
 <template>
   <div>
-    <UPageHero
-      title="Nuxt Starter Template"
-      description="A production-ready starter template powered by Nuxt UI. Build beautiful, accessible, and performant applications in minutes, not hours."
-      :links="[{
-        label: 'Get started',
-        to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-        target: '_blank',
-        trailingIcon: 'i-lucide-arrow-right',
-        size: 'xl'
-      }, {
-        label: 'Use this template',
-        to: 'https://github.com/nuxt-ui-templates/starter',
-        target: '_blank',
-        icon: 'i-simple-icons-github',
-        size: 'xl',
-        color: 'neutral',
-        variant: 'subtle'
-      }]"
-    />
+    <UContainer class="flex flex-col items-center gap-6 pt-14 pb-10 text-center sm:pt-20">
+      <PixelShell :size="72" />
 
-    <UPageSection
-      id="features"
-      title="Everything you need to build modern Nuxt apps"
-      description="Start with a solid foundation. This template includes all the essentials for building production-ready applications with Nuxt UI's powerful component system."
-      :features="[{
-        icon: 'i-lucide-rocket',
-        title: 'Production-ready from day one',
-        description: 'Pre-configured with TypeScript, ESLint, Tailwind CSS, and all the best practices. Focus on building features, not setting up tooling.'
-      }, {
-        icon: 'i-lucide-palette',
-        title: 'Beautiful by default',
-        description: 'Leveraging Nuxt UI\'s design system with automatic dark mode, consistent spacing, and polished components that look great out of the box.'
-      }, {
-        icon: 'i-lucide-zap',
-        title: 'Lightning fast',
-        description: 'Optimized for performance with SSR/SSG support, automatic code splitting, and edge-ready deployment. Your users will love the speed.'
-      }, {
-        icon: 'i-lucide-blocks',
-        title: '100+ components included',
-        description: 'Access Nuxt UI\'s comprehensive component library. From forms to navigation, everything is accessible, responsive, and customizable.'
-      }, {
-        icon: 'i-lucide-code-2',
-        title: 'Developer experience first',
-        description: 'Auto-imports, hot module replacement, and TypeScript support. Write less boilerplate and ship more features.'
-      }, {
-        icon: 'i-lucide-shield-check',
-        title: 'Built for scale',
-        description: 'Enterprise-ready architecture with proper error handling, SEO optimization, and security best practices built-in.'
-      }]"
-    />
+      <h1 class="max-w-3xl font-pixel text-pixel-3xl text-balance text-highlighted sm:text-pixel-4xl">
+        <i18n-t keypath="home.taglineRich">
+          <template #highlight>
+            <span class="text-primary">{{ t('home.taglineHighlight') }}</span>
+          </template>
+        </i18n-t>
+      </h1>
 
-    <UPageSection>
-      <UPageCTA
-        title="Ready to build your next Nuxt app?"
-        description="Join thousands of developers building with Nuxt and Nuxt UI. Get this template and start shipping today."
-        variant="subtle"
-        :links="[{
-          label: 'Start building',
-          to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-          target: '_blank',
-          trailingIcon: 'i-lucide-arrow-right',
-          color: 'neutral'
-        }, {
-          label: 'View on GitHub',
-          to: 'https://github.com/nuxt-ui-templates/starter',
-          target: '_blank',
-          icon: 'i-simple-icons-github',
-          color: 'neutral',
-          variant: 'outline'
-        }]"
+      <form
+        role="search"
+        class="w-full max-w-xl"
+        @submit.prevent="submitSearch"
+      >
+        <UInput
+          ref="searchInput"
+          v-model="search"
+          icon="i-lucide-search"
+          size="xl"
+          :placeholder="t('home.searchPlaceholder')"
+          :aria-label="t('browse.search')"
+          :aria-keyshortcuts="'/'"
+          class="w-full"
+          :ui="{ base: 'shadow-[5px_5px_0_var(--color-nautilus-500)] focus-visible:shadow-[5px_5px_0_var(--color-nautilus-500)]' }"
+        >
+          <template #trailing>
+            <UKbd
+              value="/"
+              :title="t('home.searchShortcut')"
+            />
+          </template>
+        </UInput>
+      </form>
+
+      <nav
+        :aria-label="t('home.quickTags')"
+        class="flex max-w-xl flex-wrap justify-center gap-2"
+      >
+        <UButton
+          v-for="tag in QUICK_TAGS"
+          :key="tag"
+          :to="browse({ tags: tag })"
+          :label="t(`tags.label.${tag}`, tag)"
+          color="neutral"
+          variant="soft"
+          size="sm"
+          class="lift-secondary"
+        />
+      </nav>
+    </UContainer>
+
+    <UContainer class="flex flex-col gap-10 pb-16">
+      <ServerShelf
+        v-for="shelf in shelves"
+        :key="shelf.key"
+        :title="shelf.title"
+        :filters="shelf.filters"
+        :to="shelf.to"
       />
-    </UPageSection>
+    </UContainer>
   </div>
 </template>

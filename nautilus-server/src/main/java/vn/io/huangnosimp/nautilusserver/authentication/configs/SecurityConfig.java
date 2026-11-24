@@ -1,6 +1,8 @@
 package vn.io.huangnosimp.nautilusserver.authentication.configs;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,12 +15,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -27,7 +29,9 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
-    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService;
+
+    @Value("${app.domain}")
+    private String domain;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -44,7 +48,8 @@ public class SecurityConfig {
                                                 "/auth/check-email",
                                                 "/storage/webhook/upload-complete")
                                         .permitAll()
-                                        .requestMatchers("/storage/upload-url")
+                                        .requestMatchers(
+                                                "/storage/upload-url", "/storage/resources/**")
                                         .authenticated()
                                         .requestMatchers(HttpMethod.GET, "/**")
                                         .permitAll()
@@ -57,14 +62,7 @@ public class SecurityConfig {
                                                 jwt.decoder(jwtDecoder)
                                                         .jwtAuthenticationConverter(
                                                                 jwtAuthenticationConverter)))
-                .oauth2Login(
-                        oauth2Login ->
-                                oauth2Login
-                                        .loginPage("/auth/login")
-                                        .userInfoEndpoint(
-                                                userInfo ->
-                                                        userInfo.userService(
-                                                                customOAuth2UserService)));
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         return http.build();
     }
@@ -78,5 +76,17 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration authenticationConfiguration) {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        var configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:8082", "https://" + domain));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

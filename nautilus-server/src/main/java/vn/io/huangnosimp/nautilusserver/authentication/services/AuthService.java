@@ -17,8 +17,8 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.io.huangnosimp.nautilusserver.authentication.constants.Provider;
 import vn.io.huangnosimp.nautilusserver.authentication.constants.Role;
+import vn.io.huangnosimp.nautilusserver.authentication.dto.requests.ChangePasswordRequest;
 import vn.io.huangnosimp.nautilusserver.authentication.dto.requests.LoginRequest;
 import vn.io.huangnosimp.nautilusserver.authentication.dto.requests.RegisterRequest;
 import vn.io.huangnosimp.nautilusserver.authentication.dto.results.TokenResult;
@@ -28,6 +28,7 @@ import vn.io.huangnosimp.nautilusserver.events.UserRegisteredEvent;
 import vn.io.huangnosimp.nautilusserver.exceptions.AuthUserNotFound;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateEmail;
 import vn.io.huangnosimp.nautilusserver.exceptions.DuplicateUsername;
+import vn.io.huangnosimp.nautilusserver.exceptions.InvalidPassword;
 import vn.io.huangnosimp.nautilusserver.logging.Logging;
 
 @Service
@@ -78,7 +79,6 @@ public class AuthService {
                         .username(registerRequest.username())
                         .email(registerRequest.email())
                         .password(passwordEncoder.encode(registerRequest.password()))
-                        .provider(Provider.LOCAL)
                         .role(Role.USER)
                         .enabled(true)
                         .build();
@@ -118,6 +118,29 @@ public class AuthService {
         refreshTokenService.deleteRefreshToken(authUser);
         String newRefreshToken = refreshTokenService.generateRefreshToken(authUser);
         return new TokenResult(accessToken, newRefreshToken);
+    }
+
+    /** Changes the password, revokes every existing session and issues a fresh token pair. */
+    @Logging
+    @Transactional(rollbackFor = Exception.class)
+    public TokenResult changePassword(Jwt token, ChangePasswordRequest request) {
+        AuthUser authUser =
+                authUserRepository
+                        .findByUsername(token.getSubject())
+                        .orElseThrow(
+                                () ->
+                                        new AuthUserNotFound(
+                                                "User not found: " + token.getSubject()));
+        if (authUser.getPassword() == null
+                || !passwordEncoder.matches(request.currentPassword(), authUser.getPassword())) {
+            throw new InvalidPassword("Current password is incorrect");
+        }
+        authUser.setPassword(passwordEncoder.encode(request.newPassword()));
+        authUserRepository.save(authUser);
+        tokenBlacklistService.addToken(token);
+        refreshTokenService.deleteRefreshToken(authUser);
+        return new TokenResult(
+                generateAccessToken(authUser), refreshTokenService.generateRefreshToken(authUser));
     }
 
     @Logging
